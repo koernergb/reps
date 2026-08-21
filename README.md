@@ -2,7 +2,10 @@
 
 Reps is an adaptive technical interview coach. It observes how a learner reasons, converts mistakes and hint usage into capability-level evidence, and schedules targeted practice until the learner can transfer the skill to an unseen problem.
 
-The repository is currently at **Milestone 0: foundation**. The product brief is in [`ai_native_spaced_repetition_interview_coach_build_brief_v2.md`](./ai_native_spaced_repetition_interview_coach_build_brief_v2.md), and the implementation sequence with mandatory human gates is in [`MILESTONES.md`](./MILESTONES.md).
+The repository is currently a **local-first, single-user prototype**. Human Gate 0 approved deferring authentication, deployment, and MAU planning while preserving the data and sandbox boundaries needed for later expansion. The product brief is in [`ai_native_spaced_repetition_interview_coach_build_brief_v2.md`](./ai_native_spaced_repetition_interview_coach_build_brief_v2.md), and the implementation sequence with mandatory human gates is in [`MILESTONES.md`](./MILESTONES.md).
+
+> [!WARNING]
+> Local mode has no authentication. Keep the web, API, and database on your machine. Do not expose them through a tunnel, port forward, shared host, or public network.
 
 ## Prerequisites
 
@@ -21,6 +24,7 @@ cp .env.example .env
 make setup
 make services-up
 make db-migrate
+make db-seed
 ```
 
 Run both applications:
@@ -33,6 +37,7 @@ make dev
 - API docs: http://localhost:8000/docs
 - Liveness: http://localhost:8000/health
 - Database readiness: http://localhost:8000/ready
+- Seeded problem API: http://localhost:8000/v1/problems
 
 To run the applications separately:
 
@@ -49,6 +54,16 @@ pnpm build
 ```
 
 The API unit tests use in-memory SQLite only to verify foundation behavior. PostgreSQL remains the product database and migration target.
+
+Migration tests upgrade, downgrade, and re-upgrade the complete domain schema. Seed data is idempotent and contains one stable local learner plus three development-only problems. Hidden tests and reference solutions live in a separate evaluator table and are never returned by public problem or export APIs.
+
+## Local data controls
+
+- `GET /v1/me/export` exports the singleton learner's profile, attempts, capability state, interview sessions/events, and hints.
+- `DELETE /v1/me/history` permanently resets learner history while preserving the local profile and problem corpus.
+- The Settings screen provides both actions with a destructive-action confirmation.
+
+Authentication is a release blocker before shared or hosted use. The schema retains `user_id` ownership now so adding identity later does not require redefining learning evidence.
 
 ## Repository layout
 

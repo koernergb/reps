@@ -1,8 +1,10 @@
-# Milestone 0 cost envelope
+# Deferred hosted-service cost envelope
 
 - Prepared: 2026-08-20
 - Currency: USD/month, list price before tax, credits, negotiated discounts, support labor, and payment processing
-- Purpose: architecture review estimate, not a vendor quote
+- Purpose: archived planning estimate for a future hosted phase, not the approved local-first topology or a vendor quote
+
+Human Gate 0 approved a single-user local prototype. MAU projections and hosted web/API/auth/database costs are therefore deferred. During the local phase, expected external variable cost is limited primarily to OpenAI API usage; local hardware, electricity, and developer time are not modeled below. Reopen this estimate before deployment or shared use.
 
 The recommended beta topology is Vercel Pro (web), Google Cloud Run request-based billing (API), Neon Launch (PostgreSQL), Clerk Pro (identity), OpenAI GPT-5.6 Terra standard processing (interviewer/evaluator), and E2B (sandbox). Final vendors remain a Human Gate 0 decision.
 

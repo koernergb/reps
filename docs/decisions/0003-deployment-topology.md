@@ -1,21 +1,21 @@
-# ADR 0003: Separate web, API, database, and execution trust zones
+# ADR 0003: Local-first topology with preserved execution isolation
 
-- Status: Proposed
+- Status: Accepted at Human Gate 0
 - Date: 2026-08-20
 
-## Recommendation
+## Decision
 
-- Web: Vercel.
-- API: a container service such as Render, Fly.io, or Google Cloud Run, selected after latency and cost comparison.
-- PostgreSQL: managed PostgreSQL (recommended: Neon for preview branching and scale-to-zero during private beta).
-- Code execution: a purpose-built isolated execution provider or a separately administered sandbox service. It must not share credentials, runtime, filesystem, or a network trust zone with the API.
+- Web: local Next.js development/production server.
+- API: local FastAPI process.
+- PostgreSQL: local PostgreSQL through Compose.
+- Code execution: a separately isolated local sandbox introduced in Milestone 3. It must not run in the FastAPI process or receive application/database/OpenAI credentials.
 
-Deploy web and API in compatible regions. Use separate service identities, least-privilege database roles, encrypted connections, and independent kill switches for LLM and execution features.
+Bind local services to loopback by default. Do not expose the application through port forwarding, tunnels, or a public host under this ADR.
 
 ## Why
 
-The trust boundary matters more than reducing the number of deployables. Learner code is hostile and must not enter the API process. The private-beta load does not justify self-managing PostgreSQL.
+The immediate goal is a useful tool for its owner, not a hosted multi-user service. Local operation removes premature auth, MAU, and infrastructure work, but it does not make submitted code safe to execute in the API process.
 
-## Open decision
+## Reopen trigger
 
-Benchmark the shortlisted API and execution providers before committing. Human Gate 0 must approve the actual topology and recurring cost envelope.
+Reopen before shared use, remote access, or deployment. At that point select hosting, managed PostgreSQL, identity, regions, backups, budget controls, observability, and support-access policy.

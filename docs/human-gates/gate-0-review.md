@@ -4,15 +4,15 @@ Implementation must stop after the Milestone 0 checkpoint until this gate is app
 
 ## Review checklist
 
-- [ ] A new contributor can follow `README.md` to install, test, and run the system.
-- [ ] Product owner confirms the MVP is Python-first interview prep and accepts the parking-lot exclusions.
-- [ ] Engineering approves the web/API/database/sandbox trust boundaries in `docs/threat-model.md`.
-- [ ] Team chooses or revises ADR 0002 authentication.
-- [ ] Team chooses API/database/execution providers in ADRs 0003 and 0005.
-- [ ] Team approves the structured LLM boundary in ADR 0004.
-- [ ] Product/privacy owners approve concrete retention, backup expiry, support access, and processor disclosures for ADR 0006.
-- [ ] A monthly beta budget and initial concurrency target are supplied.
-- [ ] Named approvers and decision date are recorded below.
+- [x] A new contributor can follow `README.md` to install, test, and run the system.
+- [x] Product owner confirms a Python-first, single-user interview-prep prototype and accepts the parking-lot exclusions.
+- [x] Engineering trust boundaries remain required even for local use; code execution stays outside the API process.
+- [x] Authentication is deferred; an application-owned singleton user preserves the future ownership boundary.
+- [x] Hosting and MAU architecture are deferred. Web, API, and PostgreSQL run locally.
+- [x] OpenAI is approved as the initial structured LLM provider boundary.
+- [x] Local data is retained until the owner uses export, history reset, or database reset controls.
+- [x] Hosted-service budget and concurrency targets are not applicable to the current phase.
+- [x] Product/engineering approval is recorded below.
 
 ## Five-minute walkthrough
 
@@ -37,18 +37,16 @@ Include fixed and usage-based web/API/database/auth, LLM input/output, execution
 
 ## Unresolved decisions
 
-- Authentication: Clerk recommendation versus self-hosted alternative.
-- API hosting: benchmark Render, Fly.io, and Cloud Run.
-- PostgreSQL: approve Neon or select another managed service.
-- Execution: benchmark E2B, Modal, and hardened self-managed microVMs.
-- Exact LLM model(s): decided by the Milestone 4 evaluation harness; approve OpenAI as initial provider boundary.
-- Retention windows, backup expiry, data region, support access, beta budget, and beta concurrency.
+- Authentication and multi-user authorization before any hosted or shared use.
+- Hosting, managed PostgreSQL, regions, support access, backups, budget, and concurrency before deployment.
+- Exact OpenAI model selection, which remains evaluation-driven in Milestones 4–5.
+- The local isolated execution mechanism and its Milestone 3 adversarial review.
 
 ## Decision record
 
-- Product approver:
-- Engineering approver:
-- Security/privacy approver:
-- Decision date:
-- Status: Pending
-- Required changes:
+- Product approver: Repository owner
+- Engineering approver: Repository owner, accepting the local-first prototype constraints
+- Security/privacy approver: Not applicable until shared/hosted use; sandbox isolation remains a mandatory gate
+- Decision date: 2026-08-20
+- Status: Approved — local-first, single-user scope
+- Required changes: Defer authentication, MAU planning, and deployment. Use OpenAI for structured LLM services. Preserve user ownership columns and execution isolation so the prototype can evolve safely.

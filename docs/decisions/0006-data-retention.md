@@ -1,14 +1,14 @@
 # ADR 0006: Minimal, user-controlled learning data retention
 
-- Status: Proposed
+- Status: Accepted for local-first scope at Human Gate 0
 - Date: 2026-08-20
 
-## Recommendation
+## Local-phase decision
 
-Keep account data until account deletion; retain interview events, code snapshots, chat, execution results, evaluations, hints, and learner-state evidence while the account is active because they power the product's longitudinal loop. Let users delete individual interview history and export all account data. On account deletion, remove active-system data promptly and document bounded backup expiry.
+Keep interview events, code snapshots, chat, execution results, evaluations, hints, and learner-state evidence in local PostgreSQL until the owner exports or resets it. Provide a complete JSON learning-data export and a history reset that preserves corpus content. Local database volume removal remains the full reset mechanism.
 
 Default application logs must not include raw submitted code, full transcripts, email addresses, prompts, hidden tests, or secrets. Analytics receives event names and minimal pseudonymous properties, not content.
 
-## Required before implementation
+## Reopen trigger
 
-At Human Gate 0/1, choose concrete retention windows, subprocessors, backup expiry, support-access policy, legal basis/consent language, and external-provider deletion behavior. The UI and policy must match actual system behavior before beta.
+Before any shared or hosted use, choose concrete retention windows, backup expiry, subprocessors, support-access policy, consent language, and external-provider deletion behavior. OpenAI request retention and data controls must be disclosed before live interview content is sent in Milestone 4.

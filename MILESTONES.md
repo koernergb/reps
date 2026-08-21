@@ -6,6 +6,20 @@ It is written as instructions for an implementation agent. Complete milestones i
 
 The source of truth for product intent is [`ai_native_spaced_repetition_interview_coach_build_brief_v2.md`](./ai_native_spaced_repetition_interview_coach_build_brief_v2.md). If this plan and the brief conflict, stop and ask the product owner which behavior should win, then update both documents.
 
+## Approved local-first scope overlay
+
+Human Gate 0 was approved on 2026-08-20 for a single-user tool built for its repository owner:
+
+- use OpenAI as the initial structured LLM backend;
+- run the web app, API, and PostgreSQL locally;
+- defer authentication, hosting, MAU planning, and production operations;
+- seed one stable local user while retaining `user_id` ownership throughout the schema;
+- never interpret local-only mode as authorization for shared or public access;
+- keep submitted-code execution outside the API process and require the full sandbox security gate;
+- reopen identity, privacy/retention, deployment, backup, support-access, budget, and observability decisions before another person can use the system or it becomes network-accessible.
+
+Where a milestone or gate below assumes multiple accounts or hosted infrastructure, use the local adaptation in `docs/human-gates/` until this overlay is explicitly revoked. This overlay narrows implementation; it does not waive content, evaluator, sandbox, AI-behavior, learning-quality, or destructive-data validation gates.
+
 ## Working rules for every milestone
 
 1. Read the current repository state, relevant documentation, and existing tests before changing code.

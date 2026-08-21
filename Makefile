@@ -1,4 +1,4 @@
-.PHONY: setup dev check services-up services-down db-migrate
+.PHONY: setup dev check services-up services-down db-migrate db-seed
 
 setup:
 	pnpm install
@@ -18,3 +18,6 @@ services-down:
 
 db-migrate:
 	pnpm db:migrate
+
+db-seed:
+	pnpm db:seed

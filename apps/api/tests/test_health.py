@@ -23,6 +23,15 @@ def test_health_includes_request_id() -> None:
     }
 
 
+def test_health_generates_request_id() -> None:
+    with TestClient(create_app(sqlite_engine)) as client:
+        response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json()["request_id"] != "unknown"
+    assert response.headers["x-request-id"] == response.json()["request_id"]
+
+
 def test_ready_succeeds_when_database_is_available() -> None:
     with TestClient(create_app(sqlite_engine)) as client:
         response = client.get("/ready", headers={"x-request-id": "ready-request"})

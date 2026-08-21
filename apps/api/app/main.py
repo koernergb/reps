@@ -10,8 +10,10 @@ from sqlalchemy.engine import Engine
 from starlette.middleware.base import RequestResponseEndpoint
 
 from app.config import get_settings
-from app.db import create_database_engine, database_is_ready
+from app.db import create_database_engine, create_session_factory, database_is_ready
 from app.logging import configure_logging
+from app.routes.local_data import router as local_data_router
+from app.routes.problems import router as problems_router
 from app.schemas import ErrorDetail, ErrorResponse, HealthResponse
 
 logger = structlog.get_logger()
@@ -24,6 +26,7 @@ def create_app(engine_factory: Callable[[], Engine] = create_database_engine) ->
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.database_engine = engine_factory()
+        app.state.session_factory = create_session_factory(app.state.database_engine)
         yield
         app.state.database_engine.dispose()
 
@@ -41,6 +44,8 @@ def create_app(engine_factory: Callable[[], Engine] = create_database_engine) ->
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
         allow_headers=["Content-Type", "Authorization", "X-Request-ID"],
     )
+    application.include_router(problems_router)
+    application.include_router(local_data_router)
 
     @application.middleware("http")
     async def request_context(request: Request, call_next: RequestResponseEndpoint) -> Response:
@@ -73,7 +78,7 @@ def create_app(engine_factory: Callable[[], Engine] = create_database_engine) ->
     async def health(request: Request) -> HealthResponse:
         return HealthResponse(
             status="ok",
-            request_id=request.headers.get("x-request-id") or "unknown",
+            request_id=request.state.request_id,
         )
 
     @application.get(
@@ -82,7 +87,7 @@ def create_app(engine_factory: Callable[[], Engine] = create_database_engine) ->
         responses={503: {"model": ErrorResponse}},
     )
     async def ready(request: Request) -> HealthResponse | JSONResponse:
-        request_id = request.headers.get("x-request-id") or "unknown"
+        request_id = request.state.request_id
         if not database_is_ready(request.app.state.database_engine):
             payload = ErrorResponse(
                 error=ErrorDetail(
