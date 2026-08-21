@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-reps}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-reps-local-only}
+      POSTGRES_DB: ${POSTGRES_DB:-reps}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+    volumes:
+      - reps-postgres:/var/lib/postgresql/data
+
+volumes:
+  reps-postgres:

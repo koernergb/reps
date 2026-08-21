@@ -1,0 +1,2 @@
+import { PlaceholderPage } from "@/components/placeholder-page";
+export default async function Page({ params }: { params: Promise<{ sessionId: string }> }) { const { sessionId } = await params; return <main className="p-8"><PlaceholderPage eyebrow={`Session ${sessionId}`} title="Interview workspace" description="The resizable editor, test output, and interviewer event stream arrive in Milestones 3 and 4." /></main>; }

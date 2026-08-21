@@ -1,0 +1,14 @@
+{
+  "name": "@reps/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "uv --cache-dir ../../.uv-cache run --offline uvicorn app.main:app --reload --host 127.0.0.1 --port 8000",
+    "format": "uv --cache-dir ../../.uv-cache run --offline ruff format .",
+    "lint": "uv --cache-dir ../../.uv-cache run --offline ruff check .",
+    "typecheck": "uv --cache-dir ../../.uv-cache run --offline mypy app tests",
+    "test": "uv --cache-dir ../../.uv-cache run --offline pytest",
+    "db:migrate": "uv --cache-dir ../../.uv-cache run --offline alembic upgrade head",
+    "db:downgrade": "uv --cache-dir ../../.uv-cache run --offline alembic downgrade -1"
+  }
+}
