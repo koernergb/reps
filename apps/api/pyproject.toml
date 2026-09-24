@@ -30,6 +30,10 @@ dev = [
 addopts = "--strict-markers --strict-config --cov=app --cov-report=term-missing --cov-fail-under=90"
 pythonpath = ["."]
 testpaths = ["tests"]
+markers = ["sandbox: adversarial tests against the Docker sandbox (skipped without Docker)"]
+
+[tool.coverage.run]
+omit = ["app/worker.py", "app/devserver.py", "app/execution/loadtest.py"]
 
 [tool.ruff]
 line-length = 100

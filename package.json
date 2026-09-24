@@ -20,6 +20,8 @@
     "db:downgrade": "pnpm --filter @reps/api db:downgrade",
     "db:seed": "pnpm --filter @reps/api db:seed",
     "corpus:validate": "pnpm --filter @reps/api corpus:validate",
-    "corpus:report": "pnpm --filter @reps/api corpus:report"
+    "corpus:report": "pnpm --filter @reps/api corpus:report",
+    "dev:worker": "pnpm --filter @reps/api dev:worker",
+    "test:sandbox": "pnpm --filter @reps/api test:sandbox"
   }
 }

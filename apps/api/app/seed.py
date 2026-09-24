@@ -163,13 +163,18 @@ def sync_corpus(session: Session, corpus: Corpus) -> dict[str, int]:
             )
             session.add(exercise_row)
         exercise_row.capability_id = capabilities[exercise_def.capability].id
-        exercise_row.problem_id = problem_ids.get(exercise_def.problem) if exercise_def.problem else None
+        exercise_row.problem_id = (
+            problem_ids.get(exercise_def.problem) if exercise_def.problem else None
+        )
         exercise_row.exercise_type = exercise_def.type
         exercise_row.prompt = exercise_def.prompt
         exercise_row.expected_answer = exercise_def.reference_answer
         exercise_row.status = exercise_def.status
         exercise_row.estimated_minutes = exercise_def.estimated_minutes
-        exercise_row.provenance = {"source": "corpus", "reviewed": exercise_def.status == "reviewed"}
+        exercise_row.provenance = {
+            "source": "corpus",
+            "reviewed": exercise_def.status == "reviewed",
+        }
     session.commit()
     return counts
 

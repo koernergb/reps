@@ -16,24 +16,39 @@ describe("getApiHealth", () => {
 
 describe("local product API", () => {
   it("lists problems without adding client ownership fields", async () => {
-    const payload = [{ id: "1", slug: "pair", title: "Pair", difficulty: "easy", language: "python", status: "development", capabilities: [] }];
+    const payload = [{ id: "1", slug: "pair", title: "Pair", difficulty: "easy", language: "python", status: "development", topic: null, capabilities: [] }];
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(payload), { status: 200 })));
     await expect(listProblems()).resolves.toEqual(payload);
-    expect(fetch).toHaveBeenCalledWith("http://localhost:8000/v1/problems", expect.objectContaining({ cache: "no-store" }));
+    expect(fetch).toHaveBeenCalledWith("http://127.0.0.1:8000/v1/problems", expect.objectContaining({ cache: "no-store" }));
     vi.unstubAllGlobals();
   });
 
   it("encodes a problem slug", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ slug: "a/b" }), { status: 200 })));
     await getProblem("a/b");
-    expect(fetch).toHaveBeenCalledWith("http://localhost:8000/v1/problems/a%2Fb", expect.any(Object));
+    expect(fetch).toHaveBeenCalledWith("http://127.0.0.1:8000/v1/problems/a%2Fb", expect.any(Object));
     vi.unstubAllGlobals();
   });
 
   it("uses DELETE for a confirmed history reset", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ status: "reset", deleted: {} }), { status: 200 })));
     await resetLocalHistory();
-    expect(fetch).toHaveBeenCalledWith("http://localhost:8000/v1/me/history", expect.objectContaining({ method: "DELETE" }));
+    expect(fetch).toHaveBeenCalledWith("http://127.0.0.1:8000/v1/me/history", expect.objectContaining({ method: "DELETE" }));
+    vi.unstubAllGlobals();
+  });
+});
+
+describe("error envelope", () => {
+  it("surfaces the API error message and request id", async () => {
+    const body = { error: { code: "queue_full", message: "Too many executions.", request_id: "req-9" } };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status: 429 })));
+    await expect(listProblems()).rejects.toMatchObject({ code: "queue_full", status: 429, requestId: "req-9", message: "Too many executions." });
+    vi.unstubAllGlobals();
+  });
+
+  it("explains an unreachable API", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("fetch failed")));
+    await expect(listProblems()).rejects.toMatchObject({ code: "api_unreachable" });
     vi.unstubAllGlobals();
   });
 });

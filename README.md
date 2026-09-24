@@ -23,21 +23,22 @@ Docker is needed for the normal development database but not for the current uni
 cp .env.example .env
 make setup
 make services-up
+make sandbox-build   # learner code only runs in this Docker image
 make db-migrate
 make db-seed
 ```
 
-Run both applications:
+Run the web app, API, and execution worker:
 
 ```bash
 make dev
 ```
 
 - Web: http://localhost:3000
-- API docs: http://localhost:8000/docs
-- Liveness: http://localhost:8000/health
-- Database readiness: http://localhost:8000/ready
-- Seeded problem API: http://localhost:8000/v1/problems
+- API docs: http://127.0.0.1:8000/docs
+- Liveness: http://127.0.0.1:8000/health
+- Database readiness: http://127.0.0.1:8000/ready
+- Seeded problem API: http://127.0.0.1:8000/v1/problems
 
 To run the applications separately:
 

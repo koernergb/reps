@@ -11,9 +11,12 @@ from starlette.middleware.base import RequestResponseEndpoint
 
 from app.config import get_settings
 from app.db import create_database_engine, create_session_factory, database_is_ready
+from app.errors import ApiError, api_error_handler
 from app.logging import configure_logging
+from app.routes.executions import router as executions_router
 from app.routes.local_data import router as local_data_router
 from app.routes.problems import router as problems_router
+from app.routes.system import router as system_router
 from app.schemas import ErrorDetail, ErrorResponse, HealthResponse
 
 logger = structlog.get_logger()
@@ -39,13 +42,18 @@ def create_app(engine_factory: Callable[[], Engine] = create_database_engine) ->
     )
     application.add_middleware(
         CORSMiddleware,
-        allow_origins=[settings.web_origin],
+        allow_origins=sorted(
+            {settings.web_origin, settings.web_origin.replace("localhost", "127.0.0.1")}
+        ),
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-        allow_headers=["Content-Type", "Authorization", "X-Request-ID"],
+        allow_headers=["Content-Type", "Authorization", "X-Request-ID", "Idempotency-Key"],
     )
     application.include_router(problems_router)
     application.include_router(local_data_router)
+    application.include_router(executions_router)
+    application.include_router(system_router)
+    application.add_exception_handler(ApiError, api_error_handler)
 
     @application.middleware("http")
     async def request_context(request: Request, call_next: RequestResponseEndpoint) -> Response:

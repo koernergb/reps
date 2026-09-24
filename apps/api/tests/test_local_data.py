@@ -106,7 +106,7 @@ def test_export_contains_owned_history_but_not_corpus_secrets(
 
     assert response.status_code == 200
     body = response.json()
-    assert body["schema_version"] == 1
+    assert body["schema_version"] == 2
     assert len(body["review_attempts"]) == 1
     assert len(body["interview_sessions"]) == 1
     assert len(body["interview_events"]) == 1
@@ -122,13 +122,12 @@ def test_reset_deletes_history_and_preserves_profile_and_corpus(
     response = client.delete("/v1/me/history")
 
     assert response.status_code == 200
-    assert response.json()["deleted"] == {
-        "interview_events": 1,
-        "hint_logs": 1,
-        "review_attempts": 1,
-        "capability_states": 1,
-        "interview_sessions": 1,
-    }
+    deleted = response.json()["deleted"]
+    assert deleted["interview_events"] == 1
+    assert deleted["hint_logs"] == 1
+    assert deleted["review_attempts"] == 1
+    assert deleted["capability_states"] == 1
+    assert deleted["interview_sessions"] == 1
     with Session(seeded_engine) as session:
         assert session.scalar(select(func.count()).select_from(InterviewSession)) == 0
         assert session.scalar(select(func.count()).select_from(Problem)) == len(
@@ -149,3 +148,43 @@ def test_local_profile_fails_closed_before_seed(unseeded_engine: Engine) -> None
 
     assert response.status_code == 503
     assert response.json()["detail"]["code"] == "local_data_not_initialized"
+
+
+def test_every_user_owned_table_is_exported_and_reset() -> None:
+    from app.models import Base
+    from app.routes.local_data import OWNED_TABLES
+
+    registered = {table.name for table in OWNED_TABLES}
+    for table in Base.metadata.sorted_tables:
+        owned = "user_id" in table.columns and table.name != "users"
+        session_scoped = any(
+            fk.column.table.name == "interview_sessions" for fk in table.foreign_keys
+        )
+        if owned or session_scoped:
+            assert table.name in registered, f"{table.name} is not covered by export/reset"
+
+
+def test_export_excludes_private_execution_results_and_reset_removes_code(
+    client: TestClient, seeded_engine: Engine
+) -> None:
+    from app.execution.service import submit_job
+
+    with Session(seeded_engine) as session:
+        job, _ = submit_job(
+            session,
+            user_id=LOCAL_USER_ID,
+            problem_slug="pair-sum-indices",
+            code="def pair_sum_indices(nums, target):\n    return [0, 1]\n",
+            kind="run",
+            idempotency_key="export-test-key",
+        )
+        job.result_private = {"tests": [{"expected": "secret-hidden-value"}]}
+        session.commit()
+    body = client.get("/v1/me/export")
+    assert body.status_code == 200
+    jobs = body.json()["additional"]["execution_jobs"]
+    assert len(jobs) == 1 and "code" in jobs[0]
+    assert "secret-hidden-value" not in body.text
+    assert "result_private" not in body.text
+    deleted = client.delete("/v1/me/history").json()["deleted"]
+    assert deleted["execution_jobs"] == 1

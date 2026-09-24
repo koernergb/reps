@@ -60,7 +60,7 @@ class LocalProfile(BaseModel):
 
 
 class LocalDataExport(BaseModel):
-    schema_version: int = 1
+    schema_version: int = 2
     exported_at: datetime
     profile: dict[str, Any]
     review_attempts: list[dict[str, Any]]
@@ -68,6 +68,7 @@ class LocalDataExport(BaseModel):
     interview_sessions: list[dict[str, Any]]
     interview_events: list[dict[str, Any]]
     hint_logs: list[dict[str, Any]]
+    additional: dict[str, list[dict[str, Any]]] = {}
 
 
 class ResetResult(BaseModel):

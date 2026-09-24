@@ -48,9 +48,7 @@ def upgrade() -> None:
             name="ck_execution_status",
         ),
         sa.ForeignKeyConstraint(["problem_id"], ["problems.id"], ondelete="RESTRICT"),
-        sa.ForeignKeyConstraint(
-            ["review_attempt_id"], ["review_attempts.id"], ondelete="CASCADE"
-        ),
+        sa.ForeignKeyConstraint(["review_attempt_id"], ["review_attempts.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["session_id"], ["interview_sessions.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
@@ -77,9 +75,7 @@ def upgrade() -> None:
 
     with op.batch_alter_table("problem_evaluators") as batch_op:
         batch_op.add_column(sa.Column("hints", sa.JSON(), nullable=False, server_default="[]"))
-        batch_op.add_column(
-            sa.Column("key_insight", sa.Text(), nullable=False, server_default="")
-        )
+        batch_op.add_column(sa.Column("key_insight", sa.Text(), nullable=False, server_default=""))
         batch_op.add_column(
             sa.Column("clarifications", sa.JSON(), nullable=False, server_default="[]")
         )

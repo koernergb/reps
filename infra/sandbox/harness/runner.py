@@ -226,6 +226,10 @@ def run_child(job: dict[str, Any], result_fd: int) -> None:
         out.write(encoded + "\n")
         out.flush()
 
+    os.environ.clear()
+    os.environ.update(
+        {"PATH": "/usr/local/bin:/usr/bin:/bin", "HOME": "/tmp", "LANG": "C.UTF-8"}
+    )
     apply_child_limits(int(job.get("memory_limit_mb", 256)))
     timeout = float(job.get("per_test_timeout_s", 2.0))
     soft_stdout = int(job.get("max_stdout_bytes", 4000))
@@ -321,7 +325,22 @@ def run_class_test(namespace: dict[str, Any], entrypoint: str, args: list[Any]) 
     return outputs
 
 
+def make_non_dumpable() -> None:
+    """Deny same-uid learner code access to this process's /proc entries (fds, memory)."""
+    if not sys.platform.startswith("linux"):
+        return
+    try:
+        import ctypes
+
+        libc = ctypes.CDLL(None, use_errno=True)
+        pr_set_dumpable = 4
+        libc.prctl(pr_set_dumpable, 0, 0, 0, 0)
+    except (OSError, AttributeError):
+        pass
+
+
 def supervise(job: dict[str, Any]) -> dict[str, Any]:
+    make_non_dumpable()
     read_fd, write_fd = os.pipe()
     pid = os.fork()
     if pid == 0:  # child
@@ -391,27 +410,28 @@ def supervise(job: dict[str, Any]) -> dict[str, Any]:
         return {"status": load["status"], "error": load.get("error")}
 
     ordered: list[dict[str, Any]] = []
-    missing_status = "not_run"
+    first_missing = True
     for test in tests:
         found = results.get(str(test["id"]))
         if found is not None:
             found.pop("type", None)
             ordered.append(found)
             continue
-        if missing_status == "not_run" and killed_reason is not None:
-            ordered.append({"id": test["id"], "status": killed_reason,
-                            "error": "Test exceeded its time limit."
-                            if killed_reason == "timeout" else "Output limit exceeded."})
-            missing_status = "not_run"
-            killed_reason = None
-            continue
-        if missing_status == "not_run" and signaled:
+        if first_missing and killed_reason is not None:
+            # The supervisor killed the child; attribute it to the test that was running.
+            message = (
+                "Test exceeded its time limit."
+                if killed_reason == "timeout"
+                else "Output limit exceeded."
+            )
+            ordered.append({"id": test["id"], "status": killed_reason, "error": message})
+        elif first_missing and signaled:
             ordered.append({"id": test["id"], "status": "crashed",
                             "error": "The process was killed while running this test."})
-            signaled = False
-            continue
-        ordered.append({"id": test["id"], "status": "not_run",
-                        "error": "Not run because an earlier test stopped execution."})
+        else:
+            ordered.append({"id": test["id"], "status": "not_run",
+                            "error": "Not run because an earlier test stopped execution."})
+        first_missing = False
     return {"status": "ok", "results": ordered}
 
 

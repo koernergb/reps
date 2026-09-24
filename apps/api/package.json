@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "uv --cache-dir ../../.uv-cache run --offline uvicorn app.main:app --reload --host 127.0.0.1 --port 8000",
+    "dev": "uv --cache-dir ../../.uv-cache run --offline python -m app.devserver",
     "format": "uv --cache-dir ../../.uv-cache run --offline ruff format .",
     "lint": "uv --cache-dir ../../.uv-cache run --offline ruff check .",
     "typecheck": "uv --cache-dir ../../.uv-cache run --offline mypy app tests",
@@ -12,6 +12,10 @@
     "db:downgrade": "uv --cache-dir ../../.uv-cache run --offline alembic downgrade -1",
     "db:seed": "uv --cache-dir ../../.uv-cache run --offline python -m app.seed",
     "corpus:validate": "uv --cache-dir ../../.uv-cache run --offline python -m app.corpus.validate --execute",
-    "corpus:report": "uv --cache-dir ../../.uv-cache run --offline python -m app.corpus.validate --report"
+    "corpus:report": "uv --cache-dir ../../.uv-cache run --offline python -m app.corpus.validate --report",
+    "dev:api-only": "uv --cache-dir ../../.uv-cache run --offline uvicorn app.main:app --reload --host 127.0.0.1 --port 8000",
+    "dev:worker": "uv --cache-dir ../../.uv-cache run --offline python -m app.worker",
+    "test:sandbox": "uv --cache-dir ../../.uv-cache run --offline pytest -m sandbox --no-cov",
+    "loadtest:sandbox": "uv --cache-dir ../../.uv-cache run --offline python -m app.execution.loadtest"
   }
 }
