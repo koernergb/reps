@@ -1,0 +1,13 @@
+persona: candidate_wrong_complexity
+problem: find-sorted-value
+mode: practice
+expect:
+  result: solved_independently
+  weakness_in: [binary-search.complexity]
+steps:
+  - say: The list is sorted so I'll use binary search with inclusive left and right bounds.
+  - advance: IMPLEMENTATION
+  - submit: reference
+  - say: It's O(n) time and O(n) space.
+  - say: I think it's O(n) time and O(n) space because we look at elements.
+  - say: Still O(n) time, O(n) space.

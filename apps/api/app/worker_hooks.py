@@ -1,8 +1,9 @@
-"""Registers post-execution hooks. Later milestones append their hooks here."""
+"""Registers post-execution hooks run by the worker after each job."""
 
 from app.execution.service import completion_hooks
 
 
 def register_hooks() -> None:
-    # Imported lazily so the worker only loads modules it needs.
-    del completion_hooks[:]
+    from app.interview.service import on_execution_completed
+
+    completion_hooks[:] = [on_execution_completed]

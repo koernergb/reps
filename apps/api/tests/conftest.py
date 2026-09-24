@@ -20,6 +20,13 @@ from app.seed import seed_database
 
 
 def isolated_engine() -> Engine:
+    """In-memory SQLite by default; set TEST_DATABASE_URL to run the suite on PostgreSQL."""
+    url = os.environ.get("TEST_DATABASE_URL")
+    if url:
+        engine = create_engine(url)
+        Base.metadata.drop_all(engine)
+        Base.metadata.create_all(engine)
+        return engine
     engine = create_engine(
         "sqlite+pysqlite:///:memory:",
         connect_args={"check_same_thread": False},
@@ -60,3 +67,21 @@ def reset_rate_limits() -> Iterator[None]:
     rate_limiter.reset()
     yield
     get_settings.cache_clear()
+
+
+@pytest.fixture
+def run_jobs(seeded_engine: Engine):  # type: ignore[no-untyped-def]
+    """Process queued executions with interview hooks, like the worker does."""
+    from sqlalchemy.orm import sessionmaker
+
+    from app.execution.backends import TrustedSubprocessBackend
+    from app.execution.service import process_available_jobs
+    from app.worker_hooks import register_hooks
+
+    register_hooks()
+    factory = sessionmaker(bind=seeded_engine, expire_on_commit=False)
+
+    def run() -> int:
+        return process_available_jobs(factory, TrustedSubprocessBackend())
+
+    return run

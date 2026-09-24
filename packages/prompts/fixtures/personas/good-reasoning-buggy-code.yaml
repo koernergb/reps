@@ -1,0 +1,14 @@
+persona: candidate_good_reasoning_buggy_code
+problem: longest-unique-substring
+mode: practice
+expect:
+  result: failed
+  weakness_in: [sliding-window.boundaries, sliding-window.implementation]
+  no_weakness_in: [sliding-window.recognition]
+steps:
+  - say: Should the comparison be case-sensitive?
+  - say: I'll use a variable sliding window with a last-seen map, moving the left edge past the previous occurrence so the window stays repeat-free.
+  - say: Each index enters and leaves once, so O(n) time and O(alphabet) space.
+  - advance: IMPLEMENTATION
+  - submit: wrong:left-moves-backward
+  - advance: COMPLETE

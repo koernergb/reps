@@ -27,10 +27,18 @@ class OwnedTable:
 
 # Order matters for deletion: children before parents.
 OWNED_TABLES: tuple[OwnedTable, ...] = (
+    OwnedTable("diagnosis_flags"),
+    OwnedTable("interview_evaluations"),
+    OwnedTable("llm_calls"),
+    OwnedTable("solution_views"),
     OwnedTable("interview_events", via_session=True),
-    OwnedTable("execution_jobs", private_columns=frozenset({"result_private"})),
     OwnedTable("hint_logs"),
+    OwnedTable("execution_jobs", private_columns=frozenset({"result_private"})),
+    OwnedTable("capability_evidence"),
+    OwnedTable("analytics_events"),
     OwnedTable("review_attempts"),
+    OwnedTable("review_tasks"),
+    OwnedTable("drill_sessions"),
     OwnedTable("learner_capability_states"),
     OwnedTable("interview_sessions"),
 )

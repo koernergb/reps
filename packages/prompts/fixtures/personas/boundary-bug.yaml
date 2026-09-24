@@ -1,0 +1,12 @@
+persona: candidate_boundary_bug
+problem: find-sorted-value
+mode: practice
+expect:
+  result: failed
+  weakness_in: [binary-search.boundaries, binary-search.implementation]
+steps:
+  - say: Sorted input, so binary search. I'll keep left and right and halve the range.
+  - advance: IMPLEMENTATION
+  - run: wrong:strict-loop
+  - submit: wrong:strict-loop
+  - advance: COMPLETE
