@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const Monaco = dynamic(() => import("@monaco-editor/react").then((module) => module.default), {
   ssr: false,
@@ -21,6 +21,14 @@ type Props = {
 export function CodeEditor({ value, onChange, onRun, onSubmit, label }: Props) {
   const [fallback, setFallback] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // Monaco commands are registered once at mount; refs keep them pointed at current handlers
+  // so a keyboard run always uses the latest code.
+  const runRef = useRef(onRun);
+  const submitRef = useRef(onSubmit);
+  useEffect(() => {
+    runRef.current = onRun;
+    submitRef.current = onSubmit;
+  }, [onRun, onSubmit]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -59,14 +67,14 @@ export function CodeEditor({ value, onChange, onRun, onSubmit, label }: Props) {
   }
 
   return (
-    <div aria-label={label} className="h-full" role="group">
+    <div aria-label={label} className="h-full" data-editor-ready={mounted ? "true" : "false"} role="group">
       <Monaco
         defaultLanguage="python"
         onChange={(next) => onChange(next ?? "")}
         onMount={(editor, monaco) => {
           setMounted(true);
-          editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => onRun?.());
-          editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter, () => onSubmit?.());
+          editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => runRef.current?.());
+          editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter, () => submitRef.current?.());
         }}
         options={{
           minimap: { enabled: false },

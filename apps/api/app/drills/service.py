@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.analytics import track
 from app.config import get_settings
+from app.corpus.loader import get_corpus
 from app.drills.composer import Candidate, compose, describe_mix
 from app.errors import ApiError
 from app.models import (
@@ -129,7 +130,7 @@ def gather_candidates(db: Session, user: User) -> list[Candidate]:
             exercise = options[0]
             candidates.append(
                 Candidate(
-                    kind="practice",
+                    kind="onboarding",
                     key=f"practice:{exercise.id}",
                     capability_slug=f"{topic}.recognition",
                     topic=topic,
@@ -170,7 +171,7 @@ def create_drill(db: Session, user: User, budget_minutes: int) -> DrillSession:
     capabilities = {row.slug: row for row in db.scalars(select(Capability))}
     for item in chosen:
         task_id = item.key
-        if item.kind == "practice":
+        if item.kind in ("practice", "onboarding"):
             exercise = db.get(Exercise, item.exercise_id) if item.exercise_id else None
             task = create_task(
                 db,
@@ -278,7 +279,8 @@ def drill_view(db: Session, drill: DrillSession) -> dict[str, Any]:
                     reason=item["reason"],
                 )
                 for item in drill.plan
-            ]
+            ],
+            {topic.slug: topic.name for topic in get_corpus().taxonomy.topics},
         ),
         "items": items,
         "completed_items": completed,
@@ -304,7 +306,7 @@ def set_status(db: Session, user: User, drill: DrillSession, action: str) -> Dri
         drill.completed_at = now
         # Practice items created for this drill disappear if they were never started.
         for item in view["items"]:
-            if item["kind"] == "practice" and item["status"] == "pending":
+            if item["kind"] in ("practice", "onboarding") and item["status"] == "pending":
                 task = db.get(ReviewTask, item["task_id"])
                 if task is not None and task.status in ("pending", "snoozed"):
                     task.status = "invalidated"

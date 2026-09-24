@@ -98,15 +98,19 @@ def interleave(items: list[Candidate]) -> list[Candidate]:
     return result
 
 
-def describe_mix(items: list[Candidate]) -> str:
+def describe_mix(items: list[Candidate], topic_names: dict[str, str] | None = None) -> str:
+    names = topic_names or {}
     due = sum(1 for item in items if item.kind == "task")
-    practice = len(items) - due
+    onboarding = sum(1 for item in items if item.kind == "onboarding")
+    practice = len(items) - due - onboarding
     parts = []
     if due:
         parts.append(f"{due} scheduled review{'s' if due != 1 else ''}")
     if practice:
         parts.append(f"{practice} practice item{'s' if practice != 1 else ''} for weak areas")
-    topics = sorted({item.topic for item in items})
+    if onboarding:
+        parts.append(f"{onboarding} calibration question{'s' if onboarding != 1 else ''}")
+    topics = sorted({names.get(item.topic, item.topic) for item in items})
     if topics:
         parts.append(f"covering {', '.join(topics)}")
     return ", ".join(parts) or "Nothing to practice right now."

@@ -191,7 +191,9 @@ def failed_interview(client: TestClient, run_jobs: Any) -> str:
 def test_failed_interview_to_review_to_state_change(
     client: TestClient, run_jobs: Any, seeded_engine: Engine
 ) -> None:
-    failed_interview(client, run_jobs)
+    session_id = failed_interview(client, run_jobs)
+    scheduled = client.get(f"/v1/interviews/{session_id}/report").json()["scheduled"]
+    assert scheduled and all(item["label"] and item["due_at"] for item in scheduled)
     with Session(seeded_engine) as session:
         tasks = session.scalars(
             select(ReviewTask).where(ReviewTask.status == "pending").order_by(ReviewTask.due_at)

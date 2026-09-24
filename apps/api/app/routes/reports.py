@@ -17,7 +17,9 @@ from app.models import (
     InterviewEvaluation,
     InterviewEvent,
     InterviewSession,
+    ReviewTask,
 )
+from app.scheduling.scheduler import TASK_LABELS
 
 router = APIRouter(prefix="/v1/interviews", tags=["reports"])
 
@@ -47,6 +49,11 @@ def report_view(
     flags = db.scalars(
         select(DiagnosisFlag).where(DiagnosisFlag.evaluation_id == evaluation.id)
     ).all()
+    scheduled = db.scalars(
+        select(ReviewTask)
+        .where(ReviewTask.source_type == "interview", ReviewTask.source_id == interview.id)
+        .order_by(ReviewTask.due_at)
+    ).all()
     return {
         "evaluation_id": evaluation.id,
         "session_id": interview.id,
@@ -60,6 +67,16 @@ def report_view(
         "report": evaluation.report,
         "capability_names": names,
         "evidence": events,
+        "scheduled": [
+            {
+                "task_type": task.task_type,
+                "label": TASK_LABELS.get(task.task_type, task.task_type),
+                "capability": names.get(task.capability.slug, task.capability.slug),
+                "due_at": task.due_at.isoformat(),
+                "status": task.status,
+            }
+            for task in scheduled
+        ],
         "flags": [
             {"capability_slug": flag.capability_slug, "reason": flag.reason, "status": flag.status}
             for flag in flags

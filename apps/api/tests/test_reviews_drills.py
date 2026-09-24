@@ -185,7 +185,7 @@ def test_reviews_are_user_scoped(client: TestClient, seeded_engine: Engine) -> N
 
 candidate_strategy = st.builds(
     Candidate,
-    kind=st.sampled_from(["task", "practice"]),
+    kind=st.sampled_from(["task", "practice", "onboarding"]),
     key=st.uuids().map(str),
     capability_slug=st.sampled_from([f"t{i}.c{j}" for i in range(4) for j in range(3)]),
     topic=st.just("x"),
@@ -226,7 +226,8 @@ def test_new_user_drill_onboards_across_topics(client: TestClient, seeded_engine
     assert drill["items"] and drill["planned_minutes"] <= 10
     topics = [item["topic"] for item in drill["items"]]
     assert len(set(topics)) == len(topics)
-    assert all(item["kind"] == "practice" for item in drill["items"])
+    assert all(item["kind"] == "onboarding" for item in drill["items"])
+    assert "calibration" in drill["mix"] and "Arrays & Hashing" in drill["mix"]
     assert client.post("/v1/drills", json={"budget_minutes": 10}).json()["id"] == drill["id"]
 
 

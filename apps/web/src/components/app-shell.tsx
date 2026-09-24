@@ -1,11 +1,13 @@
-import { BrainCircuit, CalendarClock, Code2, LayoutDashboard, Settings } from "lucide-react";
+import { BrainCircuit, Code2, LayoutDashboard, MessagesSquare, Repeat2, Settings, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
 const navigation = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/problems", label: "Problems", icon: Code2 },
   { href: "/drills", label: "Drills", icon: BrainCircuit },
-  { href: "/history", label: "History", icon: CalendarClock },
+  { href: "/reviews", label: "Reviews", icon: Repeat2 },
+  { href: "/interviews", label: "Interviews", icon: MessagesSquare },
+  { href: "/problems", label: "Problems", icon: Code2 },
+  { href: "/history", label: "Progress", icon: TrendingUp },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
