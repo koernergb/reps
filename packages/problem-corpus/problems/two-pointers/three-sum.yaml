@@ -1,0 +1,125 @@
+schema_version: 1
+slug: three-sum
+version: 1
+status: development
+title: Zero-Sum Triplets
+topic: two-pointers
+patterns: [sort-then-converge, dedupe]
+role: transfer
+difficulty: medium
+transfer_group: converging-pointers
+prerequisites: [pair-sum-sorted]
+related: [pair-sum-sorted]
+statement: |
+  Return every unique triplet `[a, b, c]` of values from `nums` (using three different
+  positions) such that `a + b + c == 0`. Each triplet should be sorted ascending, and the
+  result must not contain duplicate triplets. Triplets may be returned in any order.
+examples:
+  - input: {nums: [-1, 0, 1, 2, -1, -4]}
+    output: [[-1, -1, 2], [-1, 0, 1]]
+constraints:
+  - 0 <= len(nums) <= 3,000
+  - -10^5 <= nums[i] <= 10^5
+entrypoint: three_sum
+comparison: nested_unordered
+per_test_timeout_s: 3
+starter_code: |
+  def three_sum(nums: list[int]) -> list[list[int]]:
+      pass
+time_complexity: O(n^2)
+space_complexity: O(1) excluding output and sort
+capabilities:
+  - {slug: two-pointers.recognition, weight: 0.15}
+  - {slug: two-pointers.invariant, weight: 0.15}
+  - {slug: two-pointers.implementation, weight: 0.2}
+  - {slug: two-pointers.boundaries, weight: 0.2}
+  - {slug: two-pointers.complexity, weight: 0.05}
+  - {slug: two-pointers.transfer, weight: 0.25}
+hints:
+  - If you fix the first value, what problem remains for the other two?
+  - Sorting first lets you reuse the sorted pair-sum technique for the remaining two values.
+  - For each index i, run converging pointers on nums[i + 1:] looking for sum -nums[i].
+  - Skip duplicate values for i, and after finding a triplet move both pointers past equal values.
+  - "nums.sort(); for i: skip if i > 0 and nums[i] == nums[i-1]; two pointers lo, hi; on match append, then advance lo while nums[lo] == nums[lo-1]."
+key_insight: Sort, fix one value, and solve sorted pair-sum on the rest with converging pointers, skipping equal values to avoid duplicate triplets.
+clarifications:
+  - question: Can the same value be used twice if it appears twice?
+    answer: Yes, if it appears at two different positions.
+  - question: Does the order of triplets matter?
+    answer: No, but each triplet should be sorted ascending.
+follow_ups:
+  - How would you generalize to k-sum?
+  - Can you avoid sorting? What would it cost?
+common_mistakes:
+  - id: duplicate-triplets
+    description: Returns the same triplet more than once.
+    capability: two-pointers.boundaries
+  - id: cubic-scan
+    description: Enumerates all triples (O(n^3)).
+    capability: two-pointers.transfer
+  - id: reuses-index
+    description: Lets the pointers reuse the fixed index.
+    capability: two-pointers.implementation
+visible_tests:
+  - {args: [[-1, 0, 1, 2, -1, -4]], expected: [[-1, -1, 2], [-1, 0, 1]]}
+  - {args: [[0, 1, 1]], expected: []}
+hidden_tests:
+  - {args: [[0, 0, 0, 0]], expected: [[0, 0, 0]], label: many duplicates}
+  - {args: [[]], expected: []}
+  - {args: [[-2, 0, 1, 1, 2]], expected: [[-2, 0, 2], [-2, 1, 1]]}
+  - {args: [[1, -1]], expected: []}
+  - {args: [[3, -2, -1, 0, 0, 1, 2]], expected: [[-2, -1, 3], [-2, 0, 2], [-1, 0, 1]]}
+  - {args_expr: "[list(range(1, 1500)) + [-3, -5]]", expected: [[-5, -3, 8], [-5, 1, 4], [-5, 2, 3], [-3, 1, 2]], label: large input}
+reference_solution: |
+  def three_sum(nums):
+      nums = sorted(nums)
+      result = []
+      for i in range(len(nums) - 2):
+          if i > 0 and nums[i] == nums[i - 1]:
+              continue
+          low, high = i + 1, len(nums) - 1
+          while low < high:
+              total = nums[i] + nums[low] + nums[high]
+              if total < 0:
+                  low += 1
+              elif total > 0:
+                  high -= 1
+              else:
+                  result.append([nums[i], nums[low], nums[high]])
+                  low += 1
+                  high -= 1
+                  while low < high and nums[low] == nums[low - 1]:
+                      low += 1
+      return result
+wrong_solutions:
+  - mistake: duplicate-triplets
+    expect: wrong_answer
+    code: |
+      def three_sum(nums):
+          nums = sorted(nums)
+          result = []
+          for i in range(len(nums) - 2):
+              low, high = i + 1, len(nums) - 1
+              while low < high:
+                  total = nums[i] + nums[low] + nums[high]
+                  if total < 0:
+                      low += 1
+                  elif total > 0:
+                      high -= 1
+                  else:
+                      result.append([nums[i], nums[low], nums[high]])
+                      low += 1
+                      high -= 1
+          return result
+  - mistake: cubic-scan
+    expect: timeout
+    code: |
+      def three_sum(nums):
+          found = set()
+          n = len(nums)
+          for i in range(n):
+              for j in range(i + 1, n):
+                  for k in range(j + 1, n):
+                      if nums[i] + nums[j] + nums[k] == 0:
+                          found.add(tuple(sorted((nums[i], nums[j], nums[k]))))
+          return [list(t) for t in found]

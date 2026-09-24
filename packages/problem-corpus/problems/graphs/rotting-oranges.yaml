@@ -1,0 +1,134 @@
+schema_version: 1
+slug: rotting-oranges
+version: 1
+status: development
+title: Spreading Spoilage
+topic: graphs
+patterns: [multi-source-bfs, grid-flood-fill]
+role: transfer
+difficulty: medium
+transfer_group: grid-flood-fill
+prerequisites: [number-of-islands]
+related: [number-of-islands]
+statement: |
+  In `grid`, 0 is an empty cell, 1 is a fresh item, and 2 is a spoiled item. Every minute,
+  each fresh item adjacent (up, down, left, right) to a spoiled item becomes spoiled. Return
+  the number of minutes until no fresh item remains, or `-1` if that never happens.
+examples:
+  - input: {grid: [[2, 1, 1], [1, 1, 0], [0, 1, 1]]}
+    output: 4
+constraints:
+  - 1 <= rows, cols <= 100
+entrypoint: minutes_to_spoil
+starter_code: |
+  def minutes_to_spoil(grid: list[list[int]]) -> int:
+      pass
+time_complexity: O(rows * cols)
+space_complexity: O(rows * cols)
+capabilities:
+  - {slug: graphs.recognition, weight: 0.2}
+  - {slug: graphs.invariant, weight: 0.2}
+  - {slug: graphs.implementation, weight: 0.15}
+  - {slug: graphs.boundaries, weight: 0.15}
+  - {slug: graphs.complexity, weight: 0.05}
+  - {slug: graphs.transfer, weight: 0.25}
+hints:
+  - Spoilage spreads one step per minute from every spoiled item at once. Which traversal models "one step at a time"?
+  - Instead of running a search from each spoiled item separately, what if they all started in the same queue?
+  - Multi-source BFS, enqueue every initially spoiled cell, then process the queue level by level, one level per minute.
+  - Count fresh items first. Decrement as they spoil; if any remain at the end, return -1. Do not count a final minute in which nothing spoils.
+  - "queue = all 2s; fresh = count of 1s; minutes = 0; while queue and fresh: for _ in range(len(queue)): spread to 4 neighbors; minutes += 1; return minutes if fresh == 0 else -1."
+key_insight: Starting BFS from all spoiled cells simultaneously makes each BFS level one minute, so the number of levels needed to reach every fresh cell is the answer.
+clarifications:
+  - question: What if there are no fresh items at the start?
+    answer: Return 0.
+  - question: Do diagonal neighbors spread spoilage?
+    answer: No.
+follow_ups:
+  - Why is a single multi-source BFS better than one BFS per spoiled item?
+  - How would you report which cell spoiled last?
+common_mistakes:
+  - id: single-source
+    description: Runs BFS from only one spoiled item.
+    capability: graphs.transfer
+  - id: extra-minute
+    description: Counts one extra minute after the last item spoils.
+    capability: graphs.boundaries
+visible_tests:
+  - {args: [[[2, 1, 1], [1, 1, 0], [0, 1, 1]]], expected: 4}
+  - {args: [[[2, 1, 1], [0, 1, 1], [1, 0, 1]]], expected: -1}
+hidden_tests:
+  - {args: [[[0, 2]]], expected: 0}
+  - {args: [[[0]]], expected: 0}
+  - {args: [[[1]]], expected: -1}
+  - {args: [[[2, 2], [1, 1]]], expected: 1}
+  - {args: [[[2, 1, 1, 1, 1, 2]]], expected: 2, label: two sources}
+reference_solution: |
+  from collections import deque
+
+  def minutes_to_spoil(grid):
+      rows, cols = len(grid), len(grid[0])
+      grid = [row[:] for row in grid]
+      queue = deque()
+      fresh = 0
+      for r in range(rows):
+          for c in range(cols):
+              if grid[r][c] == 2:
+                  queue.append((r, c))
+              elif grid[r][c] == 1:
+                  fresh += 1
+      minutes = 0
+      while queue and fresh:
+          for _ in range(len(queue)):
+              r, c = queue.popleft()
+              for nr, nc in ((r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)):
+                  if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 1:
+                      grid[nr][nc] = 2
+                      fresh -= 1
+                      queue.append((nr, nc))
+          minutes += 1
+      return minutes if fresh == 0 else -1
+wrong_solutions:
+  - mistake: single-source
+    expect: wrong_answer
+    code: |
+      from collections import deque
+
+      def minutes_to_spoil(grid):
+          rows, cols = len(grid), len(grid[0])
+          grid = [row[:] for row in grid]
+          start = [(r, c) for r in range(rows) for c in range(cols) if grid[r][c] == 2][:1]
+          fresh = sum(row.count(1) for row in grid)
+          queue = deque(start)
+          minutes = 0
+          while queue and fresh:
+              for _ in range(len(queue)):
+                  r, c = queue.popleft()
+                  for nr, nc in ((r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)):
+                      if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 1:
+                          grid[nr][nc] = 2
+                          fresh -= 1
+                          queue.append((nr, nc))
+              minutes += 1
+          return minutes if fresh == 0 else -1
+  - mistake: extra-minute
+    expect: wrong_answer
+    code: |
+      from collections import deque
+
+      def minutes_to_spoil(grid):
+          rows, cols = len(grid), len(grid[0])
+          grid = [row[:] for row in grid]
+          queue = deque((r, c) for r in range(rows) for c in range(cols) if grid[r][c] == 2)
+          fresh = sum(row.count(1) for row in grid)
+          minutes = 0
+          while queue:
+              for _ in range(len(queue)):
+                  r, c = queue.popleft()
+                  for nr, nc in ((r + 1, c), (r - 1, c), (r, c + 1), (r, c - 1)):
+                      if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 1:
+                          grid[nr][nc] = 2
+                          fresh -= 1
+                          queue.append((nr, nc))
+              minutes += 1
+          return minutes if fresh == 0 else -1

@@ -1,15 +1,24 @@
+"""Synchronize the database projection of the curated corpus.
+
+Corpus files under `packages/problem-corpus` are the source of truth. This command is
+idempotent: it inserts missing rows, updates rows whose content version changed, and retires
+(never deletes) problems that left the corpus, so learner history keeps its references.
+"""
+
 from __future__ import annotations
 
-from typing import Any, cast
 from uuid import NAMESPACE_URL, uuid5
 
+import structlog
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
+from app.corpus.loader import Corpus, LoadedProblem, get_corpus
 from app.db import create_database_engine, create_session_factory
 from app.local_mode import LOCAL_USER_ID
 from app.models import (
     Capability,
+    Exercise,
     Problem,
     ProblemCapability,
     ProblemEvaluator,
@@ -17,140 +26,155 @@ from app.models import (
     User,
 )
 
+logger = structlog.get_logger()
+
 
 def stable_id(kind: str, slug: str) -> str:
     return str(uuid5(NAMESPACE_URL, f"https://reps.local/{kind}/{slug}"))
 
 
-TOPICS: list[dict[str, str]] = [
-    {"slug": "arrays-hashing", "name": "Arrays & Hashing"},
-    {"slug": "stack", "name": "Stack"},
-    {"slug": "binary-search", "name": "Binary Search"},
-]
-
-CAPABILITIES: list[dict[str, str]] = [
-    {
-        "slug": "hash-map-complement-recognition",
-        "topic": "arrays-hashing",
-        "name": "Recognize complement lookup",
-        "description": "Recognize when prior values can be indexed to find a required complement.",
-        "type": "recognition",
-    },
-    {
-        "slug": "hash-map-single-pass-implementation",
-        "topic": "arrays-hashing",
-        "name": "Implement a single-pass hash map",
-        "description": "Store and query values in an order that avoids reusing the same element.",
-        "type": "implementation",
-    },
-    {
-        "slug": "stack-matching-invariant",
-        "topic": "stack",
-        "name": "Maintain the unmatched-opener invariant",
-        "description": "Use a stack to represent opening delimiters that still require a match.",
-        "type": "reasoning",
-    },
-    {
-        "slug": "binary-search-boundaries",
-        "topic": "binary-search",
-        "name": "Update binary-search boundaries",
-        "description": "Move inclusive search boundaries without losing the target or looping forever.",
-        "type": "implementation",
-    },
-    {
-        "slug": "logarithmic-complexity",
-        "topic": "binary-search",
-        "name": "Explain logarithmic complexity",
-        "description": "Explain why halving a search space produces logarithmic time.",
-        "type": "complexity",
-    },
-]
-
-PROBLEMS: list[dict[str, Any]] = [
-    {
-        "slug": "pair-sum-indices",
-        "title": "Pair Sum Indices",
-        "statement": "Given a list of integers and a target, return the indices of two distinct elements whose values add to the target. Exactly one valid pair exists.",
-        "difficulty": "easy",
-        "time_complexity": "O(n)",
-        "space_complexity": "O(n)",
-        "starter_code": "def pair_sum_indices(nums: list[int], target: int) -> list[int]:\n    pass\n",
-        "examples": [{"input": {"nums": [4, 7, 1, 9], "target": 8}, "output": [1, 2]}],
-        "constraints": ["2 <= len(nums) <= 10,000", "Return two distinct indices."],
-        "visible_tests": [
-            {"args": [[4, 7, 1, 9], 8], "expected": [1, 2]},
-            {"args": [[3, 3], 6], "expected": [0, 1]},
-        ],
-        "reference_solution": "def pair_sum_indices(nums, target):\n    seen = {}\n    for index, value in enumerate(nums):\n        complement = target - value\n        if complement in seen:\n            return [seen[complement], index]\n        seen[value] = index\n    raise ValueError('pair required')\n",
-        "hidden_tests": [
-            {"args": [[-2, 5, 11, -7], 4], "expected": [2, 3]},
-            {"args": [[0, 4, 0], 0], "expected": [0, 2]},
-        ],
-        "mistakes": [
-            "Stores the current value before checking and reuses one index.",
-            "Uses a nested scan.",
-        ],
-        "follow_ups": ["How would the tradeoff change if the input were sorted?"],
-        "capabilities": [
-            ("hash-map-complement-recognition", 0.6),
-            ("hash-map-single-pass-implementation", 0.4),
-        ],
-    },
-    {
-        "slug": "balanced-delimiters",
-        "title": "Balanced Delimiters",
-        "statement": "Return whether a string containing only (), [], and {} is properly nested and every opening delimiter is closed by the matching type.",
-        "difficulty": "easy",
-        "time_complexity": "O(n)",
-        "space_complexity": "O(n)",
-        "starter_code": "def balanced_delimiters(text: str) -> bool:\n    pass\n",
-        "examples": [{"input": {"text": "([]){}"}, "output": True}],
-        "constraints": ["0 <= len(text) <= 10,000", "Input contains delimiter characters only."],
-        "visible_tests": [
-            {"args": ["([]){}"], "expected": True},
-            {"args": ["([)]"], "expected": False},
-        ],
-        "reference_solution": "def balanced_delimiters(text):\n    pairs = {')': '(', ']': '[', '}': '{'}\n    stack = []\n    for char in text:\n        if char in pairs:\n            if not stack or stack.pop() != pairs[char]:\n                return False\n        else:\n            stack.append(char)\n    return not stack\n",
-        "hidden_tests": [
-            {"args": [""], "expected": True},
-            {"args": ["]"], "expected": False},
-            {"args": ["(("], "expected": False},
-        ],
-        "mistakes": ["Pops an empty stack.", "Does not reject unmatched opening delimiters."],
-        "follow_ups": ["What does the stack represent after each character?"],
-        "capabilities": [("stack-matching-invariant", 1.0)],
-    },
-    {
-        "slug": "find-sorted-value",
-        "title": "Find a Sorted Value",
-        "statement": "Given an ascending list of distinct integers and a target, return its index or -1 when it is absent. Your solution must run in logarithmic time.",
-        "difficulty": "easy",
-        "time_complexity": "O(log n)",
-        "space_complexity": "O(1)",
-        "starter_code": "def find_sorted_value(nums: list[int], target: int) -> int:\n    pass\n",
-        "examples": [{"input": {"nums": [-3, 0, 5, 12], "target": 5}, "output": 2}],
-        "constraints": ["0 <= len(nums) <= 100,000", "Values are strictly increasing."],
-        "visible_tests": [
-            {"args": [[-3, 0, 5, 12], 5], "expected": 2},
-            {"args": [[1, 4, 8], 6], "expected": -1},
-        ],
-        "reference_solution": "def find_sorted_value(nums, target):\n    left, right = 0, len(nums) - 1\n    while left <= right:\n        middle = left + (right - left) // 2\n        if nums[middle] == target:\n            return middle\n        if nums[middle] < target:\n            left = middle + 1\n        else:\n            right = middle - 1\n    return -1\n",
-        "hidden_tests": [
-            {"args": [[], 1], "expected": -1},
-            {"args": [[7], 7], "expected": 0},
-            {"args": [[1, 3, 9, 20], 20], "expected": 3},
-        ],
-        "mistakes": [
-            "Uses a strict left < right condition and skips one candidate.",
-            "Does not move beyond middle.",
-        ],
-        "follow_ups": ["Why is the running time logarithmic?"],
-        "capabilities": [("binary-search-boundaries", 0.7), ("logarithmic-complexity", 0.3)],
-    },
-]
+def _hidden_tests(problem: LoadedProblem) -> list[dict[str, object]]:
+    return [
+        {"id": test.id, "args": test.args, "expected": test.expected, "label": test.label}
+        for test in problem.hidden_tests
+    ]
 
 
-def seed_database(session: Session) -> None:
+def _apply_problem(
+    row: Problem,
+    loaded: LoadedProblem,
+    topics: dict[str, Topic],
+    capabilities: dict[str, Capability],
+) -> None:
+    definition = loaded.definition
+    row.slug = definition.slug
+    row.title = definition.title
+    row.statement = definition.statement.strip()
+    row.difficulty = definition.difficulty
+    row.language = "python"
+    row.time_complexity = definition.time_complexity
+    row.space_complexity = definition.space_complexity
+    row.starter_code = definition.starter_code
+    row.examples = [example.model_dump(exclude_none=True) for example in definition.examples]
+    row.constraints = list(definition.constraints)
+    row.visible_tests = [
+        {"id": test.id, "args": test.args, "expected": test.expected}
+        for test in loaded.visible_tests
+    ]
+    row.status = definition.status
+    row.topic = topics[definition.topic]
+    row.content_version = definition.version
+    row.role = definition.role
+    row.transfer_group = definition.transfer_group
+    row.patterns = list(definition.patterns)
+    row.related_slugs = list(definition.related)
+    evaluator = row.evaluator or ProblemEvaluator()
+    evaluator.reference_solution = definition.reference_solution
+    evaluator.hidden_tests = _hidden_tests(loaded)
+    evaluator.common_mistakes = [mistake.model_dump() for mistake in definition.common_mistakes]
+    evaluator.follow_up_questions = list(definition.follow_ups)
+    evaluator.evaluator_version = definition.version
+    evaluator.hints = list(definition.hints)
+    evaluator.key_insight = definition.key_insight
+    evaluator.clarifications = [item.model_dump() for item in definition.clarifications]
+    row.evaluator = evaluator
+    wanted = {weight.slug: weight.weight for weight in definition.capabilities}
+    row.capability_links = [link for link in row.capability_links if link.capability.slug in wanted]
+    existing = {link.capability.slug: link for link in row.capability_links}
+    for slug, weight in wanted.items():
+        if slug in existing:
+            existing[slug].weight = weight
+        else:
+            row.capability_links.append(
+                ProblemCapability(capability=capabilities[slug], weight=weight)
+            )
+
+
+def sync_corpus(session: Session, corpus: Corpus) -> dict[str, int]:
+    counts = {"problems_created": 0, "problems_updated": 0, "problems_retired": 0}
+    topics: dict[str, Topic] = {topic.slug: topic for topic in session.scalars(select(Topic)).all()}
+    for topic_def in corpus.taxonomy.topics:
+        topic = topics.get(topic_def.slug)
+        if topic is None:
+            topic = Topic(id=stable_id("topic", topic_def.slug), slug=topic_def.slug)
+            session.add(topic)
+            topics[topic_def.slug] = topic
+        topic.name = topic_def.name
+    for topic_def in corpus.taxonomy.topics:
+        topics[topic_def.slug].parent = topics.get(topic_def.parent or "")
+
+    capabilities: dict[str, Capability] = {
+        item.slug: item for item in session.scalars(select(Capability)).all()
+    }
+    for cap_def in corpus.taxonomy.capabilities:
+        capability = capabilities.get(cap_def.slug)
+        if capability is None:
+            capability = Capability(id=stable_id("capability", cap_def.slug), slug=cap_def.slug)
+            session.add(capability)
+            capabilities[cap_def.slug] = capability
+        capability.topic = topics[cap_def.topic]
+        capability.name = cap_def.name
+        capability.description = cap_def.description
+        capability.capability_type = cap_def.type
+    session.flush()
+
+    rows = {
+        row.slug: row
+        for row in session.scalars(
+            select(Problem).options(
+                selectinload(Problem.capability_links).selectinload(ProblemCapability.capability),
+                selectinload(Problem.evaluator),
+            )
+        ).all()
+    }
+    for slug, loaded in corpus.problems.items():
+        row = rows.get(slug)
+        if row is None:
+            row = Problem(id=stable_id("problem", slug))
+            _apply_problem(row, loaded, topics, capabilities)
+            session.add(row)
+            counts["problems_created"] += 1
+        elif (
+            row.content_version != loaded.definition.version
+            or row.status != loaded.definition.status
+            or row.evaluator is None
+        ):
+            _apply_problem(row, loaded, topics, capabilities)
+            counts["problems_updated"] += 1
+    for slug, row in rows.items():
+        if slug not in corpus.problems and row.status != "retired":
+            row.status = "retired"
+            counts["problems_retired"] += 1
+    session.flush()
+
+    problem_ids = dict(session.execute(select(Problem.slug, Problem.id)).tuples().all())
+    exercises = {
+        row.source_id: row
+        for row in session.scalars(select(Exercise).where(Exercise.source_type == "curated"))
+    }
+    for exercise_id, loaded_exercise in corpus.exercises.items():
+        exercise_def = loaded_exercise.definition
+        exercise_row = exercises.get(exercise_id)
+        if exercise_row is None:
+            exercise_row = Exercise(
+                id=stable_id("exercise", exercise_id),
+                source_type="curated",
+                source_id=exercise_id,
+            )
+            session.add(exercise_row)
+        exercise_row.capability_id = capabilities[exercise_def.capability].id
+        exercise_row.problem_id = problem_ids.get(exercise_def.problem) if exercise_def.problem else None
+        exercise_row.exercise_type = exercise_def.type
+        exercise_row.prompt = exercise_def.prompt
+        exercise_row.expected_answer = exercise_def.reference_answer
+        exercise_row.status = exercise_def.status
+        exercise_row.estimated_minutes = exercise_def.estimated_minutes
+        exercise_row.provenance = {"source": "corpus", "reviewed": exercise_def.status == "reviewed"}
+    session.commit()
+    return counts
+
+
+def seed_database(session: Session, corpus: Corpus | None = None) -> dict[str, int]:
     if session.get(User, LOCAL_USER_ID) is None:
         session.add(
             User(
@@ -160,72 +184,17 @@ def seed_database(session: Session) -> None:
                 mode="local",
             )
         )
-
-    topics_by_slug: dict[str, Topic] = {}
-    for item in TOPICS:
-        topic = session.scalar(select(Topic).where(Topic.slug == item["slug"]))
-        if topic is None:
-            topic = Topic(id=stable_id("topic", item["slug"]), **item)
-            session.add(topic)
-        topics_by_slug[item["slug"]] = topic
-
-    capabilities_by_slug: dict[str, Capability] = {}
-    for item in CAPABILITIES:
-        capability = session.scalar(select(Capability).where(Capability.slug == item["slug"]))
-        if capability is None:
-            capability = Capability(
-                id=stable_id("capability", item["slug"]),
-                topic=topics_by_slug[item["topic"]],
-                slug=item["slug"],
-                name=item["name"],
-                description=item["description"],
-                capability_type=item["type"],
-            )
-            session.add(capability)
-        capabilities_by_slug[item["slug"]] = capability
-
-    for item in PROBLEMS:
-        problem = session.scalar(select(Problem).where(Problem.slug == item["slug"]))
-        if problem is not None:
-            continue
-        problem = Problem(
-            id=stable_id("problem", item["slug"]),
-            slug=item["slug"],
-            title=item["title"],
-            statement=item["statement"],
-            difficulty=item["difficulty"],
-            language="python",
-            time_complexity=item["time_complexity"],
-            space_complexity=item["space_complexity"],
-            starter_code=item["starter_code"],
-            examples=item["examples"],
-            constraints=item["constraints"],
-            visible_tests=item["visible_tests"],
-            status="development",
-        )
-        problem.evaluator = ProblemEvaluator(
-            reference_solution=item["reference_solution"],
-            hidden_tests=item["hidden_tests"],
-            common_mistakes=item["mistakes"],
-            follow_up_questions=item["follow_ups"],
-            evaluator_version=1,
-        )
-        capability_weights = cast(list[tuple[str, float]], item["capabilities"])
-        for capability_slug, weight in capability_weights:
-            problem.capability_links.append(
-                ProblemCapability(capability=capabilities_by_slug[capability_slug], weight=weight)
-            )
-        session.add(problem)
-
-    session.commit()
+        session.flush()
+    return sync_corpus(session, corpus or get_corpus())
 
 
 def main() -> None:
     engine = create_database_engine()
     session_factory = create_session_factory(engine)
     with session_factory() as session:
-        seed_database(session)
+        counts = seed_database(session)
     engine.dispose()
+    logger.info("corpus_synchronized", **counts)
 
 
 if __name__ == "__main__":

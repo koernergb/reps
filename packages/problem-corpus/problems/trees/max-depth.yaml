@@ -1,0 +1,96 @@
+schema_version: 1
+slug: max-depth
+version: 1
+status: development
+title: Tree Height
+topic: trees
+patterns: [tree-recursion]
+role: recognition
+difficulty: easy
+transfer_group: tree-recursion
+prerequisites: []
+related: [invert-tree]
+statement: |
+  Return the number of nodes on the longest path from the root of a binary tree down to a
+  leaf. An empty tree has height 0. Nodes are `TreeNode` objects with `val`, `left`, and
+  `right`; tests show trees in level order with `null` for missing children.
+examples:
+  - input: {root: [3, 9, 20, null, null, 15, 7]}
+    output: 3
+constraints:
+  - 0 <= number of nodes <= 10,000
+  - The tree height is at most 500.
+entrypoint: max_depth
+input_adapters: [tree]
+starter_code: |
+  # class TreeNode:
+  #     def __init__(self, val=0, left=None, right=None):
+  #         self.val = val
+  #         self.left = left
+  #         self.right = right
+
+  def max_depth(root: "TreeNode | None") -> int:
+      pass
+time_complexity: O(n)
+space_complexity: O(h)
+capabilities:
+  - {slug: trees.recognition, weight: 0.3}
+  - {slug: trees.invariant, weight: 0.3}
+  - {slug: trees.implementation, weight: 0.2}
+  - {slug: trees.boundaries, weight: 0.1}
+  - {slug: trees.complexity, weight: 0.1}
+hints:
+  - If you knew the heights of both subtrees, how would you get the height of the whole tree?
+  - What is the height of an empty subtree?
+  - "Define height(node) recursively: 0 for None, otherwise 1 plus the larger child height."
+  - An iterative alternative is BFS, counting how many levels you process.
+  - "if root is None: return 0; return 1 + max(max_depth(root.left), max_depth(root.right))."
+key_insight: A tree's height is one more than the taller of its two subtrees, with an empty tree having height 0.
+clarifications:
+  - question: Is height counted in nodes or edges?
+    answer: In nodes, so a single node has height 1.
+  - question: What about an empty tree?
+    answer: Return 0.
+follow_ups:
+  - What is the recursion depth in the worst case?
+  - How would you compute the minimum depth to a leaf?
+common_mistakes:
+  - id: min-instead-of-max
+    description: Combines child heights with min instead of max.
+    capability: trees.invariant
+  - id: counts-edges
+    description: Returns the number of edges rather than nodes.
+    capability: trees.boundaries
+visible_tests:
+  - {args: [[3, 9, 20, null, null, 15, 7]], expected: 3}
+  - {args: [[1, null, 2]], expected: 2}
+hidden_tests:
+  - {args: [[]], expected: 0}
+  - {args: [[0]], expected: 1}
+  - {args: [[1, 2, null, 3, null, 4]], expected: 4, label: skewed}
+  - {args: [[1, 2, 3, 4, 5, 6, 7, 8]], expected: 4}
+reference_solution: |
+  def max_depth(root):
+      if root is None:
+          return 0
+      depth = 0
+      level = [root]
+      while level:
+          depth += 1
+          level = [child for node in level for child in (node.left, node.right) if child]
+      return depth
+wrong_solutions:
+  - mistake: min-instead-of-max
+    expect: wrong_answer
+    code: |
+      def max_depth(root):
+          if root is None:
+              return 0
+          return 1 + min(max_depth(root.left), max_depth(root.right))
+  - mistake: counts-edges
+    expect: wrong_answer
+    code: |
+      def max_depth(root):
+          if root is None:
+              return -1
+          return 1 + max(max_depth(root.left), max_depth(root.right))

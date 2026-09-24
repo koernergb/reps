@@ -1,0 +1,103 @@
+schema_version: 1
+slug: first-at-least
+version: 1
+status: development
+title: First Position At Least Target
+topic: binary-search
+patterns: [lower-bound]
+role: boundary
+difficulty: easy
+transfer_group: boundary-search
+prerequisites: [find-sorted-value]
+related: [find-sorted-value, min-eating-speed]
+statement: |
+  `nums` is sorted in non-decreasing order and may contain duplicates. Return the smallest
+  index `i` such that `nums[i] >= target`. If every value is smaller than `target`, return
+  `len(nums)`. Run in O(log n) time.
+examples:
+  - input: {nums: [1, 2, 2, 2, 5], target: 2}
+    output: 1
+constraints:
+  - 0 <= len(nums) <= 100,000
+  - nums is sorted in non-decreasing order.
+entrypoint: first_at_least
+starter_code: |
+  def first_at_least(nums: list[int], target: int) -> int:
+      pass
+time_complexity: O(log n)
+space_complexity: O(1)
+capabilities:
+  - {slug: binary-search.recognition, weight: 0.1}
+  - {slug: binary-search.invariant, weight: 0.3}
+  - {slug: binary-search.implementation, weight: 0.2}
+  - {slug: binary-search.boundaries, weight: 0.3}
+  - {slug: binary-search.complexity, weight: 0.1}
+hints:
+  - Finding some matching index is not enough. What should you do after finding a value >= target?
+  - Think of the predicate nums[i] >= target. It is False then True across the list. You want the first True.
+  - "Use a half-open range [left, right) with right = len(nums); the answer always stays inside [left, right]."
+  - If nums[mid] >= target the answer is at mid or earlier, so set right = mid; otherwise set left = mid + 1.
+  - "left, right = 0, len(nums); while left < right: mid = (left + right) // 2; if nums[mid] >= target: right = mid else: left = mid + 1; return left."
+key_insight: Binary search over the monotone predicate nums[i] >= target with a half-open range, keeping mid as a candidate when the predicate holds, converges on the first True.
+clarifications:
+  - question: What if target is larger than every value?
+    answer: Return len(nums).
+  - question: Can nums be empty?
+    answer: Yes. Return 0.
+follow_ups:
+  - How would you find the last index with nums[i] <= target?
+  - How can you count occurrences of target in O(log n)?
+common_mistakes:
+  - id: returns-any-match
+    description: Returns the first match found rather than the leftmost one.
+    capability: binary-search.invariant
+  - id: closed-range-end
+    description: Uses right = len(nums) - 1 and never returns len(nums).
+    capability: binary-search.boundaries
+visible_tests:
+  - {args: [[1, 2, 2, 2, 5], 2], expected: 1}
+  - {args: [[1, 3, 5], 4], expected: 2}
+hidden_tests:
+  - {args: [[], 3], expected: 0}
+  - {args: [[1, 3, 5], 6], expected: 3, label: past the end}
+  - {args: [[1, 3, 5], 0], expected: 0}
+  - {args: [[2, 2, 2], 2], expected: 0, label: all duplicates}
+  - {args: [[1, 1, 2], 2], expected: 2}
+  - {args: [[1, 2, 2, 2, 2, 2, 2, 3], 2], expected: 1}
+reference_solution: |
+  def first_at_least(nums, target):
+      left, right = 0, len(nums)
+      while left < right:
+          middle = (left + right) // 2
+          if nums[middle] >= target:
+              right = middle
+          else:
+              left = middle + 1
+      return left
+wrong_solutions:
+  - mistake: returns-any-match
+    expect: wrong_answer
+    code: |
+      def first_at_least(nums, target):
+          left, right = 0, len(nums) - 1
+          while left <= right:
+              middle = (left + right) // 2
+              if nums[middle] == target:
+                  return middle
+              if nums[middle] < target:
+                  left = middle + 1
+              else:
+                  right = middle - 1
+          return left
+  - mistake: closed-range-end
+    expect: wrong_answer
+    code: |
+      def first_at_least(nums, target):
+          left, right = 0, max(len(nums) - 1, 0)
+          while left < right:
+              middle = (left + right) // 2
+              if nums[middle] >= target:
+                  right = middle
+              else:
+                  left = middle + 1
+          return left

@@ -1,0 +1,102 @@
+schema_version: 1
+slug: validate-bst
+version: 1
+status: development
+title: Check a Search Tree
+topic: trees
+patterns: [bounded-recursion]
+role: boundary
+difficulty: medium
+transfer_group: bounded-recursion
+prerequisites: [max-depth]
+related: [level-order]
+statement: |
+  Return `True` if a binary tree is a valid binary search tree: for every node, all values in
+  its left subtree are strictly smaller and all values in its right subtree are strictly
+  larger than the node's value.
+examples:
+  - input: {root: [2, 1, 3]}
+    output: true
+constraints:
+  - 0 <= number of nodes <= 10,000
+  - The tree height is at most 500.
+  - -2^31 <= val <= 2^31 - 1
+entrypoint: is_valid_bst
+input_adapters: [tree]
+starter_code: |
+  def is_valid_bst(root: "TreeNode | None") -> bool:
+      pass
+time_complexity: O(n)
+space_complexity: O(h)
+capabilities:
+  - {slug: trees.recognition, weight: 0.15}
+  - {slug: trees.invariant, weight: 0.35}
+  - {slug: trees.implementation, weight: 0.15}
+  - {slug: trees.boundaries, weight: 0.25}
+  - {slug: trees.complexity, weight: 0.1}
+hints:
+  - Is it enough to compare each node only with its two children?
+  - A node deep in the right subtree must still be larger than the root. What must each node know about its ancestors?
+  - Pass down an allowed open interval (low, high) and check that each node's value lies strictly inside it.
+  - Going left tightens the upper bound to node.val; going right tightens the lower bound to node.val.
+  - "def ok(node, low, high): return node is None or (low < node.val < high and ok(node.left, low, node.val) and ok(node.right, node.val, high))."
+key_insight: Every node must lie within bounds inherited from all its ancestors, so pass an open (low, high) interval down the recursion rather than comparing only with children.
+clarifications:
+  - question: Are duplicate values allowed?
+    answer: No. Equal values make the tree invalid.
+  - question: Is an empty tree valid?
+    answer: Yes.
+follow_ups:
+  - How would an in-order traversal solve this?
+  - What if duplicates were allowed on the left side?
+common_mistakes:
+  - id: local-check-only
+    description: Compares each node only with its direct children.
+    capability: trees.invariant
+  - id: allows-duplicates
+    description: Uses non-strict comparisons and accepts equal values.
+    capability: trees.boundaries
+visible_tests:
+  - {args: [[2, 1, 3]], expected: true}
+  - {args: [[5, 1, 4, null, null, 3, 6]], expected: false}
+hidden_tests:
+  - {args: [[]], expected: true}
+  - {args: [[1]], expected: true}
+  - {args: [[2, 2, 2]], expected: false, label: duplicates}
+  - {args: [[5, 4, 6, null, null, 3, 7]], expected: false, label: ancestor bound}
+  - {args: [[1, null, 1]], expected: false}
+  - {args: [[3, 1, 5, 0, 2, 4, 6]], expected: true}
+  - {args: [[-2147483648, null, 2147483647]], expected: true}
+reference_solution: |
+  def is_valid_bst(root):
+      stack = [(root, float("-inf"), float("inf"))]
+      while stack:
+          node, low, high = stack.pop()
+          if node is None:
+              continue
+          if not low < node.val < high:
+              return False
+          stack.append((node.left, low, node.val))
+          stack.append((node.right, node.val, high))
+      return True
+wrong_solutions:
+  - mistake: local-check-only
+    expect: wrong_answer
+    code: |
+      def is_valid_bst(root):
+          if root is None:
+              return True
+          if root.left and root.left.val >= root.val:
+              return False
+          if root.right and root.right.val <= root.val:
+              return False
+          return is_valid_bst(root.left) and is_valid_bst(root.right)
+  - mistake: allows-duplicates
+    expect: wrong_answer
+    code: |
+      def is_valid_bst(root, low=float("-inf"), high=float("inf")):
+          if root is None:
+              return True
+          if not low <= root.val <= high:
+              return False
+          return is_valid_bst(root.left, low, root.val) and is_valid_bst(root.right, root.val, high)

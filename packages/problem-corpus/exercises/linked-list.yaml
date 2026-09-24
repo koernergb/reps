@@ -1,0 +1,76 @@
+schema_version: 1
+topic: linked-list
+exercises:
+  - id: ll-recall-dummy
+    capability: linked-list.recognition
+    type: recall
+    prompt: When is a dummy (sentinel) head node useful in linked-list problems?
+    key_points:
+      - ["head", "first node", "front"]
+      - ["special case", "edge case", "uniform", "same way", "removed", "change"]
+    reference_answer: When the head itself might be removed, replaced, or built up (merging, deleting), a dummy node before the head lets you treat the first node like any other and return dummy.next.
+    hints:
+      - Which node is awkward to delete or attach without a predecessor?
+    estimated_minutes: 1
+  - id: ll-explain-reverse
+    capability: linked-list.invariant
+    type: explain
+    prompt: When reversing a list iteratively, what do prev and current represent after each iteration, and why must next be saved first?
+    key_points:
+      - ["reversed", "already reversed", "prefix", "done"]
+      - ["remaining", "rest", "not yet", "unreversed"]
+      - ["lose", "lost", "overwrite", "access"]
+    reference_answer: prev is the head of the already-reversed prefix and current is the first node of the remaining list. You save current.next before rewiring because setting current.next = prev would otherwise lose access to the rest of the list.
+    misconception: You can rewire current.next and still reach the next node.
+    confirmation_question: In 1 -> 2 -> 3, after the first iteration, what are prev and current?
+    hints:
+      - Draw the list after one iteration.
+      - What does current.next point to after you rewire it?
+    estimated_minutes: 2
+  - id: ll-trace-gap
+    capability: linked-list.implementation
+    type: trace
+    prompt: "Removing the 2nd node from the end of 1 -> 2 -> 3 -> 4 -> 5 with a dummy and gap n + 1: which node value is slow on when fast becomes None?"
+    accepted_answers: ["3"]
+    key_points:
+      - ["3"]
+    reference_answer: "3 — slow.next is 4, the node to remove."
+    hints:
+      - Fast starts 3 steps ahead of slow (both starting at the dummy).
+    estimated_minutes: 2
+  - id: ll-debug-remainder
+    capability: linked-list.boundaries
+    type: debug
+    problem: merge-two-sorted-lists
+    from_mistake: drops-remainder
+    prompt: This merge loses nodes. Fix it.
+    reference_answer: After the loop, attach whichever list still has nodes, tail.next = first or second.
+    misconception: The merge loop handles every node.
+    hints:
+      - Try first = [5], second = [1, 2, 3].
+      - What happens when one list runs out?
+    estimated_minutes: 3
+  - id: ll-debug-head-removal
+    capability: linked-list.transfer
+    type: debug
+    problem: remove-nth-from-end
+    from_mistake: head-removal
+    prompt: This solution fails when the node to remove is the head. Fix it.
+    reference_answer: Start both pointers at a dummy node before head and return dummy.next.
+    misconception: Removing the head needs no special handling.
+    hints:
+      - Try [1, 2] with n = 2.
+      - What node precedes the head?
+    estimated_minutes: 4
+  - id: ll-complexity
+    capability: linked-list.complexity
+    type: explain
+    prompt: What are the time and extra-space costs of iterative versus recursive list reversal in Python?
+    key_points:
+      - ["o(n) time", "linear time", "o(n)"]
+      - ["o(1)", "constant space", "constant extra"]
+      - ["recursion", "call stack", "stack depth", "recursion limit", "o(n) space"]
+    reference_answer: Both take O(n) time. The iterative version uses O(1) extra space; the recursive version uses O(n) call-stack space and can hit Python's recursion limit on long lists.
+    hints:
+      - Where does the recursive version store its state?
+    estimated_minutes: 1.5

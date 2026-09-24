@@ -1,0 +1,72 @@
+schema_version: 1
+topic: trees
+exercises:
+  - id: tr-recall-bfs-dfs
+    capability: trees.recognition
+    type: recall
+    prompt: When would you choose BFS over DFS for a tree problem?
+    key_points:
+      - ["level", "by level", "layer", "breadth"]
+      - ["shortest", "closest", "nearest", "minimum depth", "first"]
+    reference_answer: Choose BFS when the answer is organized by level (level order, per-level aggregates) or when you want the shallowest/nearest node first; DFS suits subtree computations like height or validation.
+    hints:
+      - Which traversal visits nodes in order of depth?
+    estimated_minutes: 1
+  - id: tr-explain-bounds
+    capability: trees.invariant
+    type: explain
+    prompt: Why is checking each node against only its children insufficient to validate a BST, and what must be passed down instead?
+    key_points:
+      - ["ancestor", "grandparent", "root", "above", "all nodes"]
+      - ["bound", "range", "interval", "low", "high", "min", "max"]
+    reference_answer: A node deep in a subtree must respect every ancestor (for example a node in the root's right subtree must exceed the root), so pass down an allowed (low, high) interval that tightens at each step.
+    misconception: A tree is a BST if every parent is between its two children.
+    confirmation_question: Is [5, 4, 6, null, null, 3, 7] a valid BST? Which node breaks it?
+    hints:
+      - Find a tree where every parent-child pair looks fine but the tree is not a BST.
+      - What does a node in the root's right subtree need to be larger than?
+    estimated_minutes: 2.5
+  - id: tr-trace-levels
+    capability: trees.implementation
+    type: trace
+    prompt: "For the tree [1, 2, 3, 4, null, null, 5] (level order), what does level-order traversal return?"
+    accepted_answers: ["[[1], [2, 3], [4, 5]]", "[[1],[2,3],[4,5]]"]
+    key_points:
+      - ["[4, 5]", "[4,5]"]
+    reference_answer: "[[1], [2, 3], [4, 5]]"
+    hints:
+      - Draw the tree first; 4 is 2's left child and 5 is 3's right child.
+    estimated_minutes: 2
+  - id: tr-debug-invert
+    capability: trees.boundaries
+    type: debug
+    problem: invert-tree
+    from_mistake: overwrites-before-use
+    prompt: This mirror function corrupts the tree. Fix it.
+    reference_answer: Compute both recursive results before assigning, root.left, root.right = invert(root.right), invert(root.left).
+    misconception: Sequential assignments to left and right are independent.
+    hints:
+      - After root.left is reassigned, what does root.left refer to?
+    estimated_minutes: 3
+  - id: tr-debug-bst
+    capability: trees.transfer
+    type: debug
+    problem: validate-bst
+    from_mistake: local-check-only
+    prompt: This BST validator accepts invalid trees. Fix it.
+    reference_answer: Pass (low, high) bounds down the recursion and check low < node.val < high.
+    misconception: Parent-child comparisons are enough to validate a BST.
+    hints:
+      - Try [5, 4, 6, null, null, 3, 7].
+    estimated_minutes: 5
+  - id: tr-complexity
+    capability: trees.complexity
+    type: explain
+    prompt: What is the space complexity of recursive DFS on a binary tree, and when is it worst?
+    key_points:
+      - ["o(h)", "height", "depth"]
+      - ["skewed", "linked list", "unbalanced", "o(n) worst", "degenerate"]
+    reference_answer: O(h) for the call stack, where h is the height; worst case O(n) for a skewed tree, O(log n) for a balanced one.
+    hints:
+      - How deep can the recursion go?
+    estimated_minutes: 1

@@ -18,6 +18,8 @@
     "test": "pnpm --filter @reps/web test && pnpm --filter @reps/api test",
     "db:migrate": "pnpm --filter @reps/api db:migrate",
     "db:downgrade": "pnpm --filter @reps/api db:downgrade",
-    "db:seed": "pnpm --filter @reps/api db:seed"
+    "db:seed": "pnpm --filter @reps/api db:seed",
+    "corpus:validate": "pnpm --filter @reps/api corpus:validate",
+    "corpus:report": "pnpm --filter @reps/api corpus:report"
   }
 }

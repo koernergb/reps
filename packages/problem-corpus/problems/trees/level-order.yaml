@@ -1,0 +1,97 @@
+schema_version: 1
+slug: level-order
+version: 1
+status: development
+title: Values by Level
+topic: trees
+patterns: [level-bfs]
+role: transfer
+difficulty: medium
+transfer_group: tree-recursion
+prerequisites: [max-depth]
+related: [max-depth, validate-bst]
+statement: |
+  Return the values of a binary tree grouped by level, from top to bottom, with each level's
+  values listed left to right.
+examples:
+  - input: {root: [3, 9, 20, null, null, 15, 7]}
+    output: [[3], [9, 20], [15, 7]]
+constraints:
+  - 0 <= number of nodes <= 10,000
+entrypoint: level_order
+input_adapters: [tree]
+starter_code: |
+  def level_order(root: "TreeNode | None") -> list[list[int]]:
+      pass
+time_complexity: O(n)
+space_complexity: O(w)
+capabilities:
+  - {slug: trees.recognition, weight: 0.2}
+  - {slug: trees.invariant, weight: 0.15}
+  - {slug: trees.implementation, weight: 0.2}
+  - {slug: trees.boundaries, weight: 0.1}
+  - {slug: trees.complexity, weight: 0.1}
+  - {slug: trees.transfer, weight: 0.25}
+hints:
+  - Depth-first traversal visits nodes in the wrong order here. What order do you need?
+  - A queue processes nodes in the order they were discovered. How do you know where one level ends?
+  - At the start of each level, the queue holds exactly that level's nodes. Record its size before processing.
+  - Pop exactly that many nodes, collect their values, and enqueue their children left then right.
+  - "queue = deque([root]) if root else deque(); while queue: level = []; for _ in range(len(queue)): node = queue.popleft(); ...; result.append(level)."
+key_insight: Breadth-first search with a queue, processing exactly len(queue) nodes per iteration, separates the tree into levels.
+clarifications:
+  - question: What should an empty tree return?
+    answer: An empty list.
+follow_ups:
+  - How would you return levels in zigzag order?
+  - Can you produce the same result with DFS and a depth parameter?
+common_mistakes:
+  - id: reversed-children
+    description: Enqueues the right child before the left child.
+    capability: trees.implementation
+  - id: empty-root
+    description: Enqueues a None root and crashes on an empty tree.
+    capability: trees.boundaries
+visible_tests:
+  - {args: [[3, 9, 20, null, null, 15, 7]], expected: [[3], [9, 20], [15, 7]]}
+  - {args: [[1]], expected: [[1]]}
+hidden_tests:
+  - {args: [[]], expected: [], label: empty tree}
+  - {args: [[1, 2, 3, 4, null, null, 5]], expected: [[1], [2, 3], [4, 5]]}
+  - {args: [[1, 2, null, 3, null, 4]], expected: [[1], [2], [3], [4]]}
+reference_solution: |
+  from collections import deque
+
+  def level_order(root):
+      result = []
+      queue = deque([root]) if root else deque()
+      while queue:
+          level = []
+          for _ in range(len(queue)):
+              node = queue.popleft()
+              level.append(node.val)
+              if node.left:
+                  queue.append(node.left)
+              if node.right:
+                  queue.append(node.right)
+          result.append(level)
+      return result
+wrong_solutions:
+  - mistake: reversed-children
+    expect: wrong_answer
+    code: |
+      def level_order(root):
+          result, level = [], [root] if root else []
+          while level:
+              result.append([node.val for node in level])
+              level = [c for node in level for c in (node.right, node.left) if c]
+          return result
+  - mistake: empty-root
+    expect: error
+    code: |
+      def level_order(root):
+          result, level = [], [root]
+          while level:
+              result.append([node.val for node in level])
+              level = [c for node in level for c in (node.left, node.right) if c]
+          return result

@@ -1,0 +1,86 @@
+schema_version: 1
+slug: house-robber
+version: 1
+status: development
+title: Non-Adjacent Maximum Sum
+topic: dp-1d
+patterns: [take-or-skip]
+role: canonical
+difficulty: medium
+transfer_group: take-or-skip
+prerequisites: [climbing-stairs]
+related: [climbing-stairs, coin-change]
+statement: |
+  Given non-negative integers `values`, choose a subset with no two chosen elements adjacent
+  in the list. Return the largest possible sum.
+examples:
+  - input: {values: [2, 7, 9, 3, 1]}
+    output: 12
+    explanation: Choose 2, 9, and 1.
+constraints:
+  - 1 <= len(values) <= 100,000
+  - 0 <= values[i] <= 10,000
+entrypoint: max_non_adjacent
+starter_code: |
+  def max_non_adjacent(values: list[int]) -> int:
+      pass
+time_complexity: O(n)
+space_complexity: O(1)
+capabilities:
+  - {slug: dp-1d.recognition, weight: 0.2}
+  - {slug: dp-1d.invariant, weight: 0.35}
+  - {slug: dp-1d.implementation, weight: 0.2}
+  - {slug: dp-1d.boundaries, weight: 0.1}
+  - {slug: dp-1d.complexity, weight: 0.15}
+hints:
+  - For the last element, you either take it or you skip it. What does each choice imply?
+  - Taking values[i] forbids values[i - 1]. Skipping it leaves the best answer for the prefix before i.
+  - Define best[i] as the best sum using only the first i + 1 elements; best[i] = max(best[i - 1], best[i - 2] + values[i]).
+  - You only need the last two best values, so O(1) space suffices.
+  - "take, skip = 0, 0; for v in values: take, skip = skip + v, max(take, skip); return max(take, skip)."
+key_insight: For each element choose between skipping it (best of the previous prefix) and taking it (best of the prefix two back plus its value).
+clarifications:
+  - question: Are values non-negative?
+    answer: Yes.
+  - question: Can I choose nothing?
+    answer: Yes, but with non-negative values that is never better.
+follow_ups:
+  - How does the solution change if the list is circular?
+  - How would you return which elements were chosen?
+common_mistakes:
+  - id: alternating-sums
+    description: Compares only the sum of even indices with the sum of odd indices.
+    capability: dp-1d.invariant
+  - id: exponential-recursion
+    description: Tries every take/skip combination without memoization.
+    capability: dp-1d.complexity
+visible_tests:
+  - {args: [[1, 2, 3, 1]], expected: 4}
+  - {args: [[2, 7, 9, 3, 1]], expected: 12}
+hidden_tests:
+  - {args: [[5]], expected: 5}
+  - {args: [[2, 1, 1, 2]], expected: 4, label: skip two}
+  - {args: [[0, 0]], expected: 0}
+  - {args: [[10, 1, 1, 10]], expected: 20}
+  - {args_expr: "[[1] * 100]", expected: 50, label: long input}
+reference_solution: |
+  def max_non_adjacent(values):
+      take = skip = 0
+      for value in values:
+          take, skip = skip + value, max(take, skip)
+      return max(take, skip)
+wrong_solutions:
+  - mistake: alternating-sums
+    expect: wrong_answer
+    code: |
+      def max_non_adjacent(values):
+          return max(sum(values[0::2]), sum(values[1::2]))
+  - mistake: exponential-recursion
+    expect: timeout
+    code: |
+      def max_non_adjacent(values):
+          def best(i):
+              if i >= len(values):
+                  return 0
+              return max(values[i] + best(i + 2), best(i + 1))
+          return best(0)

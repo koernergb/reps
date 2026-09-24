@@ -97,6 +97,14 @@ class Problem(TimestampMixin, Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     slug: Mapped[str] = mapped_column(String(160), nullable=False, unique=True)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
+    topic_id: Mapped[str | None] = mapped_column(
+        ForeignKey("topics.id", ondelete="SET NULL"), index=True
+    )
+    content_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    role: Mapped[str] = mapped_column(String(20), nullable=False, default="canonical")
+    transfer_group: Mapped[str | None] = mapped_column(String(100), index=True)
+    patterns: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    related_slugs: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     statement: Mapped[str] = mapped_column(Text, nullable=False)
     difficulty: Mapped[str] = mapped_column(String(20), nullable=False)
     language: Mapped[str] = mapped_column(String(20), nullable=False, default="python")
@@ -108,6 +116,7 @@ class Problem(TimestampMixin, Base):
     visible_tests: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False, default=list)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="development")
 
+    topic: Mapped[Topic | None] = relationship()
     capability_links: Mapped[list[ProblemCapability]] = relationship(
         back_populates="problem", cascade="all, delete-orphan"
     )
@@ -134,9 +143,12 @@ class ProblemEvaluator(TimestampMixin, Base):
     )
     reference_solution: Mapped[str] = mapped_column(Text, nullable=False)
     hidden_tests: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
-    common_mistakes: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    common_mistakes: Mapped[list[Any]] = mapped_column(JSON, nullable=False, default=list)
     follow_up_questions: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     evaluator_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    hints: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    key_insight: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    clarifications: Mapped[list[dict[str, str]]] = mapped_column(JSON, nullable=False, default=list)
 
     problem: Mapped[Problem] = relationship(back_populates="evaluator")
 
@@ -172,10 +184,14 @@ class Exercise(TimestampMixin, Base):
     prompt: Mapped[str] = mapped_column(Text, nullable=False)
     expected_answer: Mapped[str | None] = mapped_column(Text)
     source_type: Mapped[str] = mapped_column(String(32), nullable=False)
-    source_id: Mapped[str | None] = mapped_column(String(100))
+    source_id: Mapped[str | None] = mapped_column(String(100), unique=True)
     provenance: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="development")
+    estimated_minutes: Mapped[float] = mapped_column(Float, nullable=False, default=2)
+    content_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
 
     problem: Mapped[Problem | None] = relationship(back_populates="exercises")
+    capability: Mapped[Capability] = relationship()
     attempts: Mapped[list[ReviewAttempt]] = relationship(back_populates="exercise")
 
 
@@ -315,4 +331,54 @@ class HintLog(Base):
         CheckConstraint(
             "session_id IS NOT NULL OR exercise_id IS NOT NULL", name="ck_hint_context"
         ),
+    )
+
+
+class ExecutionJob(Base):
+    """An immutable request to run learner code in the sandbox.
+
+    `code` is learner content; it is exported and deleted with the learner's history and is
+    never written to logs. `result_private` includes hidden-test detail and must never be
+    returned to a client.
+    """
+
+    __tablename__ = "execution_jobs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    problem_id: Mapped[str] = mapped_column(
+        ForeignKey("problems.id", ondelete="RESTRICT"), nullable=False, index=True
+    )
+    session_id: Mapped[str | None] = mapped_column(
+        ForeignKey("interview_sessions.id", ondelete="CASCADE"), index=True
+    )
+    review_attempt_id: Mapped[str | None] = mapped_column(
+        ForeignKey("review_attempts.id", ondelete="CASCADE"), index=True
+    )
+    kind: Mapped[str] = mapped_column(String(10), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="queued")
+    idempotency_key: Mapped[str] = mapped_column(String(80), nullable=False)
+    code: Mapped[str] = mapped_column(Text, nullable=False)
+    code_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    content_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    verdict: Mapped[str | None] = mapped_column(String(30))
+    result_public: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    result_private: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    backend: Mapped[str | None] = mapped_column(String(40))
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "idempotency_key", name="uq_execution_idempotency"),
+        CheckConstraint("kind IN ('run', 'submit')", name="ck_execution_kind"),
+        CheckConstraint(
+            "status IN ('queued', 'running', 'completed', 'failed', 'cancelled', 'expired')",
+            name="ck_execution_status",
+        ),
+        Index("ix_execution_status_created", "status", "created_at"),
     )

@@ -1,0 +1,108 @@
+schema_version: 1
+slug: course-schedule
+version: 1
+status: development
+title: Can Every Course Be Finished?
+topic: graphs
+patterns: [topological-order, cycle-detection]
+role: canonical
+difficulty: medium
+transfer_group: dependency-order
+prerequisites: []
+related: [number-of-islands]
+statement: |
+  There are `count` courses labeled `0` to `count - 1`. Each pair `[a, b]` in `requirements`
+  means course `b` must be taken before course `a`. Return `True` if it is possible to finish
+  every course, otherwise `False`.
+examples:
+  - input: {count: 2, requirements: [[1, 0]]}
+    output: true
+constraints:
+  - 1 <= count <= 2,000
+  - 0 <= len(requirements) <= 5,000
+entrypoint: can_finish
+starter_code: |
+  def can_finish(count: int, requirements: list[list[int]]) -> bool:
+      pass
+time_complexity: O(V + E)
+space_complexity: O(V + E)
+capabilities:
+  - {slug: graphs.recognition, weight: 0.3}
+  - {slug: graphs.invariant, weight: 0.3}
+  - {slug: graphs.implementation, weight: 0.2}
+  - {slug: graphs.boundaries, weight: 0.1}
+  - {slug: graphs.complexity, weight: 0.1}
+hints:
+  - Model courses as nodes and requirements as directed edges. When is finishing impossible?
+  - Finishing is impossible exactly when the graph contains a directed cycle.
+  - "Kahn's algorithm: repeatedly take courses with no remaining prerequisites and reduce their dependents' in-degrees."
+  - If fewer than count courses are ever taken, a cycle blocked the rest. With DFS, a node reached again while still on the current path means a cycle.
+  - "indegree + adjacency; queue = nodes with indegree 0; pop, count taken, decrement neighbors, enqueue zeros; return taken == count."
+key_insight: All courses can be finished exactly when the prerequisite graph is acyclic, which Kahn's algorithm detects by checking that every node is eventually removed.
+clarifications:
+  - question: Can a course require itself?
+    answer: Yes, which makes finishing impossible.
+  - question: Can requirements repeat?
+    answer: They will not repeat.
+follow_ups:
+  - How would you return a valid course order?
+  - Why does DFS need three node states rather than a simple visited flag?
+common_mistakes:
+  - id: two-cycles-only
+    description: Checks only for direct mutual requirements, missing longer cycles.
+    capability: graphs.invariant
+  - id: visited-as-cycle
+    description: Treats any previously visited node as a cycle, rejecting shared prerequisites.
+    capability: graphs.invariant
+visible_tests:
+  - {args: [2, [[1, 0]]], expected: true}
+  - {args: [2, [[1, 0], [0, 1]]], expected: false}
+hidden_tests:
+  - {args: [1, []], expected: true}
+  - {args: [3, [[0, 1], [1, 2], [2, 0]]], expected: false, label: three-cycle}
+  - {args: [4, [[1, 0], [2, 1], [3, 2]]], expected: true}
+  - {args: [4, [[1, 0], [2, 0], [3, 1], [3, 2]]], expected: true, label: diamond}
+  - {args: [2, [[0, 0]]], expected: false}
+  - {args_expr: "[500, [[i + 1, i] for i in range(499)]]", expected: true, label: long chain}
+reference_solution: |
+  from collections import deque
+
+  def can_finish(count, requirements):
+      dependents = [[] for _ in range(count)]
+      indegree = [0] * count
+      for course, before in requirements:
+          dependents[before].append(course)
+          indegree[course] += 1
+      queue = deque(node for node in range(count) if indegree[node] == 0)
+      taken = 0
+      while queue:
+          node = queue.popleft()
+          taken += 1
+          for nxt in dependents[node]:
+              indegree[nxt] -= 1
+              if indegree[nxt] == 0:
+                  queue.append(nxt)
+      return taken == count
+wrong_solutions:
+  - mistake: two-cycles-only
+    expect: wrong_answer
+    code: |
+      def can_finish(count, requirements):
+          pairs = {tuple(pair) for pair in requirements}
+          return not any((b, a) in pairs for a, b in requirements)
+  - mistake: visited-as-cycle
+    expect: wrong_answer
+    code: |
+      def can_finish(count, requirements):
+          graph = [[] for _ in range(count)]
+          for course, before in requirements:
+              graph[before].append(course)
+          visited = set()
+
+          def dfs(node):
+              if node in visited:
+                  return False
+              visited.add(node)
+              return all(dfs(nxt) for nxt in graph[node])
+
+          return all(node in visited or dfs(node) for node in range(count))

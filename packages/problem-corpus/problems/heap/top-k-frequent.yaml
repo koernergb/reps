@@ -1,0 +1,86 @@
+schema_version: 1
+slug: top-k-frequent
+version: 1
+status: development
+title: Most Frequent Values
+topic: heap
+patterns: [bounded-heap, counting]
+role: transfer
+difficulty: medium
+transfer_group: bounded-heap
+prerequisites: [kth-largest]
+related: [kth-largest, group-anagrams]
+statement: |
+  Return the `k` values that occur most often in `nums`, in any order. The answer is
+  guaranteed to be unique.
+examples:
+  - input: {nums: [1, 1, 1, 2, 2, 3], k: 2}
+    output: [1, 2]
+constraints:
+  - 1 <= len(nums) <= 100,000
+  - k is between 1 and the number of distinct values.
+entrypoint: top_k_frequent
+comparison: unordered
+starter_code: |
+  def top_k_frequent(nums: list[int], k: int) -> list[int]:
+      pass
+time_complexity: O(n log k)
+space_complexity: O(n)
+capabilities:
+  - {slug: heap.recognition, weight: 0.2}
+  - {slug: heap.invariant, weight: 0.15}
+  - {slug: heap.implementation, weight: 0.2}
+  - {slug: heap.boundaries, weight: 0.1}
+  - {slug: heap.complexity, weight: 0.1}
+  - {slug: heap.transfer, weight: 0.25}
+hints:
+  - First, how would you know how often each value occurs?
+  - Once you have counts, this is "select the k largest" over (count, value) pairs. Where have you seen that?
+  - Count with a dictionary, then keep a min-heap of size k keyed by count.
+  - heapq.nlargest(k, counts, key=counts.get) does exactly this; bucket sort by count is an O(n) alternative.
+  - "counts = Counter(nums); return heapq.nlargest(k, counts, key=counts.get)."
+key_insight: Count occurrences, then select the k largest counts with a bounded heap (or bucket by frequency).
+clarifications:
+  - question: Does the output order matter?
+    answer: No.
+  - question: Can there be ties at the cutoff?
+    answer: No, the answer is guaranteed unique.
+follow_ups:
+  - How does bucket sort give O(n)?
+  - What changes if the input is a stream?
+common_mistakes:
+  - id: least-frequent
+    description: Selects the smallest counts because of a reversed comparison.
+    capability: heap.invariant
+  - id: input-order
+    description: Returns the first k distinct values instead of the most frequent.
+    capability: heap.transfer
+visible_tests:
+  - {args: [[1, 1, 1, 2, 2, 3], 2], expected: [1, 2]}
+  - {args: [[1], 1], expected: [1]}
+hidden_tests:
+  - {args: [[4, 4, 5, 5, 5, 6], 1], expected: [5]}
+  - {args: [[-1, -1, 2], 1], expected: [-1]}
+  - {args: [[1, 2, 2, 3, 3, 3, 4, 4, 4, 4], 3], expected: [4, 3, 2]}
+reference_solution: |
+  import heapq
+  from collections import Counter
+
+  def top_k_frequent(nums, k):
+      counts = Counter(nums)
+      return heapq.nlargest(k, counts, key=counts.get)
+wrong_solutions:
+  - mistake: least-frequent
+    expect: wrong_answer
+    code: |
+      import heapq
+      from collections import Counter
+
+      def top_k_frequent(nums, k):
+          counts = Counter(nums)
+          return heapq.nsmallest(k, counts, key=counts.get)
+  - mistake: input-order
+    expect: wrong_answer
+    code: |
+      def top_k_frequent(nums, k):
+          return list(dict.fromkeys(nums))[:k]

@@ -1,0 +1,120 @@
+schema_version: 1
+slug: balanced-delimiters
+version: 2
+status: development
+title: Balanced Delimiters
+topic: stack
+patterns: [matching-stack]
+role: recognition
+difficulty: easy
+transfer_group: matching-stack
+prerequisites: []
+related: [min-stack]
+statement: |
+  `text` contains only the characters `()[]{}`. Return `True` if every opening delimiter is
+  closed by the same type of delimiter in the correct order, and every closing delimiter
+  matches an earlier unmatched opener. Otherwise return `False`.
+examples:
+  - input: {text: "([]){}"}
+    output: true
+constraints:
+  - 0 <= len(text) <= 100,000
+  - text contains delimiter characters only.
+entrypoint: balanced_delimiters
+starter_code: |
+  def balanced_delimiters(text: str) -> bool:
+      pass
+time_complexity: O(n)
+space_complexity: O(n)
+capabilities:
+  - {slug: stack.recognition, weight: 0.3}
+  - {slug: stack.invariant, weight: 0.3}
+  - {slug: stack.implementation, weight: 0.15}
+  - {slug: stack.boundaries, weight: 0.2}
+  - {slug: stack.complexity, weight: 0.05}
+hints:
+  - When you see a closing delimiter, which opener must it match?
+  - The most recent unmatched opener must be closed first. Which data structure gives you "most recent" cheaply?
+  - Push openers onto a stack. On a closer, the top of the stack must be the matching opener.
+  - Handle two edge cases, a closer arriving when the stack is empty and openers left over at the end.
+  - "pairs = {')': '(', ']': '[', '}': '{'}; for c in text: if c in pairs: if not stack or stack.pop() != pairs[c]: return False; else push c; return not stack."
+key_insight: The stack always holds exactly the unmatched openers, in order, so each closer must match the top and the stack must be empty at the end.
+clarifications:
+  - question: Is the empty string balanced?
+    answer: Yes.
+  - question: Can other characters appear?
+    answer: No, only the six delimiter characters.
+follow_ups:
+  - What does the stack represent after each character?
+  - How would you report the index of the first error?
+common_mistakes:
+  - id: pops-empty
+    description: Pops from an empty stack when a closer arrives first.
+    capability: stack.boundaries
+  - id: ignores-leftovers
+    description: Does not reject unmatched openers remaining at the end.
+    capability: stack.boundaries
+  - id: counts-only
+    description: Counts each delimiter type instead of tracking order.
+    capability: stack.recognition
+visible_tests:
+  - {args: ["([]){}"], expected: true}
+  - {args: ["([)]"], expected: false}
+hidden_tests:
+  - {args: [""], expected: true}
+  - {args: ["]"], expected: false}
+  - {args: ["(("], expected: false}
+  - {args: ["{[]}"], expected: true}
+  - {args: ["[(])"], expected: false, label: interleaved}
+  - {args_expr: "['(' * 50000 + ')' * 50000]", expected: true, label: deep nesting}
+reference_solution: |
+  def balanced_delimiters(text):
+      pairs = {")": "(", "]": "[", "}": "{"}
+      stack = []
+      for char in text:
+          if char in pairs:
+              if not stack or stack.pop() != pairs[char]:
+                  return False
+          else:
+              stack.append(char)
+      return not stack
+wrong_solutions:
+  - mistake: pops-empty
+    expect: error
+    code: |
+      def balanced_delimiters(text):
+          pairs = {")": "(", "]": "[", "}": "{"}
+          stack = []
+          for char in text:
+              if char in pairs:
+                  if stack.pop() != pairs[char]:
+                      return False
+              else:
+                  stack.append(char)
+          return not stack
+  - mistake: ignores-leftovers
+    expect: wrong_answer
+    code: |
+      def balanced_delimiters(text):
+          pairs = {")": "(", "]": "[", "}": "{"}
+          stack = []
+          for char in text:
+              if char in pairs:
+                  if not stack or stack.pop() != pairs[char]:
+                      return False
+              else:
+                  stack.append(char)
+          return True
+  - mistake: counts-only
+    expect: wrong_answer
+    code: |
+      def balanced_delimiters(text):
+          for opener, closer in ("()", "[]", "{}"):
+              depth = 0
+              for char in text:
+                  depth += (char == opener) - (char == closer)
+                  if depth < 0:
+                      return False
+              if depth:
+                  return False
+          return True

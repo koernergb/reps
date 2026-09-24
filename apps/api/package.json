@@ -10,6 +10,8 @@
     "test": "uv --cache-dir ../../.uv-cache run --offline pytest",
     "db:migrate": "uv --cache-dir ../../.uv-cache run --offline alembic upgrade head",
     "db:downgrade": "uv --cache-dir ../../.uv-cache run --offline alembic downgrade -1",
-    "db:seed": "uv --cache-dir ../../.uv-cache run --offline python -m app.seed"
+    "db:seed": "uv --cache-dir ../../.uv-cache run --offline python -m app.seed",
+    "corpus:validate": "uv --cache-dir ../../.uv-cache run --offline python -m app.corpus.validate --execute",
+    "corpus:report": "uv --cache-dir ../../.uv-cache run --offline python -m app.corpus.validate --report"
   }
 }

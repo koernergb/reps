@@ -28,6 +28,11 @@ class CapabilitySummary(BaseModel):
     weight: float
 
 
+class TopicSummary(BaseModel):
+    slug: str
+    name: str
+
+
 class ProblemSummary(BaseModel):
     id: str
     slug: str
@@ -35,6 +40,7 @@ class ProblemSummary(BaseModel):
     difficulty: str
     language: str
     status: str
+    topic: TopicSummary | None
     capabilities: list[CapabilitySummary]
 
 

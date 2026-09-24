@@ -1,0 +1,103 @@
+schema_version: 1
+slug: max-sum-window
+version: 1
+status: development
+title: Best Fixed-Length Window
+topic: sliding-window
+patterns: [fixed-window]
+role: recognition
+difficulty: easy
+transfer_group: fixed-window
+prerequisites: []
+related: [longest-unique-substring]
+statement: |
+  Given a list of integers `nums` and an integer `k`, return the largest sum of any
+  contiguous block of exactly `k` elements.
+examples:
+  - input: {nums: [2, 1, 5, 1, 3, 2], k: 3}
+    output: 9
+    explanation: The block [5, 1, 3] sums to 9.
+constraints:
+  - 1 <= k <= len(nums) <= 100,000
+  - -10^4 <= nums[i] <= 10^4
+entrypoint: max_window_sum
+starter_code: |
+  def max_window_sum(nums: list[int], k: int) -> int:
+      pass
+time_complexity: O(n)
+space_complexity: O(1)
+capabilities:
+  - {slug: sliding-window.recognition, weight: 0.35}
+  - {slug: sliding-window.invariant, weight: 0.15}
+  - {slug: sliding-window.implementation, weight: 0.2}
+  - {slug: sliding-window.boundaries, weight: 0.2}
+  - {slug: sliding-window.complexity, weight: 0.1}
+hints:
+  - Two neighboring windows share k - 1 elements. What changes between them?
+  - Can you get the next window's sum from the current one without re-adding everything?
+  - Keep a running sum; add the element entering on the right and subtract the one leaving on the left.
+  - Initialize with the first k elements, then slide right from index k to the end, updating the best sum after each step.
+  - "window = sum(nums[:k]); best = window; for i in range(k, len(nums)): window += nums[i] - nums[i - k]; best = max(best, window)."
+key_insight: Adjacent windows differ by one element entering and one leaving, so maintain a running sum instead of recomputing each window.
+clarifications:
+  - question: Can values be negative?
+    answer: Yes. All values may be negative.
+  - question: Is k always valid?
+    answer: Yes, 1 <= k <= len(nums).
+follow_ups:
+  - How would you find the window with the maximum average instead?
+  - What if k were not fixed and you needed the best sum of any length?
+common_mistakes:
+  - id: zero-initial-best
+    description: Initializes the best sum to 0, which is wrong when every window is negative.
+    capability: sliding-window.boundaries
+  - id: recompute-window
+    description: Recomputes each window sum from scratch (O(n*k)).
+    capability: sliding-window.recognition
+  - id: misses-last-window
+    description: Stops one step early and never evaluates the final window.
+    capability: sliding-window.boundaries
+visible_tests:
+  - {args: [[2, 1, 5, 1, 3, 2], 3], expected: 9}
+  - {args: [[1, 2, 3], 3], expected: 6}
+hidden_tests:
+  - {args: [[5], 1], expected: 5}
+  - {args: [[-1, -2, -3], 2], expected: -3, label: all negative}
+  - {args: [[4, -1, 2, 1, -5, 4], 2], expected: 3}
+  - {args: [[1, 1, 1, 1, 9], 2], expected: 10, label: best window at the end}
+  - {args_expr: "[list(range(100000)), 50000]", expected: 3749975000, label: large input}
+reference_solution: |
+  def max_window_sum(nums, k):
+      window = sum(nums[:k])
+      best = window
+      for i in range(k, len(nums)):
+          window += nums[i] - nums[i - k]
+          best = max(best, window)
+      return best
+wrong_solutions:
+  - mistake: zero-initial-best
+    expect: wrong_answer
+    code: |
+      def max_window_sum(nums, k):
+          window = sum(nums[:k])
+          best = 0
+          for i in range(k, len(nums) + 1):
+              best = max(best, window)
+              if i < len(nums):
+                  window += nums[i] - nums[i - k]
+          return best
+  - mistake: recompute-window
+    expect: timeout
+    code: |
+      def max_window_sum(nums, k):
+          return max(sum(nums[i:i + k]) for i in range(len(nums) - k + 1))
+  - mistake: misses-last-window
+    expect: wrong_answer
+    code: |
+      def max_window_sum(nums, k):
+          window = sum(nums[:k])
+          best = window
+          for i in range(k, len(nums) - 1):
+              window += nums[i] - nums[i - k]
+              best = max(best, window)
+          return best

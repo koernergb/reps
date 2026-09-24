@@ -1,0 +1,107 @@
+schema_version: 1
+slug: remove-nth-from-end
+version: 1
+status: development
+title: Remove the Nth Node From the End
+topic: linked-list
+patterns: [gap-pointers, dummy-head]
+role: boundary
+difficulty: medium
+transfer_group: dummy-head-merge
+prerequisites: [merge-two-sorted-lists]
+related: [merge-two-sorted-lists]
+statement: |
+  Remove the `n`-th node from the end of a linked list and return the head. Try to do it in
+  one pass.
+examples:
+  - input: {head: [1, 2, 3, 4, 5], n: 2}
+    output: [1, 2, 3, 5]
+constraints:
+  - 1 <= number of nodes <= 10,000
+  - 1 <= n <= number of nodes
+entrypoint: remove_nth_from_end
+input_adapters: [linked_list]
+output_adapter: linked_list
+starter_code: |
+  def remove_nth_from_end(head: "ListNode | None", n: int) -> "ListNode | None":
+      pass
+time_complexity: O(n)
+space_complexity: O(1)
+capabilities:
+  - {slug: linked-list.recognition, weight: 0.15}
+  - {slug: linked-list.invariant, weight: 0.2}
+  - {slug: linked-list.implementation, weight: 0.15}
+  - {slug: linked-list.boundaries, weight: 0.25}
+  - {slug: linked-list.complexity, weight: 0.05}
+  - {slug: linked-list.transfer, weight: 0.2}
+hints:
+  - To delete a node you need a reference to the node before it. Which node is that here?
+  - If one pointer starts n nodes ahead of another, where is the trailing pointer when the leading one reaches the end?
+  - Keep a gap of n nodes between a fast and a slow pointer, starting both at a dummy node before the head.
+  - Advance fast n + 1 steps from the dummy, then move both until fast is None; slow.next is the node to remove.
+  - "dummy = ListNode(0, head); fast = slow = dummy; for _ in range(n + 1): fast = fast.next; while fast: advance both; slow.next = slow.next.next; return dummy.next."
+key_insight: A dummy node plus two pointers separated by n + 1 steps leaves the slow pointer just before the target, including when the head itself must be removed.
+clarifications:
+  - question: Is n always valid?
+    answer: Yes, 1 <= n <= length.
+  - question: Can the result be empty?
+    answer: Yes, when removing the only node.
+follow_ups:
+  - Why does the dummy node simplify removing the head?
+  - How would you do it in two passes, and is one pass actually faster?
+common_mistakes:
+  - id: head-removal
+    description: Starts pointers at head without a dummy and fails when the head must be removed.
+    capability: linked-list.boundaries
+  - id: gap-off-by-one
+    description: Uses a gap of n instead of n + 1 and removes the wrong node.
+    capability: linked-list.invariant
+visible_tests:
+  - {args: [[1, 2, 3, 4, 5], 2], expected: [1, 2, 3, 5]}
+  - {args: [[1], 1], expected: []}
+hidden_tests:
+  - {args: [[1, 2], 1], expected: [1]}
+  - {args: [[1, 2], 2], expected: [2], label: remove head}
+  - {args: [[1, 2, 3], 3], expected: [2, 3]}
+  - {args: [[1, 2, 3], 1], expected: [1, 2]}
+  - {args: [[4, 5, 6, 7], 2], expected: [4, 5, 7]}
+reference_solution: |
+  def remove_nth_from_end(head, n):
+      dummy = ListNode(0, head)
+      fast = slow = dummy
+      for _ in range(n + 1):
+          fast = fast.next
+      while fast is not None:
+          fast = fast.next
+          slow = slow.next
+      slow.next = slow.next.next
+      return dummy.next
+wrong_solutions:
+  - mistake: head-removal
+    expect: wrong_answer
+    code: |
+      def remove_nth_from_end(head, n):
+          fast = slow = head
+          for _ in range(n):
+              fast = fast.next
+          if fast is None:
+              return head
+          while fast.next is not None:
+              fast = fast.next
+              slow = slow.next
+          slow.next = slow.next.next
+          return head
+  - mistake: gap-off-by-one
+    expect: wrong_answer
+    code: |
+      def remove_nth_from_end(head, n):
+          dummy = ListNode(0, head)
+          fast = slow = dummy
+          for _ in range(n):
+              fast = fast.next
+          while fast is not None:
+              fast = fast.next
+              slow = slow.next
+          if slow.next is not None:
+              slow.next = slow.next.next
+          return dummy.next

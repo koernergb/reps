@@ -1,0 +1,73 @@
+schema_version: 1
+topic: heap
+exercises:
+  - id: hp-recall-when
+    capability: heap.recognition
+    type: recall
+    prompt: What problem signals suggest a heap?
+    key_points:
+      - ["k largest", "k smallest", "top k", "kth", "k-th"]
+      - ["repeatedly", "smallest", "largest", "min", "max", "priority", "extract"]
+    reference_answer: Selecting the top/kth k elements, or repeatedly extracting the current minimum/maximum (scheduling, merging sorted streams, simulations).
+    hints:
+      - Think of "kth largest" and "merge k sorted lists".
+    estimated_minutes: 1
+  - id: hp-explain-bounded
+    capability: heap.invariant
+    type: explain
+    prompt: To find the k-th largest value, why do we keep a min-heap (not a max-heap) of size k?
+    key_points:
+      - ["k largest", "largest k", "top k"]
+      - ["smallest of", "root", "heap[0]", "minimum of", "weakest"]
+      - ["evict", "pop", "remove", "replace"]
+    reference_answer: The heap holds the k largest values seen so far; its root is the smallest of them, which is exactly the k-th largest, and it is also the one to evict when a bigger value arrives.
+    misconception: A max-heap of size k gives the k-th largest at its root.
+    confirmation_question: After processing [3, 2, 1, 5] with k = 2, what does the heap contain?
+    hints:
+      - Which of the k kept values should be discarded when a larger value arrives?
+    estimated_minutes: 2
+  - id: hp-trace
+    capability: heap.implementation
+    type: trace
+    prompt: "Process [3, 2, 1, 5, 6, 4] with a size-2 min-heap for the 2nd largest. What is heap[0] at the end?"
+    accepted_answers: ["5"]
+    key_points:
+      - ["5"]
+    reference_answer: "5 — the heap ends as {5, 6}."
+    hints:
+      - Keep only the two largest values seen.
+    estimated_minutes: 2
+  - id: hp-debug-dedupe
+    capability: heap.boundaries
+    type: debug
+    problem: kth-largest
+    from_mistake: dedupes-values
+    prompt: This kth-largest solution mishandles duplicates. Fix it.
+    reference_answer: Do not deduplicate; duplicates count as separate positions.
+    misconception: The kth largest means the kth largest distinct value.
+    hints:
+      - Try [5, 5, 4] with k = 2.
+    estimated_minutes: 3
+  - id: hp-complexity
+    capability: heap.complexity
+    type: explain
+    prompt: Compare the cost of a size-k heap with sorting for the k-th largest element.
+    key_points:
+      - ["n log k", "o(n log k)"]
+      - ["n log n", "sorting", "sort"]
+      - ["o(k) space", "k space", "k elements"]
+    reference_answer: A size-k heap costs O(n log k) time and O(k) space; sorting costs O(n log n). The heap wins when k is much smaller than n.
+    hints:
+      - How large does the heap get?
+    estimated_minutes: 1.5
+  - id: hp-recall-transfer
+    capability: heap.transfer
+    type: recall
+    prompt: How does top-k-frequent reduce to a problem you already know?
+    key_points:
+      - ["count", "frequency", "counter"]
+      - ["k largest", "top k", "heap", "nlargest", "kth"]
+    reference_answer: Count occurrences, then select the k largest counts with a bounded heap, the same technique as k-th largest.
+    hints:
+      - What would you rank the values by?
+    estimated_minutes: 1

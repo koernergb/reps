@@ -5,6 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.corpus.loader import get_corpus
 from app.local_mode import LOCAL_USER_ID
 from app.main import create_app
 from app.models import (
@@ -130,7 +131,9 @@ def test_reset_deletes_history_and_preserves_profile_and_corpus(
     }
     with Session(seeded_engine) as session:
         assert session.scalar(select(func.count()).select_from(InterviewSession)) == 0
-        assert session.scalar(select(func.count()).select_from(Problem)) == 3
+        assert session.scalar(select(func.count()).select_from(Problem)) == len(
+            get_corpus().problems
+        )
     assert client.get("/v1/me").status_code == 200
 
 

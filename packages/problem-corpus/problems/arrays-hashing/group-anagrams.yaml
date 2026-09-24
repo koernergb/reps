@@ -1,0 +1,97 @@
+schema_version: 1
+slug: group-anagrams
+version: 1
+status: development
+title: Group Anagrams
+topic: arrays-hashing
+patterns: [hash-map, canonical-key]
+role: canonical
+difficulty: medium
+transfer_group: canonical-key-bucketing
+prerequisites: []
+related: [top-k-frequent]
+statement: |
+  Given a list of lowercase words, group words that are anagrams of each other.
+  Return a list of groups. Within each group keep the words in their original input order;
+  the groups themselves may be returned in any order.
+examples:
+  - input: {words: ["eat", "tea", "tan", "ate", "nat", "bat"]}
+    output: [["eat", "tea", "ate"], ["tan", "nat"], ["bat"]]
+constraints:
+  - 0 <= len(words) <= 10,000
+  - 0 <= len(words[i]) <= 100
+  - words[i] contains lowercase English letters only.
+entrypoint: group_anagrams
+comparison: unordered
+starter_code: |
+  def group_anagrams(words: list[str]) -> list[list[str]]:
+      pass
+time_complexity: O(n * k log k)
+space_complexity: O(n * k)
+capabilities:
+  - {slug: arrays-hashing.recognition, weight: 0.25}
+  - {slug: arrays-hashing.invariant, weight: 0.3}
+  - {slug: arrays-hashing.implementation, weight: 0.25}
+  - {slug: arrays-hashing.boundaries, weight: 0.1}
+  - {slug: arrays-hashing.complexity, weight: 0.1}
+hints:
+  - What do all anagrams of a word have in common?
+  - If two words produced the same "signature", could you use that signature as a dictionary key?
+  - Build a dictionary from signature to the list of words with that signature.
+  - Sorting the letters of a word (or counting its 26 letters) gives a signature shared by every anagram.
+  - "groups = defaultdict(list); for w in words: groups[''.join(sorted(w))].append(w); return list(groups.values())."
+key_insight: Every anagram shares a canonical key (sorted letters or a letter-count tuple), so bucketing words by that key groups them in one pass.
+clarifications:
+  - question: "Does the order of groups matter?"
+    answer: "No. Groups can be in any order, but words inside a group keep input order."
+  - question: "Can the empty string appear?"
+    answer: "Yes. Empty strings are anagrams of each other."
+  - question: "Can the same word appear twice?"
+    answer: "Yes. Keep both copies in the same group."
+follow_ups:
+  - How could you avoid sorting each word?
+  - What if the alphabet were all of Unicode?
+common_mistakes:
+  - id: set-dedupe
+    description: "Uses a set of letters as the key so words with different letter counts collide."
+    capability: arrays-hashing.invariant
+  - id: pairwise-compare
+    description: "Compares every pair of words (O(n^2 k))."
+    capability: arrays-hashing.recognition
+  - id: drops-duplicates
+    description: "Deduplicates repeated words."
+    capability: arrays-hashing.boundaries
+visible_tests:
+  - {args: [["eat", "tea", "tan", "ate", "nat", "bat"]], expected: [["eat", "tea", "ate"], ["tan", "nat"], ["bat"]]}
+  - {args: [["a"]], expected: [["a"]]}
+hidden_tests:
+  - {args: [[]], expected: []}
+  - {args: [["", ""]], expected: [["", ""]]}
+  - {args: [["ab", "aab", "aba", "baa", "bba"]], expected: [["ab"], ["aab", "aba", "baa"], ["bba"]], label: letter-count trap}
+  - {args: [["abc", "abc", "cba"]], expected: [["abc", "abc", "cba"]]}
+  - {args_expr: "[['ab' + 'c' * (i % 10) for i in range(20000)]]", expected_expr: "[['ab' + 'c' * i] * 2000 for i in range(10)]", label: large input}
+reference_solution: |
+  from collections import defaultdict
+
+  def group_anagrams(words):
+      groups = defaultdict(list)
+      for word in words:
+          groups["".join(sorted(word))].append(word)
+      return list(groups.values())
+wrong_solutions:
+  - mistake: set-dedupe
+    expect: wrong_answer
+    code: |
+      def group_anagrams(words):
+          groups = {}
+          for word in words:
+              groups.setdefault(frozenset(word), []).append(word)
+          return list(groups.values())
+  - mistake: drops-duplicates
+    expect: wrong_answer
+    code: |
+      def group_anagrams(words):
+          groups = {}
+          for word in dict.fromkeys(words):
+              groups.setdefault("".join(sorted(word)), []).append(word)
+          return list(groups.values())

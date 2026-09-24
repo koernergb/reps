@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.local_mode import get_session
 from app.models import Problem, ProblemCapability
-from app.schemas import CapabilitySummary, ProblemDetail, ProblemSummary
+from app.schemas import CapabilitySummary, ProblemDetail, ProblemSummary, TopicSummary
 
 router = APIRouter(prefix="/v1/problems", tags=["problems"])
 SessionDependency = Annotated[Session, Depends(get_session)]
@@ -20,6 +20,9 @@ def to_summary(problem: Problem) -> ProblemSummary:
         difficulty=problem.difficulty,
         language=problem.language,
         status=problem.status,
+        topic=TopicSummary(slug=problem.topic.slug, name=problem.topic.name)
+        if problem.topic
+        else None,
         capabilities=[
             CapabilitySummary(
                 slug=link.capability.slug,
@@ -36,7 +39,10 @@ def to_summary(problem: Problem) -> ProblemSummary:
 def list_problems(session: SessionDependency) -> list[ProblemSummary]:
     statement = (
         select(Problem)
-        .options(selectinload(Problem.capability_links).selectinload(ProblemCapability.capability))
+        .options(
+            selectinload(Problem.capability_links).selectinload(ProblemCapability.capability),
+            selectinload(Problem.topic),
+        )
         .where(Problem.status != "retired")
         .order_by(Problem.title)
     )
@@ -47,7 +53,10 @@ def list_problems(session: SessionDependency) -> list[ProblemSummary]:
 def get_problem(slug: str, session: SessionDependency) -> ProblemDetail:
     statement = (
         select(Problem)
-        .options(selectinload(Problem.capability_links).selectinload(ProblemCapability.capability))
+        .options(
+            selectinload(Problem.capability_links).selectinload(ProblemCapability.capability),
+            selectinload(Problem.topic),
+        )
         .where(Problem.slug == slug, Problem.status != "retired")
     )
     problem = session.scalar(statement)
