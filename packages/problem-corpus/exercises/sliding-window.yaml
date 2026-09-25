@@ -1,0 +1,103 @@
+schema_version: 1
+topic: sliding-window
+exercises:
+  - id: sw-recall-signals
+    capability: sliding-window.recognition
+    type: recall
+    prompt: What conditions usually suggest a sliding-window approach?
+    key_points:
+      - ["contiguous", "subarray", "substring", "consecutive", "range"]
+      - ["longest", "shortest", "maximum", "minimum", "best", "at most", "at least"]
+      - ["shrink", "grow", "expand", "monotonic", "left and right", "two boundaries"]
+    reference_answer: A question about the best (longest/shortest/max) contiguous subarray or substring, where a validity condition lets the window grow on the right and shrink on the left monotonically.
+    hints:
+      - Is the answer a contiguous block?
+      - Can you tell when extending the block breaks a rule, and fix it by dropping elements from the other end?
+    estimated_minutes: 1
+  - id: sw-recognize-budget
+    capability: sliding-window.recognition
+    type: recognition
+    prompt: "A problem: in a string of R and B characters, find the longest block you can make all R by recoloring at most k B's. What pattern would you consider first, and what must the window satisfy?"
+    key_points:
+      - ["sliding window", "variable window", "window", "two pointers"]
+      - ["at most k", "<= k", "k b", "number of b", "budget", "count of b"]
+    reference_answer: A variable sliding window whose invariant is that it contains at most k B's; expand right, and shrink left while the count exceeds k.
+    hints:
+      - Rephrase "can recolor to all R" in terms of how many B's the block contains.
+      - What quantity must stay within budget?
+    estimated_minutes: 1.5
+  - id: sw-explain-window-invariant
+    capability: sliding-window.invariant
+    type: explain
+    prompt: In the longest-substring-without-repeats algorithm, what must remain true about the current window, and why is the left edge allowed to jump forward without reconsidering earlier positions?
+    key_points:
+      - ["no repeat", "distinct", "unique", "no duplicate"]
+      - ["any window", "include", "contain", "would still", "would also", "cannot be longer", "start earlier"]
+    reference_answer: The window always holds distinct characters. Any window starting before the jump target would still contain both copies of the repeated character, so none of those starts can produce a longer valid window ending here or later.
+    misconception: The left edge moves one step at a time and may need to move backward later.
+    confirmation_question: In "abba", after reading the second 'a', where should the left edge be, and why not at index 1?
+    hints:
+      - Write the rule the window must satisfy after every step.
+      - If the window starts before the earlier copy of the repeated character, what does it still contain?
+    estimated_minutes: 2.5
+  - id: sw-trace-abba
+    capability: sliding-window.boundaries
+    type: trace
+    prompt: "Trace longest-unique-substring on \"abba\" with last-seen indices. What is left after processing each index 0..3? Answer as four numbers, e.g. 0 0 1 2."
+    accepted_answers: ["0 0 2 2", "0,0,2,2", "[0, 0, 2, 2]"]
+    key_points:
+      - ["0 0 2 2", "0, 0, 2, 2", "0,0,2,2"]
+    reference_answer: "0 0 2 2. At index 3 ('a'), its last index 0 is before left = 2, so left does not move backward."
+    hints:
+      - At index 2 ('b'), where was 'b' last seen?
+      - At index 3 ('a'), is the old 'a' still inside the window?
+    estimated_minutes: 3
+  - id: sw-debug-stale-index
+    capability: sliding-window.implementation
+    type: debug
+    problem: longest-unique-substring
+    from_mistake: left-moves-backward
+    prompt: This solution fails on inputs like "abba". Fix the window update.
+    reference_answer: Only move left when the previous occurrence is inside the window, left = max(left, last[char] + 1).
+    misconception: Any previous occurrence of a character is inside the current window.
+    hints:
+      - Trace "abba" by hand.
+      - Should left ever decrease?
+    estimated_minutes: 4
+  - id: sw-debug-last-window
+    capability: sliding-window.boundaries
+    type: debug
+    problem: max-sum-window
+    from_mistake: misses-last-window
+    prompt: This fixed-window solution misses a case. Find and fix the boundary bug.
+    reference_answer: Iterate i over range(k, len(nums)) so the final window is evaluated.
+    misconception: The loop over entering elements can stop one early.
+    hints:
+      - Which window is evaluated last?
+      - Try nums = [1, 1, 1, 1, 9] with k = 2.
+    estimated_minutes: 3
+  - id: sw-complexity-amortized
+    capability: sliding-window.complexity
+    type: explain
+    prompt: A variable sliding window has a while loop inside a for loop. Why is it still O(n)?
+    key_points:
+      - ["each element", "every index", "each index", "each character"]
+      - ["once", "at most once", "one time", "twice"]
+      - ["enter", "leave", "added", "removed", "left moves", "left only moves forward"]
+    reference_answer: Each index enters the window once (right pointer) and leaves at most once (left pointer only moves forward), so total pointer moves are at most 2n.
+    hints:
+      - How many times can the left pointer move in total?
+      - Count pointer moves rather than loop nesting.
+    estimated_minutes: 1.5
+  - id: sw-recall-transfer
+    capability: sliding-window.transfer
+    type: recall
+    prompt: How would you turn "longest block of ones after flipping at most k zeros" into a window problem you already know?
+    key_points:
+      - ["at most k zeros", "<= k zeros", "zeros", "count of zeros"]
+      - ["longest window", "longest subarray", "window", "sliding"]
+    reference_answer: It is the longest window containing at most k zeros; shrink from the left whenever the zero count exceeds k.
+    hints:
+      - What does a block need to be convertible with k flips?
+      - Which quantity is the window budget?
+    estimated_minutes: 1.5

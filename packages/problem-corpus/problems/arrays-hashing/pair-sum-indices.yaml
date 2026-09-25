@@ -1,0 +1,102 @@
+schema_version: 1
+slug: pair-sum-indices
+version: 2
+status: development
+title: Pair Sum Indices
+topic: arrays-hashing
+patterns: [hash-map, complement-lookup]
+role: recognition
+difficulty: easy
+transfer_group: complement-lookup
+prerequisites: []
+related: [pair-sum-sorted, subarray-sum-equals-k]
+statement: |
+  Given a list of integers `nums` and an integer `target`, return the indices of the two
+  distinct elements whose values add up to `target`, as `[i, j]` with `i < j`.
+  Exactly one valid pair exists.
+examples:
+  - input: {nums: [4, 7, 1, 9], target: 8}
+    output: [1, 2]
+    explanation: nums[1] + nums[2] = 7 + 1 = 8.
+constraints:
+  - 2 <= len(nums) <= 20,000
+  - -10^9 <= nums[i], target <= 10^9
+  - Exactly one pair of distinct indices sums to target.
+entrypoint: pair_sum_indices
+comparison: exact
+starter_code: |
+  def pair_sum_indices(nums: list[int], target: int) -> list[int]:
+      pass
+time_complexity: O(n)
+space_complexity: O(n)
+capabilities:
+  - {slug: arrays-hashing.recognition, weight: 0.35}
+  - {slug: arrays-hashing.invariant, weight: 0.2}
+  - {slug: arrays-hashing.implementation, weight: 0.25}
+  - {slug: arrays-hashing.boundaries, weight: 0.1}
+  - {slug: arrays-hashing.complexity, weight: 0.1}
+hints:
+  - For each element, what exact value would complete the pair?
+  - Checking every earlier element is slow. Which data structure answers "have I seen value x?" in O(1)?
+  - Walk left to right keeping a map from value to index for elements you've already passed.
+  - At index i compute complement = target - nums[i]; if it's already in the map you're done, otherwise store nums[i].
+  - "Single pass: seen = {}; for i, v in enumerate(nums): if target - v in seen: return [seen[target - v], i]; seen[v] = i."
+key_insight: Store each value's index as you scan, and look up the complement (target - value) among earlier elements, so each element is checked in O(1).
+clarifications:
+  - question: "Can the same element be used twice?"
+    answer: "No. The two indices must be different."
+  - question: "What order should the indices be in?"
+    answer: "Return [i, j] with i < j."
+  - question: "Can values repeat?"
+    answer: "Yes, values can repeat, for example [3, 3] with target 6."
+follow_ups:
+  - How would you solve it with O(1) extra space if the input were sorted?
+  - What changes if you must return every pair instead of one?
+common_mistakes:
+  - id: self-match
+    description: "Stores the current value before checking and pairs an element with itself."
+    capability: arrays-hashing.implementation
+  - id: nested-scan
+    description: "Compares every pair with a nested loop (O(n^2))."
+    capability: arrays-hashing.recognition
+  - id: duplicate-overwrite
+    description: "Pre-builds the map so a later duplicate overwrites the earlier index and ordering breaks."
+    capability: arrays-hashing.boundaries
+visible_tests:
+  - {args: [[4, 7, 1, 9], 8], expected: [1, 2]}
+  - {args: [[3, 3], 6], expected: [0, 1]}
+hidden_tests:
+  - {args: [[-2, 5, 11, -7], 4], expected: [2, 3]}
+  - {args: [[0, 4, 0], 0], expected: [0, 2]}
+  - {args: [[3, 2, 4], 6], expected: [1, 2], label: self-match trap}
+  - {args: [[1000000000, -999999995, 7], 5], expected: [0, 1]}
+  - {args_expr: "[list(range(0, 40000, 2)), 79994]", expected: [19998, 19999], label: large input}
+reference_solution: |
+  def pair_sum_indices(nums, target):
+      seen = {}
+      for index, value in enumerate(nums):
+          complement = target - value
+          if complement in seen:
+              return [seen[complement], index]
+          seen[value] = index
+      raise ValueError("pair required")
+wrong_solutions:
+  - mistake: self-match
+    expect: wrong_answer
+    code: |
+      def pair_sum_indices(nums, target):
+          seen = {}
+          for index, value in enumerate(nums):
+              seen[value] = index
+              if target - value in seen:
+                  return sorted([seen[target - value], index])
+          return []
+  - mistake: nested-scan
+    expect: timeout
+    code: |
+      def pair_sum_indices(nums, target):
+          for i in range(len(nums)):
+              for j in range(i + 1, len(nums)):
+                  if nums[i] + nums[j] == target:
+                      return [i, j]
+          return []

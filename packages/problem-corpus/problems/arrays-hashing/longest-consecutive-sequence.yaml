@@ -1,0 +1,108 @@
+schema_version: 1
+slug: longest-consecutive-sequence
+version: 1
+status: development
+title: Longest Consecutive Run
+topic: arrays-hashing
+patterns: [hash-set, sequence-starts]
+role: boundary
+difficulty: medium
+transfer_group: set-membership-scan
+prerequisites: [pair-sum-indices]
+related: []
+statement: |
+  Given an unsorted list of integers `nums`, return the length of the longest run of
+  consecutive integer values (such as 4, 5, 6, 7) that all appear in `nums`.
+  Values may repeat; repeats do not extend a run. Aim for linear time.
+examples:
+  - input: {nums: [100, 4, 200, 1, 3, 2]}
+    output: 4
+    explanation: The run 1, 2, 3, 4 has length 4.
+constraints:
+  - 0 <= len(nums) <= 50,000
+  - -10^9 <= nums[i] <= 10^9
+entrypoint: longest_consecutive
+starter_code: |
+  def longest_consecutive(nums: list[int]) -> int:
+      pass
+time_complexity: O(n)
+space_complexity: O(n)
+capabilities:
+  - {slug: arrays-hashing.recognition, weight: 0.2}
+  - {slug: arrays-hashing.invariant, weight: 0.25}
+  - {slug: arrays-hashing.implementation, weight: 0.2}
+  - {slug: arrays-hashing.boundaries, weight: 0.2}
+  - {slug: arrays-hashing.complexity, weight: 0.15}
+hints:
+  - Sorting works in O(n log n). What would let you ask "is x + 1 present?" instantly instead?
+  - Put every value in a set. Now, from which values should you start counting a run?
+  - Only start counting at a value x when x - 1 is not in the set; that x is the start of a run.
+  - From each start, walk x + 1, x + 2, ... while present. Each value is visited by at most one walk.
+  - "values = set(nums); for x in values: if x - 1 not in values: extend y = x while y + 1 in values; best = max(best, y - x + 1)."
+key_insight: Only begin counting at values whose predecessor is absent; then every value is walked at most once, giving O(n) total with a set.
+clarifications:
+  - question: "What should an empty list return?"
+    answer: "0."
+  - question: "Do duplicate values count twice?"
+    answer: "No. [1, 2, 2, 3] has a run of length 3."
+  - question: "Must the run appear in order in the list?"
+    answer: "No. Only the values matter."
+follow_ups:
+  - Why is the start-of-run check necessary for linear time?
+  - How would you return the run itself instead of its length?
+common_mistakes:
+  - id: no-start-check
+    description: "Walks upward from every value, giving O(n^2) on long runs."
+    capability: arrays-hashing.complexity
+  - id: duplicate-reset
+    description: "After sorting, treats a duplicate as a break in the run."
+    capability: arrays-hashing.boundaries
+  - id: empty-input
+    description: "Returns 1 or crashes on an empty list."
+    capability: arrays-hashing.boundaries
+visible_tests:
+  - {args: [[100, 4, 200, 1, 3, 2]], expected: 4}
+  - {args: [[0, 3, 7, 2, 5, 8, 4, 6, 0, 1]], expected: 9}
+hidden_tests:
+  - {args: [[]], expected: 0}
+  - {args: [[1, 2, 0, 1]], expected: 3, label: duplicate inside run}
+  - {args: [[9]], expected: 1}
+  - {args: [[-1, -2, -3, 10]], expected: 3}
+  - {args_expr: "[list(range(60000, 0, -1))]", expected: 60000, label: long run}
+reference_solution: |
+  def longest_consecutive(nums):
+      values = set(nums)
+      best = 0
+      for value in values:
+          if value - 1 in values:
+              continue
+          end = value
+          while end + 1 in values:
+              end += 1
+          best = max(best, end - value + 1)
+      return best
+wrong_solutions:
+  - mistake: no-start-check
+    expect: timeout
+    code: |
+      def longest_consecutive(nums):
+          values = set(nums)
+          best = 0
+          for value in values:
+              end = value
+              while end + 1 in values:
+                  end += 1
+              best = max(best, end - value + 1)
+          return best
+  - mistake: duplicate-reset
+    expect: wrong_answer
+    code: |
+      def longest_consecutive(nums):
+          if not nums:
+              return 0
+          ordered = sorted(nums)
+          best = current = 1
+          for previous, value in zip(ordered, ordered[1:]):
+              current = current + 1 if value == previous + 1 else 1
+              best = max(best, current)
+          return best

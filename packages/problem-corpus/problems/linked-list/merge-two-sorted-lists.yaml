@@ -1,0 +1,104 @@
+schema_version: 1
+slug: merge-two-sorted-lists
+version: 1
+status: development
+title: Merge Two Sorted Lists
+topic: linked-list
+patterns: [dummy-head, two-way-merge]
+role: canonical
+difficulty: easy
+transfer_group: dummy-head-merge
+prerequisites: []
+related: [reverse-linked-list, remove-nth-from-end]
+statement: |
+  Given the heads of two linked lists, each sorted in non-decreasing order, splice their
+  nodes together into one sorted list and return its head.
+examples:
+  - input: {first: [1, 2, 4], second: [1, 3, 4]}
+    output: [1, 1, 2, 3, 4, 4]
+constraints:
+  - 0 <= nodes in each list <= 20,000
+  - Both lists are sorted in non-decreasing order.
+entrypoint: merge_lists
+input_adapters: [linked_list, linked_list]
+output_adapter: linked_list
+starter_code: |
+  def merge_lists(first: "ListNode | None", second: "ListNode | None") -> "ListNode | None":
+      pass
+time_complexity: O(n + m)
+space_complexity: O(1)
+capabilities:
+  - {slug: linked-list.recognition, weight: 0.25}
+  - {slug: linked-list.invariant, weight: 0.2}
+  - {slug: linked-list.implementation, weight: 0.25}
+  - {slug: linked-list.boundaries, weight: 0.2}
+  - {slug: linked-list.complexity, weight: 0.1}
+hints:
+  - Which node should come first in the merged list?
+  - Handling "which node is the head?" separately is fiddly. What if the merged list started with a placeholder node?
+  - Use a dummy node and a tail pointer; repeatedly attach the smaller of the two current nodes.
+  - When one list runs out, the other list's remaining nodes are already sorted.
+  - "dummy = tail = ListNode(); while a and b: attach smaller, advance; tail.next = a or b; return dummy.next."
+key_insight: A dummy head removes the special case for the first node; attach the smaller front node each step and then append whichever list remains.
+clarifications:
+  - question: Can either list be empty?
+    answer: Yes, one or both.
+  - question: Should I reuse the existing nodes?
+    answer: Yes, splice the existing nodes.
+follow_ups:
+  - How would you merge k sorted lists efficiently?
+  - Why is a dummy node useful here?
+common_mistakes:
+  - id: drops-remainder
+    description: Stops when one list empties and forgets the other list's remaining nodes.
+    capability: linked-list.boundaries
+  - id: recursive-merge
+    description: Merges recursively and exceeds the recursion limit on long lists.
+    capability: linked-list.complexity
+visible_tests:
+  - {args: [[1, 2, 4], [1, 3, 4]], expected: [1, 1, 2, 3, 4, 4]}
+  - {args: [[], []], expected: []}
+hidden_tests:
+  - {args: [[], [0]], expected: [0]}
+  - {args: [[5], [1, 2, 3]], expected: [1, 2, 3, 5], label: remainder}
+  - {args: [[1, 1], [1]], expected: [1, 1, 1]}
+  - {args: [[-3, 10], [-5, -4, 20]], expected: [-5, -4, -3, 10, 20]}
+  - {args_expr: "[list(range(0, 40000, 2)), list(range(1, 40000, 2))]", expected_expr: "list(range(40000))", label: long lists}
+reference_solution: |
+  def merge_lists(first, second):
+      dummy = tail = ListNode()
+      while first is not None and second is not None:
+          if first.val <= second.val:
+              tail.next, first = first, first.next
+          else:
+              tail.next, second = second, second.next
+          tail = tail.next
+      tail.next = first if first is not None else second
+      return dummy.next
+wrong_solutions:
+  - mistake: drops-remainder
+    expect: wrong_answer
+    code: |
+      def merge_lists(first, second):
+          dummy = tail = ListNode()
+          while first is not None and second is not None:
+              if first.val <= second.val:
+                  tail.next, first = first, first.next
+              else:
+                  tail.next, second = second, second.next
+              tail = tail.next
+          tail.next = None
+          return dummy.next
+  - mistake: recursive-merge
+    expect: error
+    code: |
+      def merge_lists(first, second):
+          if first is None:
+              return second
+          if second is None:
+              return first
+          if first.val <= second.val:
+              first.next = merge_lists(first.next, second)
+              return first
+          second.next = merge_lists(first, second.next)
+          return second

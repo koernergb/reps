@@ -1,0 +1,14 @@
+persona: candidate_needs_hint
+problem: longest-unique-substring
+mode: practice
+expect:
+  result: solved_with_minor_hints
+  weakness_in: [sliding-window.recognition, interview.independence]
+steps:
+  - say: I'm not sure where to start. Maybe check every substring?
+  - hint: 1
+  - hint: 2
+  - say: Okay, I could keep a window of distinct characters and move the left edge when I see a repeat.
+  - advance: IMPLEMENTATION
+  - submit: reference
+  - say: O(n) time and O(min(n, alphabet)) space.

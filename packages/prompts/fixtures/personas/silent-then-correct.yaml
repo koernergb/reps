@@ -1,0 +1,12 @@
+persona: candidate_silent_then_correct
+problem: balanced-delimiters
+mode: practice
+expect:
+  result: solved_independently
+  weakness_in: [interview.communication]
+steps:
+  - advance: APPROACH_DISCUSSION
+  - advance: IMPLEMENTATION
+  - code: reference
+  - submit: reference
+  - advance: COMPLETE

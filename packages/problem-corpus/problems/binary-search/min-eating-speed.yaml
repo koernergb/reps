@@ -1,0 +1,101 @@
+schema_version: 1
+slug: min-eating-speed
+version: 1
+status: development
+title: Minimum Processing Rate
+topic: binary-search
+patterns: [search-on-answer]
+role: transfer
+difficulty: medium
+transfer_group: boundary-search
+prerequisites: [first-at-least]
+related: [first-at-least]
+statement: |
+  There are `piles` of tasks; pile `i` holds `piles[i]` units. Each hour a worker picks one
+  pile and processes up to `rate` units from it (if the pile has fewer, the rest of that hour
+  is idle). Return the smallest integer `rate` that finishes every pile within `hours` hours.
+examples:
+  - input: {piles: [3, 6, 7, 11], hours: 8}
+    output: 4
+constraints:
+  - 1 <= len(piles) <= 10,000
+  - len(piles) <= hours <= 10^9
+  - 1 <= piles[i] <= 10^9
+entrypoint: min_rate
+starter_code: |
+  def min_rate(piles: list[int], hours: int) -> int:
+      pass
+time_complexity: O(n log max(piles))
+space_complexity: O(1)
+capabilities:
+  - {slug: binary-search.recognition, weight: 0.2}
+  - {slug: binary-search.invariant, weight: 0.15}
+  - {slug: binary-search.implementation, weight: 0.1}
+  - {slug: binary-search.boundaries, weight: 0.15}
+  - {slug: binary-search.complexity, weight: 0.1}
+  - {slug: binary-search.transfer, weight: 0.3}
+hints:
+  - If rate r works, does every rate larger than r also work?
+  - The feasibility of a rate is monotone, so you can binary search over rates rather than over the list.
+  - "Search rates in [1, max(piles)]. For a candidate rate, hours needed is the sum of ceil(pile / rate)."
+  - "Find the first feasible rate: if a rate is feasible set right = mid, else left = mid + 1. Use (pile + rate - 1) // rate for ceiling."
+  - "left, right = 1, max(piles); while left < right: mid = (left + right) // 2; if sum((p + mid - 1) // mid for p in piles) <= hours: right = mid else: left = mid + 1; return left."
+key_insight: Feasibility is monotone in the rate, so binary search the answer space [1, max(piles)] for the first rate whose total ceil(pile / rate) fits in the hour budget.
+clarifications:
+  - question: Can the worker split an hour across two piles?
+    answer: No. One pile per hour.
+  - question: Is hours at least the number of piles?
+    answer: Yes, so a rate of max(piles) always works.
+follow_ups:
+  - Why is feasibility monotone?
+  - What other problems can be solved by binary searching the answer?
+common_mistakes:
+  - id: floor-division
+    description: Uses floor instead of ceiling division when counting hours.
+    capability: binary-search.boundaries
+  - id: linear-rate-scan
+    description: Tries every rate from 1 upward.
+    capability: binary-search.transfer
+visible_tests:
+  - {args: [[3, 6, 7, 11], 8], expected: 4}
+  - {args: [[30, 11, 23, 4, 20], 5], expected: 30}
+hidden_tests:
+  - {args: [[30, 11, 23, 4, 20], 6], expected: 23}
+  - {args: [[1], 1], expected: 1}
+  - {args: [[1000000000], 2], expected: 500000000, label: huge pile}
+  - {args: [[312884470], 312884469], expected: 2}
+  - {args: [[5, 5, 5], 15], expected: 1}
+  - {args: [[2, 2], 2], expected: 2}
+reference_solution: |
+  def min_rate(piles, hours):
+      left, right = 1, max(piles)
+      while left < right:
+          middle = (left + right) // 2
+          needed = sum((pile + middle - 1) // middle for pile in piles)
+          if needed <= hours:
+              right = middle
+          else:
+              left = middle + 1
+      return left
+wrong_solutions:
+  - mistake: floor-division
+    expect: wrong_answer
+    code: |
+      def min_rate(piles, hours):
+          left, right = 1, max(piles)
+          while left < right:
+              middle = (left + right) // 2
+              needed = sum(max(1, pile // middle) for pile in piles)
+              if needed <= hours:
+                  right = middle
+              else:
+                  left = middle + 1
+          return left
+  - mistake: linear-rate-scan
+    expect: timeout
+    code: |
+      def min_rate(piles, hours):
+          rate = 1
+          while sum((pile + rate - 1) // rate for pile in piles) > hours:
+              rate += 1
+          return rate

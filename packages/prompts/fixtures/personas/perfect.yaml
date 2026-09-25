@@ -1,0 +1,19 @@
+persona: candidate_perfect
+problem: pair-sum-indices
+mode: practice
+expect:
+  result: solved_independently
+  no_weakness_in: [arrays-hashing.implementation, arrays-hashing.boundaries, arrays-hashing.recognition]
+  final_state: COMPLETE
+steps:
+  - say: Can the same element be used twice?
+  - say: I'd scan once with a hash map from value to index, and for each value look up target minus value among earlier elements.
+  - say: The map stores values I've already passed with their indices, so checking before inserting avoids reusing the current element.
+  - say: It's O(n) time and O(n) space.
+  - say: On the first example, 7 needs 1, which comes next, so we return indices 1 and 2.
+  - advance: IMPLEMENTATION
+  - code: reference
+  - run: true
+  - submit: reference
+  - say: O(n) time and O(n) space since each element is processed once and stored once.
+  - say: With sorted input I'd use two pointers from both ends for O(1) extra space.

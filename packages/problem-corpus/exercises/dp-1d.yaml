@@ -1,0 +1,74 @@
+schema_version: 1
+topic: dp-1d
+exercises:
+  - id: dp-recall-signals
+    capability: dp-1d.recognition
+    type: recall
+    prompt: What signals suggest a 1-D dynamic programming solution?
+    key_points:
+      - ["overlapping", "same subproblem", "repeated", "recompute"]
+      - ["optimal", "minimum", "maximum", "count", "number of ways", "fewest"]
+      - ["prefix", "previous", "smaller", "index", "amount"]
+    reference_answer: An optimum or count over a sequence/amount where the answer for i depends on answers for smaller prefixes or amounts (overlapping subproblems), so you can build it bottom-up.
+    hints:
+      - Does the naive recursion recompute the same arguments many times?
+    estimated_minutes: 1
+  - id: dp-explain-state
+    capability: dp-1d.invariant
+    type: explain
+    prompt: For the non-adjacent maximum sum problem, define the DP state precisely and give the recurrence.
+    key_points:
+      - ["first i", "prefix", "up to i", "through i", "elements 0"]
+      - ["max", "maximum", "best"]
+      - ["skip", "take", "previous", "i - 2", "i-2", "i - 1", "i-1"]
+    reference_answer: best[i] is the maximum sum using only elements 0..i; best[i] = max(best[i - 1], best[i - 2] + values[i]) (skip i, or take i and the best up to i - 2).
+    misconception: Greedily comparing even-index and odd-index sums solves it.
+    confirmation_question: What is the answer for [2, 1, 1, 2], and which elements does it use?
+    hints:
+      - What are the two choices for the last element?
+    estimated_minutes: 2.5
+  - id: dp-trace-coins
+    capability: dp-1d.implementation
+    type: trace
+    prompt: "For coins [1, 3, 4], what is fewest[6] in the bottom-up table (the fewest coins for amount 6)?"
+    accepted_answers: ["2"]
+    key_points:
+      - ["2"]
+    reference_answer: "2 (3 + 3). Greedy would give 3 (4 + 1 + 1)."
+    hints:
+      - fewest[6] = 1 + min(fewest[5], fewest[3], fewest[2]).
+    estimated_minutes: 2.5
+  - id: dp-debug-greedy
+    capability: dp-1d.boundaries
+    type: debug
+    problem: coin-change
+    from_mistake: greedy-largest
+    prompt: This coin-change solution is greedy and sometimes wrong. Replace it with a correct approach.
+    reference_answer: Use bottom-up DP, fewest[a] = 1 + min(fewest[a - c]) over coins c <= a, returning -1 when unreachable.
+    misconception: Taking the largest coin first is always optimal.
+    hints:
+      - Try coins [1, 3, 4] with amount 6.
+    estimated_minutes: 6
+  - id: dp-debug-alternating
+    capability: dp-1d.transfer
+    type: debug
+    problem: house-robber
+    from_mistake: alternating-sums
+    prompt: This solution compares even and odd positions. Fix it with a real recurrence.
+    reference_answer: Track the best sum when taking vs skipping each element, take, skip = skip + v, max(take, skip).
+    misconception: The best non-adjacent subset is always every other element.
+    hints:
+      - Try [2, 1, 1, 2].
+    estimated_minutes: 5
+  - id: dp-complexity
+    capability: dp-1d.complexity
+    type: explain
+    prompt: Why is naive recursion for climbing stairs exponential, and what does memoization change?
+    key_points:
+      - ["recompute", "repeated", "same", "overlapping", "again"]
+      - ["exponential", "2^n", "fibonacci"]
+      - ["o(n)", "linear", "once", "each state"]
+    reference_answer: The recursion tree recomputes the same subproblems, growing roughly like Fibonacci (exponential). Memoization or bottom-up iteration computes each state once, giving O(n).
+    hints:
+      - How many times is ways(n - 3) computed?
+    estimated_minutes: 1.5

@@ -1,0 +1,90 @@
+schema_version: 1
+slug: kth-largest
+version: 1
+status: development
+title: Kth Largest Value
+topic: heap
+patterns: [bounded-heap]
+role: canonical
+difficulty: medium
+transfer_group: bounded-heap
+prerequisites: []
+related: [top-k-frequent]
+statement: |
+  Return the `k`-th largest value in `nums` (by sorted position, so duplicates count
+  separately). Aim for better than sorting the whole list when `k` is small.
+examples:
+  - input: {nums: [3, 2, 1, 5, 6, 4], k: 2}
+    output: 5
+constraints:
+  - 1 <= k <= len(nums) <= 100,000
+  - -10^4 <= nums[i] <= 10^4
+entrypoint: kth_largest
+starter_code: |
+  def kth_largest(nums: list[int], k: int) -> int:
+      pass
+time_complexity: O(n log k)
+space_complexity: O(k)
+capabilities:
+  - {slug: heap.recognition, weight: 0.25}
+  - {slug: heap.invariant, weight: 0.3}
+  - {slug: heap.implementation, weight: 0.2}
+  - {slug: heap.boundaries, weight: 0.15}
+  - {slug: heap.complexity, weight: 0.1}
+hints:
+  - Sorting works. Do you really need the order of all n values?
+  - If you kept only the k largest values seen so far, which of them is the answer?
+  - Keep a min-heap of size k. Its smallest element is the k-th largest seen so far.
+  - Push each value; if the heap grows beyond k, pop the smallest. At the end return heap[0].
+  - "heap = []; for x in nums: heapq.heappush(heap, x); if len(heap) > k: heapq.heappop(heap); return heap[0]."
+key_insight: A min-heap holding the k largest values seen so far has the k-th largest at its root, giving O(n log k).
+clarifications:
+  - question: Do duplicates count separately?
+    answer: Yes. In [5, 5, 4] the 2nd largest is 5.
+follow_ups:
+  - What is the expected cost of quickselect, and its worst case?
+  - How would you support a stream of values with repeated queries?
+common_mistakes:
+  - id: dedupes-values
+    description: Removes duplicates before selecting.
+    capability: heap.boundaries
+  - id: wrong-heap-end
+    description: Returns the largest element in the heap rather than its root.
+    capability: heap.invariant
+visible_tests:
+  - {args: [[3, 2, 1, 5, 6, 4], 2], expected: 5}
+  - {args: [[3, 2, 3, 1, 2, 4, 5, 5, 6], 4], expected: 4}
+hidden_tests:
+  - {args: [[1], 1], expected: 1}
+  - {args: [[2, 1], 2], expected: 1}
+  - {args: [[5, 5, 4], 2], expected: 5, label: duplicates}
+  - {args: [[-1, -5, -3], 1], expected: -1}
+reference_solution: |
+  import heapq
+
+  def kth_largest(nums, k):
+      heap = []
+      for value in nums:
+          heapq.heappush(heap, value)
+          if len(heap) > k:
+              heapq.heappop(heap)
+      return heap[0]
+wrong_solutions:
+  - mistake: dedupes-values
+    expect: wrong_answer
+    code: |
+      def kth_largest(nums, k):
+          values = sorted(set(nums), reverse=True)
+          return values[min(k, len(values)) - 1]
+  - mistake: wrong-heap-end
+    expect: wrong_answer
+    code: |
+      import heapq
+
+      def kth_largest(nums, k):
+          heap = []
+          for value in nums:
+              heapq.heappush(heap, value)
+              if len(heap) > k:
+                  heapq.heappop(heap)
+          return max(heap)

@@ -1,0 +1,27 @@
+{
+  "name": "reps",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.20.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @reps/web --filter @reps/api dev",
+    "dev:web": "pnpm --filter @reps/web dev",
+    "dev:api": "pnpm --filter @reps/api dev",
+    "build": "pnpm --filter @reps/web build",
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "format": "pnpm --filter @reps/web format && pnpm --filter @reps/api format",
+    "lint": "pnpm --filter @reps/web lint && pnpm --filter @reps/api lint",
+    "typecheck": "pnpm --filter @reps/web typecheck && pnpm --filter @reps/api typecheck",
+    "test": "pnpm --filter @reps/web test && pnpm --filter @reps/api test",
+    "db:migrate": "pnpm --filter @reps/api db:migrate",
+    "db:downgrade": "pnpm --filter @reps/api db:downgrade",
+    "db:seed": "pnpm --filter @reps/api db:seed",
+    "corpus:validate": "pnpm --filter @reps/api corpus:validate",
+    "corpus:report": "pnpm --filter @reps/api corpus:report",
+    "dev:worker": "pnpm --filter @reps/api dev:worker",
+    "test:sandbox": "pnpm --filter @reps/api test:sandbox"
+  }
+}

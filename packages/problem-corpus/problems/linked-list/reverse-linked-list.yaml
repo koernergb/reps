@@ -1,0 +1,103 @@
+schema_version: 1
+slug: reverse-linked-list
+version: 1
+status: development
+title: Reverse a Linked List
+topic: linked-list
+patterns: [pointer-rewiring]
+role: canonical
+difficulty: easy
+transfer_group: pointer-rewiring
+prerequisites: []
+related: [merge-two-sorted-lists]
+statement: |
+  Given the head of a singly linked list, reverse the list in place and return the new head.
+  Nodes are `ListNode` objects with fields `val` and `next` (the class is predefined).
+  Tests show lists as Python lists of values.
+examples:
+  - input: {head: [1, 2, 3, 4, 5]}
+    output: [5, 4, 3, 2, 1]
+constraints:
+  - 0 <= number of nodes <= 30,000
+  - Use O(1) extra space.
+entrypoint: reverse_list
+input_adapters: [linked_list]
+output_adapter: linked_list
+starter_code: |
+  # class ListNode:
+  #     def __init__(self, val=0, next=None):
+  #         self.val = val
+  #         self.next = next
+
+  def reverse_list(head: "ListNode | None") -> "ListNode | None":
+      pass
+time_complexity: O(n)
+space_complexity: O(1)
+capabilities:
+  - {slug: linked-list.recognition, weight: 0.15}
+  - {slug: linked-list.invariant, weight: 0.35}
+  - {slug: linked-list.implementation, weight: 0.3}
+  - {slug: linked-list.boundaries, weight: 0.1}
+  - {slug: linked-list.complexity, weight: 0.1}
+hints:
+  - When you redirect a node's next pointer, what do you lose access to?
+  - You need three references, the node before, the current node, and the node after.
+  - "Save current.next first, point current.next at the previous node, then advance both previous and current."
+  - When current becomes None, previous is the new head.
+  - "prev = None; while head: nxt = head.next; head.next = prev; prev = head; head = nxt; return prev."
+key_insight: Walk the list once, saving next before pointing each node back at its predecessor; the last node visited becomes the head.
+clarifications:
+  - question: Can the list be empty?
+    answer: Yes. Return None.
+  - question: Can I create new nodes?
+    answer: Reverse in place with O(1) extra space.
+follow_ups:
+  - How would you reverse only nodes m through n?
+  - What are the tradeoffs of a recursive version in Python?
+common_mistakes:
+  - id: loses-remainder
+    description: Rewires next before saving it and loses the rest of the list.
+    capability: linked-list.invariant
+  - id: deep-recursion
+    description: Reverses recursively and exceeds Python's recursion limit on long lists.
+    capability: linked-list.complexity
+visible_tests:
+  - {args: [[1, 2, 3, 4, 5]], expected: [5, 4, 3, 2, 1]}
+  - {args: [[1, 2]], expected: [2, 1]}
+hidden_tests:
+  - {args: [[]], expected: []}
+  - {args: [[1]], expected: [1]}
+  - {args: [[1, 2, 3]], expected: [3, 2, 1]}
+  - {args: [[7, 7, 8]], expected: [8, 7, 7]}
+  - {args_expr: "[list(range(30000))]", expected_expr: "list(range(29999, -1, -1))", label: long list}
+reference_solution: |
+  def reverse_list(head):
+      previous = None
+      while head is not None:
+          following = head.next
+          head.next = previous
+          previous = head
+          head = following
+      return previous
+wrong_solutions:
+  - mistake: loses-remainder
+    expect: wrong_answer
+    code: |
+      def reverse_list(head):
+          previous = None
+          current = head
+          while current is not None:
+              current.next = previous
+              previous = current
+              current = current.next
+          return previous
+  - mistake: deep-recursion
+    expect: error
+    code: |
+      def reverse_list(head):
+          if head is None or head.next is None:
+              return head
+          new_head = reverse_list(head.next)
+          head.next.next = head
+          head.next = None
+          return new_head

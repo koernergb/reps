@@ -1,0 +1,66 @@
+schema_version: 1
+topic: two-pointers
+exercises:
+  - id: tp-recall-when
+    capability: two-pointers.recognition
+    type: recall
+    prompt: What property of the input usually makes converging two pointers valid?
+    key_points:
+      - ["sorted", "order", "monotonic", "symmetric", "palindrome"]
+      - ["discard", "eliminate", "rule out", "skip", "cannot be"]
+    reference_answer: Sorted (or symmetric) input, where comparing the two ends lets you discard one end because it cannot be part of any answer.
+    hints:
+      - Think about pair-sum on sorted input.
+      - What can you conclude when the sum of the two ends is too small?
+    estimated_minutes: 1
+  - id: tp-explain-no-skip
+    capability: two-pointers.invariant
+    type: explain
+    prompt: In sorted pair-sum, when nums[left] + nums[right] < target you move left forward. Why can this never skip the answer?
+    key_points:
+      - ["largest", "biggest", "maximum", "right is the largest", "largest remaining"]
+      - ["too small", "still less", "cannot reach", "smaller than target", "any other"]
+    reference_answer: nums[right] is the largest remaining value, so if even it cannot bring nums[left] up to the target, nums[left] pairs with nothing remaining and can be discarded.
+    misconception: Moving a pointer is a heuristic that might skip valid pairs.
+    confirmation_question: In [1, 3, 4, 6, 9] with target 10, after 1 + 9 = 10 is found, suppose target were 12; which element is discarded first and why?
+    hints:
+      - What is the largest possible partner for nums[left]?
+      - If the largest partner is not enough, is any partner enough?
+    estimated_minutes: 2
+  - id: tp-trace-pair-sorted
+    capability: two-pointers.implementation
+    type: trace
+    prompt: "Run converging pointers on nums = [1, 3, 4, 6, 9] with target 7. List the (left, right) index pairs examined, in order, as 0,4 0,3 ..."
+    accepted_answers: ["0,4 0,3", "(0,4) (0,3)", "0,4 0,3 (found)"]
+    key_points:
+      - ["0,4"]
+      - ["0,3"]
+    reference_answer: "0,4 (1+9=10 too big) then 0,3 (1+6=7 found)."
+    hints:
+      - Start at the two ends.
+      - 1 + 9 is too big; which pointer moves?
+    estimated_minutes: 2
+  - id: tp-debug-three-sum-dupes
+    capability: two-pointers.boundaries
+    type: debug
+    problem: three-sum
+    from_mistake: duplicate-triplets
+    prompt: This three-sum solution returns duplicate triplets. Fix it.
+    reference_answer: Skip equal values for the fixed index and advance the low pointer past equal values after recording a triplet.
+    misconception: Sorting alone prevents duplicate results.
+    hints:
+      - What happens when the fixed value repeats?
+      - After recording a triplet, what if nums[low] equals the previous value?
+    estimated_minutes: 5
+  - id: tp-complexity-three-sum
+    capability: two-pointers.complexity
+    type: explain
+    prompt: Why is sort-then-two-pointers three-sum O(n^2) and not O(n^2 log n)?
+    key_points:
+      - ["sort once", "sorting once", "o(n log n) once", "sort happens once", "dominated"]
+      - ["linear", "o(n) per", "each fixed", "inner", "sweep"]
+    reference_answer: The O(n log n) sort happens once; then for each of n fixed values the two-pointer sweep is O(n), giving O(n^2) total, which dominates the sort.
+    hints:
+      - How many times do you sort?
+      - What does each two-pointer sweep cost?
+    estimated_minutes: 1.5

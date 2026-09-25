@@ -1,0 +1,175 @@
+schema_version: 1
+slug: min-stack
+version: 1
+status: development
+title: Stack With Constant-Time Minimum
+topic: stack
+patterns: [auxiliary-stack, class-design]
+role: canonical
+difficulty: medium
+transfer_group: auxiliary-stack
+prerequisites: [balanced-delimiters]
+related: [daily-temperatures]
+statement: |
+  Implement a class `MinStack` supporting these operations, each in O(1) time:
+
+  - `push(value)` adds a value to the top.
+  - `pop()` removes the top value (the stack is guaranteed non-empty).
+  - `top()` returns the top value.
+  - `get_min()` returns the smallest value currently in the stack.
+
+  Tests call the constructor and then a sequence of operations; methods that return nothing
+  should return `None`.
+examples:
+  - input: {operations: ["MinStack", "push", "push", "get_min", "pop", "get_min"], arguments: [[], [3], [1], [], [], []]}
+    output: [null, null, null, 1, null, 3]
+constraints:
+  - Up to 50,000 operations.
+  - pop, top, and get_min are only called on a non-empty stack.
+kind: class
+entrypoint: MinStack
+starter_code: |
+  class MinStack:
+      def __init__(self) -> None:
+          pass
+
+      def push(self, value: int) -> None:
+          pass
+
+      def pop(self) -> None:
+          pass
+
+      def top(self) -> int:
+          pass
+
+      def get_min(self) -> int:
+          pass
+time_complexity: O(1) per operation
+space_complexity: O(n)
+capabilities:
+  - {slug: stack.recognition, weight: 0.15}
+  - {slug: stack.invariant, weight: 0.35}
+  - {slug: stack.implementation, weight: 0.25}
+  - {slug: stack.boundaries, weight: 0.15}
+  - {slug: stack.complexity, weight: 0.1}
+hints:
+  - When the current minimum is popped, what information do you need to know the new minimum?
+  - The minimum only depends on what is below the top. Could you remember the minimum at every height?
+  - Keep a second stack whose top is always the minimum of the main stack.
+  - Push min(value, current minimum) onto the auxiliary stack on every push, and pop both stacks together.
+  - "self.items.append(v); self.mins.append(v if not self.mins else min(v, self.mins[-1])); pop both; get_min returns self.mins[-1]."
+key_insight: Store, alongside each element, the minimum of the stack at that height; popping restores the previous minimum automatically.
+clarifications:
+  - question: Can values repeat?
+    answer: Yes, including repeats of the minimum.
+  - question: Will pop or get_min be called on an empty stack?
+    answer: No.
+follow_ups:
+  - Can you use less extra space when many values are pushed in increasing order?
+  - How would you also support get_max?
+common_mistakes:
+  - id: single-min-variable
+    description: Tracks the minimum in one variable and never restores it after popping.
+    capability: stack.invariant
+  - id: linear-get-min
+    description: Scans the whole stack on every get_min call.
+    capability: stack.complexity
+  - id: strict-aux-push
+    description: Pushes onto the minimum stack only for strictly smaller values, breaking repeated minima.
+    capability: stack.boundaries
+visible_tests:
+  - args: [["MinStack", "push", "push", "push", "get_min", "pop", "top", "get_min"], [[], [-2], [0], [-3], [], [], [], []]]
+    expected: [null, null, null, null, -3, null, 0, -2]
+hidden_tests:
+  - args: [["MinStack", "push", "push", "pop", "get_min"], [[], [2], [1], [], []]]
+    expected: [null, null, null, null, 2]
+    label: min restored after pop
+  - args: [["MinStack", "push", "push", "push", "pop", "get_min"], [[], [1], [1], [2], [], []]]
+    expected: [null, null, null, null, null, 1]
+  - args: [["MinStack", "push", "push", "pop", "get_min", "top"], [[], [1], [1], [], [], []]]
+    expected: [null, null, null, null, 1, 1]
+    label: repeated minimum
+  - args_expr: "[['MinStack'] + ['push'] * 20000 + ['get_min'] * 20000, [[]] + [[i] for i in range(20000, 0, -1)] + [[]] * 20000]"
+    expected_expr: "[None] * 20001 + [1] * 20000"
+    label: many operations
+reference_solution: |
+  class MinStack:
+      def __init__(self):
+          self.items = []
+          self.mins = []
+
+      def push(self, value):
+          self.items.append(value)
+          self.mins.append(value if not self.mins else min(value, self.mins[-1]))
+
+      def pop(self):
+          self.items.pop()
+          self.mins.pop()
+
+      def top(self):
+          return self.items[-1]
+
+      def get_min(self):
+          return self.mins[-1]
+wrong_solutions:
+  - mistake: single-min-variable
+    expect: wrong_answer
+    code: |
+      class MinStack:
+          def __init__(self):
+              self.items = []
+              self.minimum = None
+
+          def push(self, value):
+              self.items.append(value)
+              if self.minimum is None or value < self.minimum:
+                  self.minimum = value
+
+          def pop(self):
+              self.items.pop()
+
+          def top(self):
+              return self.items[-1]
+
+          def get_min(self):
+              return self.minimum
+  - mistake: linear-get-min
+    expect: timeout
+    code: |
+      class MinStack:
+          def __init__(self):
+              self.items = []
+
+          def push(self, value):
+              self.items.append(value)
+
+          def pop(self):
+              self.items.pop()
+
+          def top(self):
+              return self.items[-1]
+
+          def get_min(self):
+              return min(self.items)
+  - mistake: strict-aux-push
+    expect: error
+    code: |
+      class MinStack:
+          def __init__(self):
+              self.items = []
+              self.mins = []
+
+          def push(self, value):
+              self.items.append(value)
+              if not self.mins or value < self.mins[-1]:
+                  self.mins.append(value)
+
+          def pop(self):
+              if self.items.pop() == self.mins[-1]:
+                  self.mins.pop()
+
+          def top(self):
+              return self.items[-1]
+
+          def get_min(self):
+              return self.mins[-1]

@@ -1,0 +1,95 @@
+schema_version: 1
+slug: valid-palindrome
+version: 1
+status: development
+title: Alphanumeric Palindrome
+topic: two-pointers
+patterns: [converging-pointers]
+role: recognition
+difficulty: easy
+transfer_group: converging-pointers
+prerequisites: []
+related: [pair-sum-sorted]
+statement: |
+  Return `True` if `text` reads the same forward and backward after ignoring every
+  character that is not a letter or digit and ignoring letter case. Otherwise return `False`.
+  Use O(1) extra space.
+examples:
+  - input: {text: "A man, a plan, a canal: Panama"}
+    output: true
+constraints:
+  - 0 <= len(text) <= 200,000
+  - text contains printable ASCII characters.
+entrypoint: is_palindrome
+starter_code: |
+  def is_palindrome(text: str) -> bool:
+      pass
+time_complexity: O(n)
+space_complexity: O(1)
+capabilities:
+  - {slug: two-pointers.recognition, weight: 0.3}
+  - {slug: two-pointers.invariant, weight: 0.2}
+  - {slug: two-pointers.implementation, weight: 0.2}
+  - {slug: two-pointers.boundaries, weight: 0.2}
+  - {slug: two-pointers.complexity, weight: 0.1}
+hints:
+  - Instead of building a cleaned copy, which two characters must match first?
+  - Put one index at each end. What should happen when one of them points at punctuation?
+  - Skip non-alphanumeric characters from each side independently before comparing.
+  - "Loop while left < right: advance left past non-alphanumerics, retreat right likewise, compare lowercased characters, then move both inward."
+  - "while left < right: skip with isalnum(); if text[left].lower() != text[right].lower(): return False; left += 1; right -= 1; return True."
+key_insight: Compare characters from both ends inward, skipping non-alphanumerics on each side, so no cleaned copy is needed.
+clarifications:
+  - question: Does an empty string count as a palindrome?
+    answer: Yes. Return True.
+  - question: Are digits compared too?
+    answer: Yes. Letters and digits both count; compare letters case-insensitively.
+follow_ups:
+  - What if you may delete at most one character?
+  - How does the approach change for Unicode text?
+common_mistakes:
+  - id: skip-overrun
+    description: Skips characters without checking left < right and indexes past the other pointer.
+    capability: two-pointers.boundaries
+  - id: case-sensitive
+    description: Compares letters without normalizing case.
+    capability: two-pointers.implementation
+  - id: ignores-digits
+    description: Filters with isalpha and drops digits.
+    capability: two-pointers.boundaries
+visible_tests:
+  - {args: ["A man, a plan, a canal: Panama"], expected: true}
+  - {args: ["race a car"], expected: false}
+hidden_tests:
+  - {args: [""], expected: true}
+  - {args: [".,!"], expected: true}
+  - {args: ["0P"], expected: false, label: digit versus letter}
+  - {args: ["ab1ba"], expected: true}
+  - {args: ["Aa"], expected: true}
+  - {args: ["1a2"], expected: false}
+reference_solution: |
+  def is_palindrome(text):
+      left, right = 0, len(text) - 1
+      while left < right:
+          while left < right and not text[left].isalnum():
+              left += 1
+          while left < right and not text[right].isalnum():
+              right -= 1
+          if text[left].lower() != text[right].lower():
+              return False
+          left += 1
+          right -= 1
+      return True
+wrong_solutions:
+  - mistake: case-sensitive
+    expect: wrong_answer
+    code: |
+      def is_palindrome(text):
+          cleaned = [c for c in text if c.isalnum()]
+          return cleaned == cleaned[::-1]
+  - mistake: ignores-digits
+    expect: wrong_answer
+    code: |
+      def is_palindrome(text):
+          cleaned = [c.lower() for c in text if c.isalpha()]
+          return cleaned == cleaned[::-1]

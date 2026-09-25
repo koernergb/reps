@@ -1,0 +1,347 @@
+# Capability taxonomy. Slugs are stable identifiers referenced by problems, exercises,
+# learner state, and stored evidence. Never rename a slug; retire and replace it instead.
+schema_version: 1
+topics:
+- slug: arrays-hashing
+  name: Arrays & Hashing
+- slug: two-pointers
+  name: Two Pointers
+- slug: sliding-window
+  name: Sliding Window
+- slug: stack
+  name: Stack
+- slug: binary-search
+  name: Binary Search
+- slug: linked-list
+  name: Linked List
+- slug: trees
+  name: Trees
+- slug: heap
+  name: Heap
+- slug: graphs
+  name: Graphs
+- slug: dp-1d
+  name: 1-D Dynamic Programming
+- slug: interview
+  name: Interview skills
+capabilities:
+- slug: arrays-hashing.recognition
+  topic: arrays-hashing
+  name: Recognize lookup-table opportunities
+  description: Notice when indexing previously seen values, counts, or keys removes a nested scan.
+  type: recognition
+- slug: arrays-hashing.invariant
+  topic: arrays-hashing
+  name: State what the table represents
+  description: Explain exactly what the hash map or set contains at each step and why that is sufficient.
+  type: reasoning
+- slug: arrays-hashing.implementation
+  topic: arrays-hashing
+  name: Implement single-pass hashing
+  description: Insert and query in an order that avoids self-matches, stale entries, and double counting.
+  type: implementation
+- slug: arrays-hashing.boundaries
+  topic: arrays-hashing
+  name: Handle hashing edge cases
+  description: Handle duplicates, empty input, negative values, and zero-valued keys correctly.
+  type: debugging
+- slug: arrays-hashing.complexity
+  topic: arrays-hashing
+  name: Analyze hashing tradeoffs
+  description: Explain average O(1) lookups, the extra space cost, and when sorting is an alternative.
+  type: complexity
+- slug: arrays-hashing.transfer
+  topic: arrays-hashing
+  name: Transfer hashing to new problems
+  description: Apply canonical keys, prefix sums, or complement lookup to unfamiliar prompts.
+  type: transfer
+- slug: two-pointers.recognition
+  topic: two-pointers
+  name: Recognize converging pointers
+  description: Notice when sorted order or symmetry lets two indices discard candidates.
+  type: recognition
+- slug: two-pointers.invariant
+  topic: two-pointers
+  name: Justify pointer moves
+  description: Explain why moving one pointer can never skip a valid answer.
+  type: reasoning
+- slug: two-pointers.implementation
+  topic: two-pointers
+  name: Implement pointer loops
+  description: Write termination conditions and pointer updates that make progress every iteration.
+  type: implementation
+- slug: two-pointers.boundaries
+  topic: two-pointers
+  name: Handle pointer edge cases
+  description: Handle duplicates, equal pointers, empty input, and skipped characters.
+  type: debugging
+- slug: two-pointers.complexity
+  topic: two-pointers
+  name: Analyze two-pointer cost
+  description: Explain linear passes and the cost of any required sort.
+  type: complexity
+- slug: two-pointers.transfer
+  topic: two-pointers
+  name: Transfer two pointers
+  description: Adapt converging pointers to k-sum, partitioning, and area problems.
+  type: transfer
+- slug: sliding-window.recognition
+  topic: sliding-window
+  name: Recognize sliding windows
+  description: Notice contiguous-range questions where a window can grow and shrink monotonically.
+  type: recognition
+- slug: sliding-window.invariant
+  topic: sliding-window
+  name: Maintain the window invariant
+  description: State what must remain true about the current window and restore it after each step.
+  type: reasoning
+- slug: sliding-window.implementation
+  topic: sliding-window
+  name: Implement window updates
+  description: Update counts and left/right boundaries in the correct order.
+  type: implementation
+- slug: sliding-window.boundaries
+  topic: sliding-window
+  name: Handle window boundaries
+  description: Compute lengths, shrink conditions, and empty/short inputs without off-by-one errors.
+  type: debugging
+- slug: sliding-window.complexity
+  topic: sliding-window
+  name: Analyze window cost
+  description: Explain why each index enters and leaves the window at most once.
+  type: complexity
+- slug: sliding-window.transfer
+  topic: sliding-window
+  name: Transfer sliding windows
+  description: Apply fixed and variable windows to unfamiliar constraints such as budgets and replacements.
+  type: transfer
+- slug: stack.recognition
+  topic: stack
+  name: Recognize stack problems
+  description: Notice nested structure, most-recent matching, or next-greater relationships.
+  type: recognition
+- slug: stack.invariant
+  topic: stack
+  name: State the stack invariant
+  description: Explain what the stack holds (unmatched openers, monotone candidates, running minima).
+  type: reasoning
+- slug: stack.implementation
+  topic: stack
+  name: Implement stack operations
+  description: Push, pop, and peek in the right order without losing information.
+  type: implementation
+- slug: stack.boundaries
+  topic: stack
+  name: Handle stack edge cases
+  description: Handle empty stacks, leftovers after the scan, and operand order.
+  type: debugging
+- slug: stack.complexity
+  topic: stack
+  name: Analyze stack cost
+  description: Explain amortized O(1) push/pop and why each element is popped at most once.
+  type: complexity
+- slug: stack.transfer
+  topic: stack
+  name: Transfer stack patterns
+  description: Apply monotonic and auxiliary stacks to unfamiliar problems.
+  type: transfer
+- slug: binary-search.recognition
+  topic: binary-search
+  name: Recognize binary search
+  description: Notice sorted order or a monotone predicate over an answer space.
+  type: recognition
+- slug: binary-search.invariant
+  topic: binary-search
+  name: State the search invariant
+  description: Explain what the boundaries guarantee about where the answer can be.
+  type: reasoning
+- slug: binary-search.implementation
+  topic: binary-search
+  name: Implement boundary updates
+  description: Move inclusive or half-open boundaries without losing the target or looping forever.
+  type: implementation
+- slug: binary-search.boundaries
+  topic: binary-search
+  name: Handle search edge cases
+  description: Handle empty input, single elements, absent targets, and first/last positions.
+  type: debugging
+- slug: binary-search.complexity
+  topic: binary-search
+  name: Explain logarithmic complexity
+  description: Explain why halving the search space yields O(log n) steps.
+  type: complexity
+- slug: binary-search.transfer
+  topic: binary-search
+  name: Transfer binary search
+  description: Search on an answer space or rotated/partially sorted input.
+  type: transfer
+- slug: linked-list.recognition
+  topic: linked-list
+  name: Recognize pointer techniques
+  description: Notice when dummy heads, fast/slow pointers, or in-place rewiring apply.
+  type: recognition
+- slug: linked-list.invariant
+  topic: linked-list
+  name: Track list pointers
+  description: Explain what prev/current/next (or gap pointers) reference after each step.
+  type: reasoning
+- slug: linked-list.implementation
+  topic: linked-list
+  name: Implement pointer rewiring
+  description: Rewire nodes without losing the remainder of the list.
+  type: implementation
+- slug: linked-list.boundaries
+  topic: linked-list
+  name: Handle list edge cases
+  description: Handle empty lists, single nodes, and removing the head.
+  type: debugging
+- slug: linked-list.complexity
+  topic: linked-list
+  name: Analyze list operations
+  description: Explain linear traversal and O(1) extra space for in-place rewiring.
+  type: complexity
+- slug: linked-list.transfer
+  topic: linked-list
+  name: Transfer list techniques
+  description: Apply rewiring and gap pointers to unfamiliar list problems.
+  type: transfer
+- slug: trees.recognition
+  topic: trees
+  name: Recognize tree traversals
+  description: Choose recursive DFS, BFS by level, or bounded recursion for a tree question.
+  type: recognition
+- slug: trees.invariant
+  topic: trees
+  name: State the recursive contract
+  description: Explain what each recursive call returns and the bounds or state it relies on.
+  type: reasoning
+- slug: trees.implementation
+  topic: trees
+  name: Implement tree recursion
+  description: Write base cases and combine child results correctly.
+  type: implementation
+- slug: trees.boundaries
+  topic: trees
+  name: Handle tree edge cases
+  description: Handle empty trees, single nodes, skewed trees, and duplicate-like values.
+  type: debugging
+- slug: trees.complexity
+  topic: trees
+  name: Analyze tree algorithms
+  description: Explain O(n) visits and O(h) recursion or O(w) queue space.
+  type: complexity
+- slug: trees.transfer
+  topic: trees
+  name: Transfer tree reasoning
+  description: Adapt height, bounds, and level traversal to new tree questions.
+  type: transfer
+- slug: heap.recognition
+  topic: heap
+  name: Recognize heap problems
+  description: Notice repeated min/max extraction or top-k selection.
+  type: recognition
+- slug: heap.invariant
+  topic: heap
+  name: State the heap invariant
+  description: Explain what a bounded heap of size k holds and why its root is the answer.
+  type: reasoning
+- slug: heap.implementation
+  topic: heap
+  name: Implement heap operations
+  description: Use heapq push/pop/replace correctly, including max-heap negation.
+  type: implementation
+- slug: heap.boundaries
+  topic: heap
+  name: Handle heap edge cases
+  description: Handle ties, k equal to n, and empty heaps.
+  type: debugging
+- slug: heap.complexity
+  topic: heap
+  name: Analyze heap cost
+  description: Explain O(n log k) versus sorting and heap construction cost.
+  type: complexity
+- slug: heap.transfer
+  topic: heap
+  name: Transfer heap patterns
+  description: Apply bounded heaps and simulation heaps to new selection problems.
+  type: transfer
+- slug: graphs.recognition
+  topic: graphs
+  name: Recognize graph structure
+  description: Model grids, dependencies, or relationships as graphs and pick BFS/DFS/topological order.
+  type: recognition
+- slug: graphs.invariant
+  topic: graphs
+  name: Maintain visited state
+  description: Explain when nodes are marked visited and what the queue/stack represents.
+  type: reasoning
+- slug: graphs.implementation
+  topic: graphs
+  name: Implement traversals
+  description: Write BFS/DFS or Kahn's algorithm with correct neighbor iteration.
+  type: implementation
+- slug: graphs.boundaries
+  topic: graphs
+  name: Handle graph edge cases
+  description: Handle empty grids, disconnected components, cycles, and bounds checks.
+  type: debugging
+- slug: graphs.complexity
+  topic: graphs
+  name: Analyze graph algorithms
+  description: Explain O(V + E) or O(rows × cols) cost and memory.
+  type: complexity
+- slug: graphs.transfer
+  topic: graphs
+  name: Transfer graph reasoning
+  description: Apply multi-source BFS, components, and cycle detection to unfamiliar prompts.
+  type: transfer
+- slug: dp-1d.recognition
+  topic: dp-1d
+  name: Recognize 1-D DP
+  description: Notice overlapping subproblems over a prefix, amount, or index.
+  type: recognition
+- slug: dp-1d.invariant
+  topic: dp-1d
+  name: Define the DP state
+  description: State exactly what dp[i] means and the recurrence that builds it.
+  type: reasoning
+- slug: dp-1d.implementation
+  topic: dp-1d
+  name: Implement the recurrence
+  description: Write base cases, iteration order, and optional space compression.
+  type: implementation
+- slug: dp-1d.boundaries
+  topic: dp-1d
+  name: Handle DP edge cases
+  description: Handle zero/one-element inputs, unreachable states, and initialization values.
+  type: debugging
+- slug: dp-1d.complexity
+  topic: dp-1d
+  name: Analyze DP cost
+  description: Explain states × transitions time and possible space reduction.
+  type: complexity
+- slug: dp-1d.transfer
+  topic: dp-1d
+  name: Transfer DP reasoning
+  description: Adapt take/skip and unbounded-choice recurrences to unfamiliar problems.
+  type: transfer
+- slug: interview.clarification
+  topic: interview
+  name: Clarify requirements
+  description: Ask about input ranges, edge cases, and output format before committing to an approach.
+  type: communication
+- slug: interview.communication
+  topic: interview
+  name: Explain reasoning aloud
+  description: Narrate the approach, tradeoffs, and code so an interviewer can follow the reasoning.
+  type: communication
+- slug: interview.testing
+  topic: interview
+  name: Test your own code
+  description: Choose representative and edge-case tests and trace code before relying on execution.
+  type: debugging
+- slug: interview.independence
+  topic: interview
+  name: Solve independently
+  description: Reach a working approach and implementation without hints or solution exposure.
+  type: independence

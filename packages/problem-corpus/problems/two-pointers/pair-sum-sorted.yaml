@@ -1,0 +1,102 @@
+schema_version: 1
+slug: pair-sum-sorted
+version: 1
+status: development
+title: Pair Sum in Sorted Input
+topic: two-pointers
+patterns: [converging-pointers]
+role: canonical
+difficulty: easy
+transfer_group: converging-pointers
+prerequisites: [pair-sum-indices]
+related: [three-sum, pair-sum-indices]
+statement: |
+  `nums` is sorted in non-decreasing order. Return the indices `[i, j]` (with `i < j`) of the
+  two elements that add up to `target`. Exactly one solution exists. Use O(1) extra space.
+examples:
+  - input: {nums: [1, 3, 4, 6, 9], target: 10}
+    output: [0, 4]
+constraints:
+  - 2 <= len(nums) <= 100,000
+  - nums is sorted in non-decreasing order.
+  - Exactly one pair of distinct indices sums to target.
+entrypoint: pair_sum_sorted
+starter_code: |
+  def pair_sum_sorted(nums: list[int], target: int) -> list[int]:
+      pass
+time_complexity: O(n)
+space_complexity: O(1)
+capabilities:
+  - {slug: two-pointers.recognition, weight: 0.3}
+  - {slug: two-pointers.invariant, weight: 0.3}
+  - {slug: two-pointers.implementation, weight: 0.2}
+  - {slug: two-pointers.boundaries, weight: 0.1}
+  - {slug: two-pointers.complexity, weight: 0.1}
+hints:
+  - The input is sorted. What does that let you conclude when a candidate sum is too small?
+  - Start with the smallest and largest values. If their sum is too big, can the largest value be part of any answer?
+  - Move the left pointer right when the sum is too small and the right pointer left when it is too large.
+  - Each move discards one value that cannot be in the answer, so the loop ends in at most n steps.
+  - "left, right = 0, len(nums) - 1; while True: s = nums[left] + nums[right]; if s == target: return [left, right]; move left if s < target else right."
+key_insight: In sorted input, if nums[left] + nums[right] is too small, nums[left] pairs with nothing larger than nums[right], so it can be discarded; symmetric for too large.
+clarifications:
+  - question: Are the indices 0-based?
+    answer: Yes.
+  - question: Can values repeat?
+    answer: Yes, for example [2, 2] with target 4.
+follow_ups:
+  - Why can a pointer move never skip the answer?
+  - How would you count all pairs with sum at most target?
+common_mistakes:
+  - id: uses-hash-map
+    description: Uses a hash map, ignoring sorted order and the O(1) space requirement.
+    capability: two-pointers.recognition
+  - id: wrong-direction
+    description: Moves the wrong pointer when the sum is too small.
+    capability: two-pointers.invariant
+  - id: quadratic-scan
+    description: Checks every pair.
+    capability: two-pointers.complexity
+visible_tests:
+  - {args: [[1, 3, 4, 6, 9], 10], expected: [0, 4]}
+  - {args: [[2, 2], 4], expected: [0, 1]}
+hidden_tests:
+  - {args: [[-5, -3, 0, 4, 8], 1], expected: [1, 3]}
+  - {args: [[1, 2, 3, 4, 4, 9, 56, 90], 8], expected: [3, 4]}
+  - {args: [[0, 0, 3, 4], 0], expected: [0, 1]}
+  - {args_expr: "[list(range(100000)), 199997]", expected: [99998, 99999], label: large input}
+reference_solution: |
+  def pair_sum_sorted(nums, target):
+      left, right = 0, len(nums) - 1
+      while left < right:
+          total = nums[left] + nums[right]
+          if total == target:
+              return [left, right]
+          if total < target:
+              left += 1
+          else:
+              right -= 1
+      raise ValueError("pair required")
+wrong_solutions:
+  - mistake: wrong-direction
+    expect: error
+    code: |
+      def pair_sum_sorted(nums, target):
+          left, right = 0, len(nums) - 1
+          while left < right:
+              total = nums[left] + nums[right]
+              if total == target:
+                  return [left, right]
+              if total > target:
+                  left += 1
+              else:
+                  right -= 1
+          raise ValueError("pair required")
+  - mistake: quadratic-scan
+    expect: timeout
+    code: |
+      def pair_sum_sorted(nums, target):
+          for i in range(len(nums)):
+              for j in range(i + 1, len(nums)):
+                  if nums[i] + nums[j] == target:
+                      return [i, j]

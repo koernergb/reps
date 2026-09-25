@@ -1,0 +1,107 @@
+schema_version: 1
+slug: longest-unique-substring
+version: 1
+status: development
+title: Longest Repeat-Free Substring
+topic: sliding-window
+patterns: [variable-window, last-seen-index]
+role: canonical
+difficulty: medium
+transfer_group: variable-window
+prerequisites: [max-sum-window]
+related: [max-consecutive-ones-flip-k]
+statement: |
+  Return the length of the longest substring of `text` that contains no repeated character.
+examples:
+  - input: {text: "abcabcbb"}
+    output: 3
+    explanation: '"abc" has length 3.'
+constraints:
+  - 0 <= len(text) <= 50,000
+  - text may contain any Unicode characters.
+entrypoint: longest_unique
+starter_code: |
+  def longest_unique(text: str) -> int:
+      pass
+time_complexity: O(n)
+space_complexity: O(min(n, alphabet))
+capabilities:
+  - {slug: sliding-window.recognition, weight: 0.2}
+  - {slug: sliding-window.invariant, weight: 0.3}
+  - {slug: sliding-window.implementation, weight: 0.25}
+  - {slug: sliding-window.boundaries, weight: 0.15}
+  - {slug: sliding-window.complexity, weight: 0.1}
+hints:
+  - The answer is a contiguous range. What must be true of the current range at all times?
+  - Grow the window to the right. When a repeated character enters, which part of the window must go?
+  - Track where each character was last seen. On a repeat, move the left edge just past that earlier position.
+  - The left edge must never move backward; a stale last-seen index from before the window must be ignored.
+  - "left = 0; for right, c in enumerate(text): if c in last and last[c] >= left: left = last[c] + 1; last[c] = right; best = max(best, right - left + 1)."
+key_insight: Maintain a window with all-distinct characters; when a character repeats inside the window, jump the left edge past its previous occurrence, never moving left backward.
+clarifications:
+  - question: Is it the substring or subsequence?
+    answer: Substring. Characters must be contiguous.
+  - question: Is the comparison case-sensitive?
+    answer: Yes. 'a' and 'A' are different.
+  - question: What about the empty string?
+    answer: Return 0.
+follow_ups:
+  - What must remain true about the current window after every step?
+  - How would you allow at most two repeats of each character?
+common_mistakes:
+  - id: left-moves-backward
+    description: Jumps left to a stale last-seen index outside the window, moving it backward.
+    capability: sliding-window.invariant
+  - id: brute-force-starts
+    description: Restarts a scan from every index (O(n^2)).
+    capability: sliding-window.recognition
+  - id: off-by-one-length
+    description: Computes length as right - left instead of right - left + 1.
+    capability: sliding-window.boundaries
+visible_tests:
+  - {args: ["abcabcbb"], expected: 3}
+  - {args: ["bbbbb"], expected: 1}
+hidden_tests:
+  - {args: [""], expected: 0}
+  - {args: [" "], expected: 1}
+  - {args: ["pwwkew"], expected: 3}
+  - {args: ["abba"], expected: 2, label: stale index}
+  - {args: ["dvdf"], expected: 3}
+  - {args: ["tmmzuxt"], expected: 5}
+  - {args_expr: "[''.join(chr(0x4e00 + i) for i in range(20000))]", expected: 20000, label: large distinct input}
+reference_solution: |
+  def longest_unique(text):
+      last = {}
+      left = best = 0
+      for right, char in enumerate(text):
+          if char in last and last[char] >= left:
+              left = last[char] + 1
+          last[char] = right
+          best = max(best, right - left + 1)
+      return best
+wrong_solutions:
+  - mistake: left-moves-backward
+    expect: wrong_answer
+    code: |
+      def longest_unique(text):
+          last = {}
+          left = best = 0
+          for right, char in enumerate(text):
+              if char in last:
+                  left = last[char] + 1
+              last[char] = right
+              best = max(best, right - left + 1)
+          return best
+  - mistake: brute-force-starts
+    expect: timeout
+    code: |
+      def longest_unique(text):
+          best = 0
+          for start in range(len(text)):
+              seen = set()
+              for char in text[start:]:
+                  if char in seen:
+                      break
+                  seen.add(char)
+              best = max(best, len(seen))
+          return best

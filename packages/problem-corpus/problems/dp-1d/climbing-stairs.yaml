@@ -1,0 +1,84 @@
+schema_version: 1
+slug: climbing-stairs
+version: 1
+status: development
+title: Ways to Climb
+topic: dp-1d
+patterns: [fibonacci-recurrence]
+role: recognition
+difficulty: easy
+transfer_group: take-or-skip
+prerequisites: []
+related: [house-robber]
+statement: |
+  You climb a staircase of `n` steps, taking either 1 or 2 steps at a time. Return the number
+  of distinct ordered ways to reach the top.
+examples:
+  - input: {n: 3}
+    output: 3
+    explanation: 1+1+1, 1+2, and 2+1.
+constraints:
+  - 1 <= n <= 90
+entrypoint: climb_ways
+starter_code: |
+  def climb_ways(n: int) -> int:
+      pass
+time_complexity: O(n)
+space_complexity: O(1)
+capabilities:
+  - {slug: dp-1d.recognition, weight: 0.35}
+  - {slug: dp-1d.invariant, weight: 0.25}
+  - {slug: dp-1d.implementation, weight: 0.15}
+  - {slug: dp-1d.boundaries, weight: 0.1}
+  - {slug: dp-1d.complexity, weight: 0.15}
+hints:
+  - What was your very last move onto step n?
+  - The ways to reach n split into those whose last move was 1 step and those whose last move was 2 steps.
+  - ways(n) = ways(n - 1) + ways(n - 2). Plain recursion recomputes the same values exponentially often.
+  - Build up from the base cases ways(1) = 1 and ways(2) = 2, keeping only the last two values.
+  - "a, b = 1, 2; for _ in range(n - 1): a, b = b, a + b; return a."
+key_insight: The last move is 1 or 2 steps, so ways(n) = ways(n - 1) + ways(n - 2); computing bottom-up avoids exponential recomputation.
+clarifications:
+  - question: Does the order of steps matter?
+    answer: Yes. 1+2 and 2+1 are different.
+follow_ups:
+  - How does the recurrence change if you may take 1, 2, or 3 steps?
+  - Can you compute it in O(log n) time?
+common_mistakes:
+  - id: naive-recursion
+    description: Recurses without memoization (exponential time).
+    capability: dp-1d.complexity
+  - id: base-case-shift
+    description: Uses the Fibonacci base cases directly and is off by one.
+    capability: dp-1d.boundaries
+visible_tests:
+  - {args: [2], expected: 2}
+  - {args: [3], expected: 3}
+hidden_tests:
+  - {args: [1], expected: 1}
+  - {args: [5], expected: 8}
+  - {args: [10], expected: 89}
+  - {args: [45], expected: 1836311903, label: large n}
+  - {args: [80], expected: 37889062373143906}
+reference_solution: |
+  def climb_ways(n):
+      a, b = 1, 2
+      for _ in range(n - 1):
+          a, b = b, a + b
+      return a
+wrong_solutions:
+  - mistake: naive-recursion
+    expect: timeout
+    code: |
+      def climb_ways(n):
+          if n <= 2:
+              return n
+          return climb_ways(n - 1) + climb_ways(n - 2)
+  - mistake: base-case-shift
+    expect: wrong_answer
+    code: |
+      def climb_ways(n):
+          a, b = 0, 1
+          for _ in range(n):
+              a, b = b, a + b
+          return a

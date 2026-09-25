@@ -1,0 +1,77 @@
+schema_version: 1
+topic: stack
+exercises:
+  - id: st-recall-when
+    capability: stack.recognition
+    type: recall
+    prompt: What problem signals point toward using a stack?
+    key_points:
+      - ["most recent", "last in", "lifo", "latest", "nested", "nesting", "matching"]
+      - ["next greater", "next larger", "previous smaller", "monotonic", "undo", "backtrack"]
+    reference_answer: Nested or matching structure where the most recent unresolved item must be handled first (LIFO), and next-greater/next-smaller relationships solvable with a monotonic stack.
+    hints:
+      - Think of delimiters and of "next warmer day".
+      - Which item must be resolved first when a closer arrives?
+    estimated_minutes: 1
+  - id: st-explain-monotonic
+    capability: stack.invariant
+    type: explain
+    prompt: In days-until-warmer, what does the stack hold, and why is each index popped at most once?
+    key_points:
+      - ["waiting", "unresolved", "not yet", "still need", "indices"]
+      - ["non-increasing", "decreasing", "monotonic", "colder"]
+      - ["once", "never pushed again", "popped at most once", "resolved"]
+    reference_answer: The stack holds indices of days still waiting for a warmer day, with non-increasing temperatures. A day is popped exactly when it gets its answer and is never pushed again, so each index is pushed and popped once.
+    misconception: Every new day must be compared with every previous day.
+    confirmation_question: With temperatures [80, 70, 60, 90], which indices are on the stack just before 90 arrives?
+    hints:
+      - Which days have not found their answer yet?
+      - What happens to those days when a warmer day arrives?
+    estimated_minutes: 2.5
+  - id: st-trace-delimiters
+    capability: stack.implementation
+    type: trace
+    prompt: "Process \"([]{\" with the matching-stack algorithm. What is the stack (bottom to top) at the end?"
+    accepted_answers: ["( {", "({", "['(', '{']", "( , {"]
+    key_points:
+      - ["({", "( {", "'(', '{'"]
+    reference_answer: "( {  — the [ ] pair cancels, leaving two unmatched openers, so the text is unbalanced."
+    hints:
+      - Push openers, pop on a matching closer.
+      - Which openers never get closed?
+    estimated_minutes: 2
+  - id: st-debug-leftovers
+    capability: stack.boundaries
+    type: debug
+    problem: balanced-delimiters
+    from_mistake: ignores-leftovers
+    prompt: This delimiter checker accepts some unbalanced strings. Fix it.
+    reference_answer: Return not stack at the end so unmatched openers make the text unbalanced.
+    misconception: Reaching the end without a mismatch means the text is balanced.
+    hints:
+      - Try "((".
+      - What should the stack look like after a balanced string?
+    estimated_minutes: 3
+  - id: st-debug-min-restore
+    capability: stack.invariant
+    type: debug
+    problem: min-stack
+    from_mistake: single-min-variable
+    prompt: This MinStack returns a stale minimum after pops. Fix it so every operation stays O(1).
+    reference_answer: Keep a parallel stack of running minima and pop it together with the main stack.
+    misconception: One variable can track the minimum across pops.
+    hints:
+      - Push 2, push 1, pop. What should get_min return?
+      - What would you need to remember at each height?
+    estimated_minutes: 5
+  - id: st-complexity
+    capability: stack.complexity
+    type: explain
+    prompt: What is the time complexity of the monotonic-stack days-until-warmer solution, and why?
+    key_points:
+      - ["o(n)", "linear"]
+      - ["pushed once", "popped once", "each index", "at most once", "amortized"]
+    reference_answer: O(n), because each index is pushed once and popped at most once, so the inner while loop runs at most n times in total (amortized O(1) per day).
+    hints:
+      - Count pushes and pops across the entire run.
+    estimated_minutes: 1

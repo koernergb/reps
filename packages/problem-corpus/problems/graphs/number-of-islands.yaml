@@ -1,0 +1,128 @@
+schema_version: 1
+slug: number-of-islands
+version: 1
+status: development
+title: Count Islands
+topic: graphs
+patterns: [grid-flood-fill, connected-components]
+role: canonical
+difficulty: medium
+transfer_group: grid-flood-fill
+prerequisites: []
+related: [rotting-oranges]
+statement: |
+  `grid` is a rectangle of 1s (land) and 0s (water). An island is a group of land cells
+  connected horizontally or vertically (not diagonally). Return the number of islands.
+examples:
+  - input: {grid: [[1, 1, 0, 0, 0], [1, 1, 0, 0, 0], [0, 0, 1, 0, 0], [0, 0, 0, 1, 1]]}
+    output: 3
+constraints:
+  - 1 <= rows, cols <= 200
+  - A single island can contain every cell, so very deep recursion may exceed Python's limit.
+entrypoint: count_islands
+starter_code: |
+  def count_islands(grid: list[list[int]]) -> int:
+      pass
+time_complexity: O(rows * cols)
+space_complexity: O(rows * cols)
+capabilities:
+  - {slug: graphs.recognition, weight: 0.3}
+  - {slug: graphs.invariant, weight: 0.25}
+  - {slug: graphs.implementation, weight: 0.25}
+  - {slug: graphs.boundaries, weight: 0.1}
+  - {slug: graphs.complexity, weight: 0.1}
+hints:
+  - Think of each land cell as a node. What are its edges?
+  - Counting islands is counting connected components. When you find unvisited land, what should you do with the rest of its island?
+  - Scan every cell. On unvisited land, increment the count and flood-fill (BFS or DFS) to mark the whole island visited.
+  - Mark cells visited when you enqueue them, and check grid bounds before reading neighbors. An explicit stack or queue avoids recursion limits.
+  - "for each cell with grid[r][c] == 1 and not seen: count += 1; stack = [(r, c)]; mark; while stack: pop, push unvisited land neighbors in 4 directions."
+key_insight: Each flood fill started from unvisited land consumes exactly one connected component, so the number of fills is the number of islands.
+clarifications:
+  - question: Do diagonal cells connect?
+    answer: No, only up, down, left, and right.
+  - question: May I modify the grid?
+    answer: Yes, or use a separate visited set.
+follow_ups:
+  - How would you return the size of the largest island?
+  - How would union-find solve this, and when is it preferable?
+common_mistakes:
+  - id: diagonal-neighbors
+    description: Treats diagonal cells as connected.
+    capability: graphs.boundaries
+  - id: recursion-depth
+    description: Uses deep recursion that exceeds Python's limit on large islands.
+    capability: graphs.implementation
+visible_tests:
+  - {args: [[[1, 1, 0, 0, 0], [1, 1, 0, 0, 0], [0, 0, 1, 0, 0], [0, 0, 0, 1, 1]]], expected: 3}
+  - {args: [[[1, 1, 1, 1, 0], [1, 1, 0, 1, 0], [1, 1, 0, 0, 0], [0, 0, 0, 0, 0]]], expected: 1}
+hidden_tests:
+  - {args: [[[0]]], expected: 0}
+  - {args: [[[1]]], expected: 1}
+  - {args: [[[1, 0, 1], [0, 1, 0], [1, 0, 1]]], expected: 5, label: diagonals}
+  - {args: [[[1, 1, 1], [0, 1, 0], [1, 1, 1]]], expected: 1}
+  - {args_expr: "[[[1] * 200 for _ in range(200)]]", expected: 1, label: one large island}
+reference_solution: |
+  def count_islands(grid):
+      rows, cols = len(grid), len(grid[0])
+      seen = set()
+      count = 0
+      for r in range(rows):
+          for c in range(cols):
+              if grid[r][c] != 1 or (r, c) in seen:
+                  continue
+              count += 1
+              seen.add((r, c))
+              stack = [(r, c)]
+              while stack:
+                  y, x = stack.pop()
+                  for ny, nx in ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)):
+                      if 0 <= ny < rows and 0 <= nx < cols and grid[ny][nx] == 1 and (ny, nx) not in seen:
+                          seen.add((ny, nx))
+                          stack.append((ny, nx))
+      return count
+wrong_solutions:
+  - mistake: diagonal-neighbors
+    expect: wrong_answer
+    code: |
+      def count_islands(grid):
+          rows, cols = len(grid), len(grid[0])
+          seen = set()
+          count = 0
+          for r in range(rows):
+              for c in range(cols):
+                  if grid[r][c] != 1 or (r, c) in seen:
+                      continue
+                  count += 1
+                  seen.add((r, c))
+                  stack = [(r, c)]
+                  while stack:
+                      y, x = stack.pop()
+                      for dy in (-1, 0, 1):
+                          for dx in (-1, 0, 1):
+                              ny, nx = y + dy, x + dx
+                              if 0 <= ny < rows and 0 <= nx < cols and grid[ny][nx] == 1 and (ny, nx) not in seen:
+                                  seen.add((ny, nx))
+                                  stack.append((ny, nx))
+          return count
+  - mistake: recursion-depth
+    expect: error
+    code: |
+      def count_islands(grid):
+          rows, cols = len(grid), len(grid[0])
+
+          def sink(r, c):
+              if 0 <= r < rows and 0 <= c < cols and grid[r][c] == 1:
+                  grid[r][c] = 0
+                  sink(r + 1, c)
+                  sink(r - 1, c)
+                  sink(r, c + 1)
+                  sink(r, c - 1)
+
+          count = 0
+          for r in range(rows):
+              for c in range(cols):
+                  if grid[r][c] == 1:
+                      count += 1
+                      sink(r, c)
+          return count

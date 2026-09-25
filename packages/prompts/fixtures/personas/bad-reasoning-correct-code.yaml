@@ -1,0 +1,13 @@
+persona: candidate_bad_reasoning_correct_code
+problem: max-sum-window
+mode: practice
+expect:
+  result: solved_independently
+  weakness_in: [sliding-window.complexity]
+steps:
+  - say: I'll just try every block, it's fine.
+  - advance: IMPLEMENTATION
+  - submit: reference
+  - say: It's O(n^2) time and O(n) space.
+  - say: O(n^2), O(n).
+  - say: O(n^2) time and O(n) space.

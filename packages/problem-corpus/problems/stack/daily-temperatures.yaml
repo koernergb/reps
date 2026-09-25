@@ -1,0 +1,99 @@
+schema_version: 1
+slug: daily-temperatures
+version: 1
+status: development
+title: Days Until Warmer
+topic: stack
+patterns: [monotonic-stack]
+role: transfer
+difficulty: medium
+transfer_group: monotonic-stack
+prerequisites: [balanced-delimiters]
+related: [min-stack]
+statement: |
+  Given daily temperatures, return a list where entry `i` is the number of days after day
+  `i` until a strictly warmer temperature. Use 0 when no warmer day follows.
+examples:
+  - input: {temperatures: [73, 74, 75, 71, 69, 72, 76, 73]}
+    output: [1, 1, 4, 2, 1, 1, 0, 0]
+constraints:
+  - 1 <= len(temperatures) <= 100,000
+  - 30 <= temperatures[i] <= 100,000
+entrypoint: days_until_warmer
+starter_code: |
+  def days_until_warmer(temperatures: list[int]) -> list[int]:
+      pass
+time_complexity: O(n)
+space_complexity: O(n)
+capabilities:
+  - {slug: stack.recognition, weight: 0.2}
+  - {slug: stack.invariant, weight: 0.2}
+  - {slug: stack.implementation, weight: 0.15}
+  - {slug: stack.boundaries, weight: 0.1}
+  - {slug: stack.complexity, weight: 0.1}
+  - {slug: stack.transfer, weight: 0.25}
+hints:
+  - For a given day, you are waiting for the next greater value. Which days are still waiting at any moment?
+  - The days still waiting have non-increasing temperatures. What happens to them when a warmer day arrives?
+  - Keep a stack of indices of days still waiting. A new temperature resolves every waiting day that is colder.
+  - While the new temperature is strictly greater than the temperature at the stack's top index, pop it and record the distance.
+  - "for i, t in enumerate(temps): while stack and temps[stack[-1]] < t: j = stack.pop(); answer[j] = i - j; stack.append(i)."
+key_insight: Maintain a stack of unresolved day indices with non-increasing temperatures; each new warmer day pops and resolves them, so every index is pushed and popped once.
+clarifications:
+  - question: Does an equal temperature count as warmer?
+    answer: No. It must be strictly warmer.
+follow_ups:
+  - Why is the total work linear even though there is a nested loop?
+  - How would you compute the previous warmer day instead?
+common_mistakes:
+  - id: counts-equal
+    description: Treats an equal temperature as warmer.
+    capability: stack.boundaries
+  - id: forward-scan
+    description: Scans forward from every day (O(n^2)).
+    capability: stack.transfer
+visible_tests:
+  - {args: [[73, 74, 75, 71, 69, 72, 76, 73]], expected: [1, 1, 4, 2, 1, 1, 0, 0]}
+  - {args: [[30, 40, 50, 60]], expected: [1, 1, 1, 0]}
+hidden_tests:
+  - {args: [[30, 60, 90]], expected: [1, 1, 0]}
+  - {args: [[50]], expected: [0]}
+  - {args: [[70, 70, 70]], expected: [0, 0, 0], label: equal temperatures}
+  - {args: [[80, 70, 60, 90]], expected: [3, 2, 1, 0]}
+  - {args_expr: "[list(range(50030, 30, -1)) + [100000]]", expected_expr: "[50000 - i for i in range(50000)] + [0]", label: large input}
+reference_solution: |
+  def days_until_warmer(temperatures):
+      answer = [0] * len(temperatures)
+      stack = []
+      for index, temperature in enumerate(temperatures):
+          while stack and temperatures[stack[-1]] < temperature:
+              previous = stack.pop()
+              answer[previous] = index - previous
+          stack.append(index)
+      return answer
+wrong_solutions:
+  - mistake: counts-equal
+    expect: wrong_answer
+    code: |
+      def days_until_warmer(temperatures):
+          answer = [0] * len(temperatures)
+          stack = []
+          for index, temperature in enumerate(temperatures):
+              while stack and temperatures[stack[-1]] <= temperature:
+                  previous = stack.pop()
+                  answer[previous] = index - previous
+              stack.append(index)
+          return answer
+  - mistake: forward-scan
+    expect: timeout
+    code: |
+      def days_until_warmer(temperatures):
+          answer = []
+          for i, t in enumerate(temperatures):
+              wait = 0
+              for j in range(i + 1, len(temperatures)):
+                  if temperatures[j] > t:
+                      wait = j - i
+                      break
+              answer.append(wait)
+          return answer

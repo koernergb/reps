@@ -1,0 +1,77 @@
+schema_version: 1
+topic: binary-search
+exercises:
+  - id: bs-recall-log
+    capability: binary-search.complexity
+    type: recall
+    prompt: Why is binary search O(log n)?
+    key_points:
+      - ["half", "halves", "halving", "divide by two", "cuts in half"]
+      - ["log", "logarithm", "number of times", "steps"]
+    reference_answer: Each comparison discards half of the remaining candidates, so after k steps n / 2^k remain; reaching one candidate takes about log2(n) steps.
+    hints:
+      - How many candidates remain after each comparison?
+      - How many halvings reduce n to 1?
+    estimated_minutes: 1
+  - id: bs-recognize-answer-space
+    capability: binary-search.recognition
+    type: recognition
+    prompt: "A problem: choose the smallest ship capacity that delivers all packages (in order) within D days. The input is not sorted. Could binary search still apply? How?"
+    key_points:
+      - ["binary search", "search on answer", "answer space", "capacity"]
+      - ["monotone", "monotonic", "feasible", "if c works", "larger also works", "predicate"]
+    reference_answer: Yes. Binary search over capacities, because feasibility is monotone; if capacity c works, every larger capacity works, so find the first feasible capacity.
+    hints:
+      - If capacity c works, what about c + 1?
+      - What range of capacities could be the answer?
+    estimated_minutes: 1.5
+  - id: bs-explain-invariant
+    capability: binary-search.invariant
+    type: explain
+    prompt: In lower-bound search with a half-open range [left, right), what do left and right guarantee at every step?
+    key_points:
+      - ["before left", "left of left", "< target", "smaller than target", "all indices before left"]
+      - ["at or after right", "from right", ">= target", "right onward", "candidate"]
+    reference_answer: Every index before left has nums[i] < target, and every index at or after right has nums[i] >= target (or is len(nums)); the answer is always in [left, right], so when they meet, left is the answer.
+    misconception: Binary search only works when you find an exact match.
+    confirmation_question: For nums = [2, 2, 2] and target 2, what are left and right after the first iteration?
+    hints:
+      - What do you know about indices you've discarded on the left?
+      - Why is right = mid (not mid - 1) when nums[mid] >= target?
+    estimated_minutes: 2.5
+  - id: bs-trace-lower-bound
+    capability: binary-search.implementation
+    type: trace
+    prompt: "Run lower-bound (first index with nums[i] >= 4) on nums = [1, 3, 5, 7] with left = 0, right = 4. List the mid values examined, separated by spaces."
+    accepted_answers: ["2 1", "2, 1", "[2, 1]"]
+    key_points:
+      - ["2 1", "2, 1"]
+    reference_answer: "2 (nums[2] = 5 >= 4, right = 2), then 1 (nums[1] = 3 < 4, left = 2). Answer 2."
+    hints:
+      - mid = (0 + 4) // 2 first.
+      - After that, which half remains?
+    estimated_minutes: 2.5
+  - id: bs-debug-strict-loop
+    capability: binary-search.boundaries
+    type: debug
+    problem: find-sorted-value
+    from_mistake: strict-loop
+    prompt: This binary search misses some targets. Fix the loop so every candidate is examined.
+    reference_answer: With inclusive bounds use while left <= right.
+    misconception: With inclusive bounds, the loop can stop when left == right.
+    hints:
+      - Try nums = [7] and target 7.
+      - What range does [left, right] represent when left == right?
+    estimated_minutes: 3
+  - id: bs-debug-rotated
+    capability: binary-search.transfer
+    type: debug
+    problem: search-rotated
+    from_mistake: strict-sorted-check
+    prompt: This rotated-array search fails on two-element ranges. Fix the sorted-half check.
+    reference_answer: Use nums[left] <= nums[mid] so a single-element left half counts as sorted.
+    misconception: The left half is sorted only when nums[left] < nums[mid].
+    hints:
+      - Try nums = [3, 1] and target 1.
+      - When left == mid, is the left half sorted?
+    estimated_minutes: 4

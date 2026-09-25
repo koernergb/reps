@@ -1,0 +1,13 @@
+persona: candidate_memorized_solution
+problem: pair-sum-indices
+mode: practice
+repeat: true
+expect:
+  result: solved_independently
+  repeat_exposure: true
+steps:
+  - advance: APPROACH_DISCUSSION
+  - say: Hash map, complement lookup.
+  - advance: IMPLEMENTATION
+  - submit: reference
+  - say: O(n).

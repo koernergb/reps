@@ -1,0 +1,109 @@
+schema_version: 1
+slug: coin-change
+version: 1
+status: development
+title: Fewest Coins
+topic: dp-1d
+patterns: [unbounded-choice]
+role: boundary
+difficulty: medium
+transfer_group: unbounded-choice
+prerequisites: [climbing-stairs]
+related: [house-robber]
+statement: |
+  Given coin denominations `coins` (unlimited supply of each) and an `amount`, return the
+  fewest coins that sum exactly to `amount`, or `-1` if it cannot be made.
+examples:
+  - input: {coins: [1, 2, 5], amount: 11}
+    output: 3
+    explanation: 5 + 5 + 1.
+constraints:
+  - 1 <= len(coins) <= 12
+  - 1 <= coins[i] <= 10,000
+  - 0 <= amount <= 10,000
+entrypoint: fewest_coins
+starter_code: |
+  def fewest_coins(coins: list[int], amount: int) -> int:
+      pass
+time_complexity: O(amount * len(coins))
+space_complexity: O(amount)
+capabilities:
+  - {slug: dp-1d.recognition, weight: 0.15}
+  - {slug: dp-1d.invariant, weight: 0.2}
+  - {slug: dp-1d.implementation, weight: 0.15}
+  - {slug: dp-1d.boundaries, weight: 0.2}
+  - {slug: dp-1d.complexity, weight: 0.1}
+  - {slug: dp-1d.transfer, weight: 0.2}
+hints:
+  - Does always taking the largest coin work? Try coins [1, 3, 4] with amount 6.
+  - Think about the last coin used to make amount a. What smaller amount remains?
+  - Define fewest[a] as the minimum coins for amount a; fewest[a] = 1 + min(fewest[a - c]) over coins c <= a.
+  - Initialize fewest[0] = 0 and every other amount to infinity, and translate infinity to -1 at the end.
+  - "dp = [0] + [inf] * amount; for a in 1..amount: for c in coins: if c <= a: dp[a] = min(dp[a], dp[a - c] + 1); return dp[amount] if finite else -1."
+key_insight: The minimum coins for amount a is one more than the best over amounts a - c for each coin c, built bottom-up from fewest[0] = 0, with unreachable amounts left at infinity.
+clarifications:
+  - question: What if amount is 0?
+    answer: Return 0.
+  - question: Is the supply of each coin unlimited?
+    answer: Yes.
+follow_ups:
+  - Why does greedy fail for some coin systems?
+  - How would you count the number of ways instead of the minimum?
+common_mistakes:
+  - id: greedy-largest
+    description: Always takes the largest coin that fits.
+    capability: dp-1d.recognition
+  - id: leaks-infinity
+    description: Returns infinity instead of -1 for unreachable amounts.
+    capability: dp-1d.boundaries
+  - id: naive-recursion
+    description: Recurses over coin choices without memoization.
+    capability: dp-1d.complexity
+visible_tests:
+  - {args: [[1, 2, 5], 11], expected: 3}
+  - {args: [[2], 3], expected: -1}
+hidden_tests:
+  - {args: [[1], 0], expected: 0}
+  - {args: [[2, 5, 10, 1], 27], expected: 4}
+  - {args: [[186, 419, 83, 408], 6249], expected: 20}
+  - {args: [[3, 7], 1], expected: -1, label: unreachable}
+  - {args: [[1, 3, 4], 6], expected: 2, label: greedy trap}
+  - {args: [[1, 2, 5], 100], expected: 20}
+reference_solution: |
+  def fewest_coins(coins, amount):
+      unreachable = amount + 1
+      best = [0] + [unreachable] * amount
+      for value in range(1, amount + 1):
+          for coin in coins:
+              if coin <= value and best[value - coin] + 1 < best[value]:
+                  best[value] = best[value - coin] + 1
+      return best[amount] if best[amount] != unreachable else -1
+wrong_solutions:
+  - mistake: greedy-largest
+    expect: wrong_answer
+    code: |
+      def fewest_coins(coins, amount):
+          count = 0
+          for coin in sorted(coins, reverse=True):
+              count += amount // coin
+              amount %= coin
+          return count if amount == 0 else -1
+  - mistake: leaks-infinity
+    expect: wrong_answer
+    code: |
+      def fewest_coins(coins, amount):
+          best = [0] + [float("inf")] * amount
+          for value in range(1, amount + 1):
+              for coin in coins:
+                  if coin <= value:
+                      best[value] = min(best[value], best[value - coin] + 1)
+          return best[amount] if amount != 3 else -1
+  - mistake: naive-recursion
+    expect: timeout
+    code: |
+      def fewest_coins(coins, amount):
+          if amount == 0:
+              return 0
+          options = [fewest_coins(coins, amount - c) for c in coins if c <= amount]
+          options = [o for o in options if o >= 0]
+          return 1 + min(options) if options else -1

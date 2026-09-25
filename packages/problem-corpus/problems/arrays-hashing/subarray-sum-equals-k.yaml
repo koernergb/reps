@@ -1,0 +1,117 @@
+schema_version: 1
+slug: subarray-sum-equals-k
+version: 1
+status: development
+title: Count Target-Sum Subarrays
+topic: arrays-hashing
+patterns: [prefix-sum, complement-lookup]
+role: transfer
+difficulty: medium
+transfer_group: complement-lookup
+prerequisites: [pair-sum-indices]
+related: [pair-sum-indices]
+statement: |
+  Given a list of integers `nums` (which may include negatives and zeros) and an integer `k`,
+  return the number of non-empty contiguous subarrays whose elements sum to exactly `k`.
+examples:
+  - input: {nums: [1, 1, 1], k: 2}
+    output: 2
+constraints:
+  - 1 <= len(nums) <= 20,000
+  - -1,000 <= nums[i] <= 1,000
+  - -10^7 <= k <= 10^7
+entrypoint: subarray_sum
+starter_code: |
+  def subarray_sum(nums: list[int], k: int) -> int:
+      pass
+time_complexity: O(n)
+space_complexity: O(n)
+capabilities:
+  - {slug: arrays-hashing.recognition, weight: 0.2}
+  - {slug: arrays-hashing.invariant, weight: 0.2}
+  - {slug: arrays-hashing.implementation, weight: 0.15}
+  - {slug: arrays-hashing.boundaries, weight: 0.1}
+  - {slug: arrays-hashing.complexity, weight: 0.1}
+  - {slug: arrays-hashing.transfer, weight: 0.25}
+hints:
+  - Can you express the sum of nums[i..j] using two running totals?
+  - sum(i..j) = prefix[j + 1] - prefix[i]. What prefix value would you need to have seen earlier?
+  - This is complement lookup again, but over prefix sums, and you need a count of matches, not an index.
+  - "Keep a map from prefix sum to how many times it has occurred, starting with {0: 1}; at each step add count[prefix - k]."
+  - "count = {0: 1}; total = answer = 0; for x in nums: total += x; answer += count.get(total - k, 0); count[total] = count.get(total, 0) + 1."
+key_insight: "A subarray sums to k exactly when two prefix sums differ by k, so count earlier prefix sums equal to (current prefix - k) with a frequency map seeded with {0: 1}."
+clarifications:
+  - question: "Can nums contain negative numbers?"
+    answer: "Yes. Negatives and zeros are allowed."
+  - question: "Do overlapping subarrays count separately?"
+    answer: "Yes. Count every (start, end) pair."
+follow_ups:
+  - Why does a sliding window fail here but work when all values are positive?
+  - How would you return the longest such subarray instead?
+common_mistakes:
+  - id: sliding-window-negatives
+    description: "Uses a shrinking window that assumes all values are positive."
+    capability: arrays-hashing.transfer
+  - id: missing-zero-prefix
+    description: "Forgets to seed the map with prefix 0 and misses subarrays starting at index 0."
+    capability: arrays-hashing.boundaries
+  - id: quadratic-sums
+    description: "Recomputes sums for every start index (O(n^2))."
+    capability: arrays-hashing.complexity
+visible_tests:
+  - {args: [[1, 1, 1], 2], expected: 2}
+  - {args: [[1, 2, 3], 3], expected: 2}
+hidden_tests:
+  - {args: [[1, -1, 0], 0], expected: 3, label: negatives and zero}
+  - {args: [[0, 0, 0], 0], expected: 6}
+  - {args: [[5], 5], expected: 1}
+  - {args: [[-1, -1, 1], 0], expected: 1}
+  - {args: [[3, 4, 7, 2, -3, 1, 4, 2], 7], expected: 4}
+  - {args_expr: "[[1] * 20000, 5]", expected: 19996, label: large input}
+reference_solution: |
+  def subarray_sum(nums, k):
+      counts = {0: 1}
+      total = 0
+      answer = 0
+      for value in nums:
+          total += value
+          answer += counts.get(total - k, 0)
+          counts[total] = counts.get(total, 0) + 1
+      return answer
+wrong_solutions:
+  - mistake: sliding-window-negatives
+    expect: wrong_answer
+    code: |
+      def subarray_sum(nums, k):
+          left = total = answer = 0
+          for right, value in enumerate(nums):
+              total += value
+              while total > k and left <= right:
+                  total -= nums[left]
+                  left += 1
+              if total == k:
+                  answer += 1
+          return answer
+  - mistake: quadratic-sums
+    expect: timeout
+    code: |
+      def subarray_sum(nums, k):
+          answer = 0
+          for start in range(len(nums)):
+              total = 0
+              for end in range(start, len(nums)):
+                  total += nums[end]
+                  if total == k:
+                      answer += 1
+          return answer
+  - mistake: missing-zero-prefix
+    expect: wrong_answer
+    code: |
+      def subarray_sum(nums, k):
+          counts = {}
+          total = answer = 0
+          for value in nums:
+              total += value
+              answer += counts.get(total - k, 0)
+              counts[total] = counts.get(total, 0) + 1
+          return answer

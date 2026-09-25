@@ -1,0 +1,94 @@
+schema_version: 1
+topic: arrays-hashing
+exercises:
+  - id: ah-recall-when-hash
+    capability: arrays-hashing.recognition
+    type: recall
+    prompt: What signals in a problem suggest that a hash map or set could replace a nested loop?
+    key_points:
+      - ["lookup", "look up", "membership", "seen", "have i seen", "check whether", "contains"]
+      - ["nested", "pairs", "every pair", "o(n^2)", "quadratic", "second loop"]
+      - ["o(1)", "constant time", "average constant"]
+    reference_answer: When you repeatedly ask whether some value (a complement, key, or count) has appeared before, a hash map or set answers that membership question in average O(1), replacing the O(n^2) nested scan over pairs.
+    hints:
+      - Think about what the inner loop of a brute-force solution is searching for.
+      - If the inner loop only asks "does value x exist earlier?", which structure answers that quickly?
+    estimated_minutes: 1
+  - id: ah-recognize-complement
+    capability: arrays-hashing.recognition
+    type: recognition
+    prompt: "A problem asks: given prices and a budget, find two different items whose prices sum exactly to the budget, in one pass. Which technique would you reach for first, and what would you store?"
+    key_points:
+      - ["hash map", "hashmap", "dictionary", "dict", "hash table"]
+      - ["complement", "budget - price", "target -", "difference", "remaining"]
+      - ["index", "position", "seen", "earlier"]
+    reference_answer: Complement lookup with a hash map, storing each price (mapped to its index) as you scan, and checking whether budget - price has been seen.
+    hints:
+      - For one item, what exact price would its partner need?
+      - Where could you store prices you've already passed so the check is O(1)?
+    estimated_minutes: 1.5
+  - id: ah-explain-check-before-insert
+    capability: arrays-hashing.invariant
+    type: explain
+    prompt: In single-pass pair-sum, why must you check for the complement before inserting the current element into the map?
+    key_points:
+      - ["same element", "itself", "self", "twice", "reuse"]
+      - ["earlier", "previous", "before", "already seen", "prior"]
+    reference_answer: The map should contain only earlier elements. Inserting first could let an element match itself (for example target 6 with value 3), reusing one index twice.
+    misconception: The map can contain the current element when you look up its complement.
+    confirmation_question: With nums = [3, 2, 4] and target 6, what goes wrong if you insert 3 before checking?
+    hints:
+      - Try target 6 with the single value 3.
+      - Which elements should the map represent at the moment of the lookup?
+    estimated_minutes: 2
+  - id: ah-trace-prefix-counts
+    capability: arrays-hashing.invariant
+    type: trace
+    prompt: "Counting subarrays that sum to k = 2 in nums = [1, 1, 1] using a prefix-sum count map seeded with {0: 1}: what is the map after processing all three elements? Answer as a dictionary like {0: 1, ...}."
+    accepted_answers: ["{0: 1, 1: 1, 2: 1, 3: 1}", "{0:1,1:1,2:1,3:1}"]
+    key_points:
+      - ["0: 1"]
+      - ["3: 1"]
+    reference_answer: "{0: 1, 1: 1, 2: 1, 3: 1} (prefix sums 1, 2, 3 each seen once, plus the seed)."
+    hints:
+      - Write the running totals after each element.
+      - Each running total is added to the map once after its lookup.
+    estimated_minutes: 2.5
+  - id: ah-debug-self-match
+    capability: arrays-hashing.implementation
+    type: debug
+    problem: pair-sum-indices
+    from_mistake: self-match
+    prompt: This pair-sum solution sometimes pairs an element with itself. Fix it so every test passes.
+    reference_answer: Check for the complement before storing the current value, and return [seen[complement], index].
+    misconception: Inserting before checking lets an element match itself.
+    hints:
+      - Look at the order of the insert and the lookup.
+      - With nums = [3, 2, 4] and target 6, what does the current code return?
+    estimated_minutes: 4
+  - id: ah-complexity-tradeoff
+    capability: arrays-hashing.complexity
+    type: explain
+    prompt: Compare the time and space of the hash-map pair-sum solution with sorting plus two pointers.
+    key_points:
+      - ["o(n) time", "linear time", "o(n)"]
+      - ["o(n) space", "extra space", "linear space", "memory"]
+      - ["o(n log n)", "sorting", "sort"]
+    reference_answer: Hash map is O(n) average time with O(n) extra space; sorting plus two pointers is O(n log n) time with O(1) extra space (beyond the sort) but loses original indices unless you track them.
+    hints:
+      - What does each approach store?
+      - What does sorting cost?
+    estimated_minutes: 2
+  - id: ah-recall-prefix-transfer
+    capability: arrays-hashing.transfer
+    type: recall
+    prompt: How does complement lookup transfer from "two values summing to k" to "subarrays summing to k"?
+    key_points:
+      - ["prefix", "running sum", "cumulative"]
+      - ["difference", "minus k", "- k", "complement"]
+      - ["count", "frequency", "how many"]
+    reference_answer: A subarray sum is a difference of two prefix sums, so look up (current prefix - k) among earlier prefix sums, counting occurrences with a frequency map.
+    hints:
+      - How can you write sum(nums[i..j]) using running totals?
+      - What earlier running total would make the difference exactly k?
+    estimated_minutes: 2
