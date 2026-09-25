@@ -20,6 +20,29 @@ Human Gate 0 was approved on 2026-08-20 for a single-user tool built for its rep
 
 Where a milestone or gate below assumes multiple accounts or hosted infrastructure, use the local adaptation in `docs/human-gates/` until this overlay is explicitly revoked. This overlay narrows implementation; it does not waive content, evaluator, sandbox, AI-behavior, learning-quality, or destructive-data validation gates.
 
+## Implementation status (2026-09-24)
+
+At the owner's explicit instruction ("blow past human gates"), Milestones 2–11 were implemented
+without stopping at their human gates. This does **not** approve any gate: each packet in
+`docs/human-gates/` records what was built, the automated evidence, and the human validation that
+is still required. Treat everything after Gate 1 as unvalidated until those reviews happen.
+
+| Milestone | Implementation | Gate status |
+| --- | --- | --- |
+| 0 | Complete | Approved 2026-08-20 (local-first scope) |
+| 1 | Complete | Pending |
+| 2 | 32 problems, 62 exercises, 64 capabilities, execution validation | Not performed |
+| 3 | Docker sandbox, worker, run/submit, editor, adversarial suite | Not performed |
+| 4 | State machine, events, replay, interviewer (offline + OpenAI adapter), guard, personas | Not performed; no LLM-backed run |
+| 5 | Facts, rules/LLM interpretation, validation, provenance, degraded mode, flags | Not performed |
+| 6 | Evidence-based model, bands, explanations, rebuild, histories report | Not performed |
+| 7 | Scheduler, reviews (Retrieve/Coach/Rebuild), queue controls | Not performed |
+| 8 | Drill composer and flow | Not performed |
+| 9 | Mock policy, server timer, accommodations, scorecard | Not performed |
+| 10 | Consentful solution viewing and remediation chain | Not performed |
+| 11 | Metrics, SLOs, diagnostics, rate limits, flags, backups, runbooks, CI security | Out of scope (no beta) |
+| 12 | Outcome metrics instrumented | Requires beta data |
+
 ## Working rules for every milestone
 
 1. Read the current repository state, relevant documentation, and existing tests before changing code.

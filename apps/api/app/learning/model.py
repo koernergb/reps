@@ -25,6 +25,7 @@ HINT_PENALTY = {0: 0.0, 1: 0.1, 2: 0.2, 3: 0.35, 4: 0.5, 5: 0.65}
 ASSISTED_SCORE_CAP = 0.5
 REPEAT_EXPOSURE_WEIGHT = 0.5
 TRANSFER_WEIGHT = 1.25
+REPEAT_GROWTH_CAP = 1.2
 SUCCESS_THRESHOLD = 0.7
 FAILURE_THRESHOLD = 0.4
 # How demanding each evidence type is; harder evidence moves the estimate more.
@@ -115,11 +116,29 @@ def evidence_weight(evidence: Evidence, days_since_previous: float | None) -> fl
     return weight
 
 
-def next_stability(current: float, score: float, confidence: float) -> float:
+def next_stability(
+    current: float,
+    score: float,
+    confidence: float,
+    gap_days: float | None = None,
+    repeat_exposure: bool = False,
+) -> float:
+    """Review interval (days) after one piece of evidence.
+
+    Growth on success is scaled by how much of the current interval actually elapsed, so
+    massed practice (reviewing again long before the interval is up) earns little, and repeats
+    of the same problem barely grow the interval because they mostly measure memory of that
+    problem, not the skill.
+    """
     if score >= SUCCESS_THRESHOLD:
         if current <= 0:
             return 1.0 if score < 0.9 else 2.0
-        return min(MAX_STABILITY_DAYS, current * (1.8 + 0.7 * score))
+        growth = 1.8 + 0.7 * score
+        if repeat_exposure:
+            growth = min(growth, REPEAT_GROWTH_CAP)
+        if gap_days is not None:
+            growth = 1 + (growth - 1) * min(1.0, max(0.0, gap_days) / current)
+        return min(MAX_STABILITY_DAYS, current * growth)
     if score >= FAILURE_THRESHOLD:
         return min(MAX_STABILITY_DAYS, max(1.0, current * 1.2))
     if confidence < 0.5:
@@ -199,7 +218,7 @@ def compute_state(
         target = effective_score(item)
         step = LEARNING_RATE * weight * (target - mastery)
         mastery = max(0.0, min(1.0, mastery + max(-MAX_STEP, min(MAX_STEP, step))))
-        stability = next_stability(stability, target, item.confidence)
+        stability = next_stability(stability, target, item.confidence, gap, item.repeat_exposure)
         total_weight += weight
         previous = item.occurred_at
     last = items[-1].occurred_at if items else None

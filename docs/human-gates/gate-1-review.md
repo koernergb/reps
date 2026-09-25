@@ -29,7 +29,7 @@ Milestone 1 is adapted to the Human Gate 0 decision: Reps is a single-user local
 
 - Product/data approver:
 - Decision date:
-- Status: Pending
+- Status: Pending (never recorded); later milestones were built at the owner's instruction without it
 - Problems found:
 - Required changes:
 

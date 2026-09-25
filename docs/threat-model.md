@@ -49,3 +49,19 @@ The browser, learner content, model output, and submitted code are untrusted. Th
 - What beta concurrency and monthly budget should limits assume?
 - What are the exact retention and backup-expiry windows?
 - Who may access learner content for support, and how is that access audited?
+
+## Implemented controls (2026-09-24, local scope)
+
+| Threat | Control in code | Evidence |
+| --- | --- | --- |
+| Sandbox escape / exfiltration | Ephemeral Docker per job: no network, read-only root, uid 65534, no capabilities, cgroup limits; non-dumpable supervisor; scrubbed env (ADR 0005) | `tests/test_sandbox_docker.py` |
+| Hidden-test extraction | Expected outputs never enter the sandbox; submit returns aggregate counts only; guard blocks hidden inputs in interviewer text | `test_execution_service.py`, `test_guard.py` |
+| Prompt injection / leakage | Fenced untrusted content, forbidden-behavior prompt, deterministic output guard (code dumps, reference overlap, prompt disclosure, key-insight reveal), policy fallback | `test_guard.py`, persona `adversarial_prompt_injection` |
+| False code verdicts | Facts computed from sandbox results only; LLM claims contradicting execution are dropped | `test_evaluation.py` |
+| Duplicate mastery/tasks | Evidence dedupe keys, idempotent execution keys, partial unique index on active tasks, optimistic concurrency | `test_learner_model.py`, `test_scheduler.py`, `test_interviews.py` |
+| Sensitive analytics/logs | Allowlisted analytics contract; logs without content | `test_solutions_analytics.py` |
+| Cross-user access (future) | Every query scoped by `user.id`; ownership tests with a second user | `test_interviews.py`, `test_reviews_drills.py`, `test_execution_service.py` |
+| Vulnerable dependencies | CI `pnpm audit` / `pip-audit` / gitleaks; Next.js upgraded 16.3.1 → 16.3.6 for critical RCE advisories | `.github/workflows/ci.yml` |
+
+Residual: no authentication (local only); Docker Desktop isolation is weaker than microVMs;
+aggregate hidden-test counts are a low-bandwidth side channel.

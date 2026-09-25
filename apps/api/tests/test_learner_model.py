@@ -52,7 +52,16 @@ def ev(day: float = 0, score: float = 1.0, **kwargs: Any) -> Evidence:
             lambda s: s.mastery < compute_state([ev(day=i, score=1.0) for i in range(3)]).mastery,
         ),
         ([ev(day=0, score=1.0), ev(day=1, score=0.0)], lambda s: s.stability_days == 1.0),
-        ([ev(day=i * 3, score=1.0) for i in range(4)], lambda s: s.stability_days > 10),
+        ([ev(day=i * 3, score=1.0) for i in range(4)], lambda s: s.stability_days > 5),
+        ([ev(day=i * 10, score=1.0) for i in range(4)], lambda s: s.stability_days > 20),
+        (
+            [
+                ev(day=0, score=1.0),
+                *[ev(day=i, score=1.0, repeat_exposure=True) for i in range(1, 6)],
+            ],
+            lambda s: s.stability_days < 7,
+        ),
+        ([ev(day=i * 0.01, score=1.0) for i in range(10)], lambda s: s.stability_days < 3),
         ([ev(score=1.0, excluded=True)], lambda s: s.evidence_count == 0),
     ],
 )

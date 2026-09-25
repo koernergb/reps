@@ -7,6 +7,7 @@ from sqlalchemy import select
 from app.analytics import track
 from app.deps import SessionDependency, UserDependency
 from app.learning.evidence import rebuild_user_state
+from app.learning.outcomes import outcome_metrics
 from app.models import (
     Capability,
     CapabilityEvidence,
@@ -171,3 +172,8 @@ def dashboard(db: SessionDependency, user: UserDependency) -> dict[str, Any]:
         ],
         "reviews_completed": len(completed_tasks),
     }
+
+
+@router.get("/metrics")
+def learning_metrics(db: SessionDependency, user: UserDependency) -> dict[str, Any]:
+    return outcome_metrics(db, user.id)

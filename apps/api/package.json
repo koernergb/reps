@@ -16,6 +16,8 @@
     "dev:api-only": "uv --cache-dir ../../.uv-cache run --offline uvicorn app.main:app --reload --host 127.0.0.1 --port 8000",
     "dev:worker": "uv --cache-dir ../../.uv-cache run --offline python -m app.worker",
     "test:sandbox": "uv --cache-dir ../../.uv-cache run --offline pytest -m sandbox --no-cov",
-    "loadtest:sandbox": "uv --cache-dir ../../.uv-cache run --offline python -m app.execution.loadtest"
+    "loadtest:sandbox": "uv --cache-dir ../../.uv-cache run --offline python -m app.execution.loadtest",
+    "personas": "uv --cache-dir ../../.uv-cache run --offline python -m app.interview.personas",
+    "histories": "uv --cache-dir ../../.uv-cache run --offline python -m app.learning.history_report"
   }
 }

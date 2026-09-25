@@ -28,6 +28,16 @@ jobs:
 
   api:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: reps
+          POSTGRES_PASSWORD: reps-ci-only
+          POSTGRES_DB: reps_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U reps" --health-interval 2s --health-timeout 3s --health-retries 15
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -45,7 +55,66 @@ jobs:
         run: uv run mypy app tests
       - working-directory: apps/api
         run: uv run pytest
-      - working-directory: apps/api
-        run: uv run alembic upgrade head --sql > /tmp/reps-migration.sql
+      - name: Core suites on PostgreSQL
+        working-directory: apps/api
+        env:
+          TEST_DATABASE_URL: postgresql+psycopg://reps:reps-ci-only@localhost:5432/reps_test
+        run: uv run pytest --no-cov tests/test_interviews.py tests/test_evaluation.py tests/test_scheduler.py tests/test_reviews_drills.py tests/test_local_data.py
+      - name: Migration round trip on PostgreSQL
+        working-directory: apps/api
+        env:
+          DATABASE_URL: postgresql+psycopg://reps:reps-ci-only@localhost:5432/reps_test
+        run: |
+          uv run python -c "from sqlalchemy import create_engine; from app.models import Base; Base.metadata.drop_all(create_engine('postgresql+psycopg://reps:reps-ci-only@localhost:5432/reps_test'))"
+          uv run alembic upgrade head && uv run alembic downgrade 20260820_0001 && uv run alembic upgrade head
       - working-directory: apps/api
         run: uv run python -m app.corpus.validate --execute
+      - working-directory: apps/api
+        env:
+          ENVIRONMENT: test
+          EXECUTION_BACKEND: trusted-subprocess
+        run: uv run python -m app.interview.personas
+
+  sandbox:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.22"
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: docker build -t reps-sandbox:dev infra/sandbox
+      - working-directory: apps/api
+        run: uv sync --frozen --all-groups
+      - working-directory: apps/api
+        run: uv run pytest -m sandbox --no-cov -v
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.20.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Node dependency audit (high and critical)
+        run: pnpm audit --prod --audit-level high
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.22"
+      - name: Python dependency audit
+        working-directory: apps/api
+        run: uv export --frozen --no-dev --no-hashes > /tmp/requirements.txt && uvx pip-audit -r /tmp/requirements.txt
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

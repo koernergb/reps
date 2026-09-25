@@ -7,6 +7,8 @@ from sqlalchemy import Select, inspect, select
 from sqlalchemy.orm import Session
 
 from app.deps import SessionDependency, UserDependency
+from app.errors import ApiError
+from app.execution.service import rate_limiter
 from app.local_mode import get_local_user
 from app.models import Base, InterviewSession
 from app.schemas import LocalDataExport, LocalProfile, ResetResult
@@ -109,6 +111,8 @@ def local_profile(session: SessionDependency) -> LocalProfile:
 
 @router.get("/export", response_model=LocalDataExport)
 def export_local_data(session: SessionDependency, user: UserDependency) -> LocalDataExport:
+    if not rate_limiter.allow(f"export:{user.id}", 10):
+        raise ApiError(429, "rate_limited", "Too many exports this minute. Try again shortly.")
     tables = export_user_data(session, user.id)
     legacy = {key: tables.pop(name) for name, key in EXPORT_KEYS.items()}
     return LocalDataExport(
@@ -127,6 +131,8 @@ def export_local_data(session: SessionDependency, user: UserDependency) -> Local
 
 @router.delete("/history", response_model=ResetResult)
 def reset_local_history(session: SessionDependency, user: UserDependency) -> ResetResult:
+    if not rate_limiter.allow(f"reset:{user.id}", 5):
+        raise ApiError(429, "rate_limited", "Too many resets this minute. Try again shortly.")
     deleted = delete_user_history(session, user.id)
     renamed = {EXPORT_KEYS.get(name, name): count for name, count in deleted.items()}
     return ResetResult(status="reset", deleted=renamed)

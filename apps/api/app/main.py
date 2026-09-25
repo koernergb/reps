@@ -1,3 +1,4 @@
+import time
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
 from uuid import uuid4
@@ -13,6 +14,7 @@ from app.config import get_settings
 from app.db import create_database_engine, create_session_factory, database_is_ready
 from app.errors import ApiError, api_error_handler
 from app.logging import configure_logging
+from app.metrics import request_metrics
 from app.routes.drills import router as drills_router
 from app.routes.executions import router as executions_router
 from app.routes.interviews import router as interviews_router
@@ -75,7 +77,19 @@ def create_app(engine_factory: Callable[[], Engine] = create_database_engine) ->
         request.state.request_id = request_id
         structlog.contextvars.clear_contextvars()
         structlog.contextvars.bind_contextvars(request_id=request_id)
-        response = await call_next(request)
+        started = time.perf_counter()
+        status = 500
+        try:
+            response = await call_next(request)
+            status = response.status_code
+        finally:
+            route = request.scope.get("route")
+            request_metrics.record(
+                request.method,
+                getattr(route, "path", "unmatched"),
+                (time.perf_counter() - started) * 1000,
+                status,
+            )
         response.headers["x-request-id"] = request_id
         return response
 

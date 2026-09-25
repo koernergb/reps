@@ -16,3 +16,19 @@ Use OpenAI as the initial backend provider. Select the exact model through the M
 - User text, code, and problem content are untrusted prompt inputs.
 - Send only the minimum bounded event context; never send hidden test bodies or credentials.
 - Do not permit provider content training without explicit user permission and compatible vendor terms.
+
+## Implementation note (2026-09-24)
+
+- `LLM_PROVIDER=offline` is the default: a deterministic policy interviewer, rubric grader, and
+  rule-based evaluator. The same code paths are the fallback when the provider fails, so the
+  product works without a key and nothing leaves the machine by default.
+- `LLM_PROVIDER=openai` uses Chat Completions with `response_format: json_schema` (`strict: true`)
+  generated from Pydantic models (`app/llm/provider.py`), per-request auth, bounded retries with
+  backoff for 429/5xx/timeouts, and schema-error feedback for malformed output. Exhausted retries
+  raise `LLMUnavailable`; callers fall back and record `llm_fallback` events.
+- The model is configurable (`OPENAI_MODEL`, default `gpt-4.1-mini` as a placeholder). **No model
+  has been selected through the evaluation harness yet**; that remains a Gate 4/5 task.
+- Every call is audited in `llm_calls` (task, provider, model, prompt id `<task>/<version>+<sha8>`,
+  schema version, status, error code, latency, tokens, attempts), without content.
+- Prompts live in `packages/prompts/`; untrusted content is fenced; hidden tests and reference
+  solutions are never included. A deterministic guard filters every interviewer message.

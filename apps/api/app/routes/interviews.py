@@ -6,8 +6,12 @@ from pydantic import BaseModel, Field
 
 from app.analytics import track
 from app.deps import SessionDependency, UserDependency
+from app.errors import ApiError
+from app.execution.service import rate_limiter
 from app.interview import service
 from app.interview.state_machine import State
+
+MESSAGES_PER_MINUTE = 30
 
 router = APIRouter(prefix="/v1/interviews", tags=["interviews"])
 Key = Field(min_length=8, max_length=80, pattern=r"^[A-Za-z0-9_-]+$")
@@ -107,6 +111,8 @@ def post_message(
     session_id: str, body: MessageRequest, db: SessionDependency, user: UserDependency
 ) -> dict[str, Any]:
     interview = service.get_owned(db, user.id, session_id)
+    if not rate_limiter.allow(f"messages:{user.id}", MESSAGES_PER_MINUTE):
+        raise ApiError(429, "rate_limited", "You're sending messages quickly. Wait a moment.")
     service.post_message(
         db,
         user,

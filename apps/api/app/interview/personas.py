@@ -26,8 +26,14 @@ from sqlalchemy.pool import StaticPool
 
 from app.corpus.loader import get_corpus
 from app.evaluation.service import latest_evaluation
-from app.execution.backends import ExecutionBackend, TrustedSubprocessBackend
-from app.execution.service import claim_next_job, completion_hooks, run_job, submit_job
+from app.execution.backends import ExecutionBackend
+from app.execution.service import (
+    build_backend,
+    claim_next_job,
+    completion_hooks,
+    run_job,
+    submit_job,
+)
 from app.interview import service
 from app.interview.guard import GuardContext, check_message, hidden_fingerprints
 from app.local_mode import LOCAL_USER_ID
@@ -93,7 +99,8 @@ def execute(
 
 def run_persona(path: Path, backend: ExecutionBackend | None = None) -> PersonaResult:
     fixture = yaml.safe_load(path.read_text())
-    backend = backend or TrustedSubprocessBackend()
+    # The configured backend: the Docker sandbox normally, trusted subprocess only in tests.
+    backend = backend or build_backend()
     db = isolated_session()
     completion_hooks[:] = [service.on_execution_completed]
     user = db.get(User, LOCAL_USER_ID)

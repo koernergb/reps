@@ -1,99 +1,146 @@
 # Reps
 
-Reps is an adaptive technical interview coach. It observes how a learner reasons, converts mistakes and hint usage into capability-level evidence, and schedules targeted practice until the learner can transfer the skill to an unseen problem.
+Reps is an adaptive technical-interview coach. It interviews you on curated Python problems,
+runs your code in an isolated sandbox, diagnoses capability-level weaknesses from what actually
+happened (tests, hints, explanations), schedules targeted spaced remediation, and checks transfer
+on unseen problems later.
 
-The repository is currently a **local-first, single-user prototype**. Human Gate 0 approved deferring authentication, deployment, and MAU planning while preserving the data and sandbox boundaries needed for later expansion. The product brief is in [`ai_native_spaced_repetition_interview_coach_build_brief_v2.md`](./ai_native_spaced_repetition_interview_coach_build_brief_v2.md), and the implementation sequence with mandatory human gates is in [`MILESTONES.md`](./MILESTONES.md).
+The product brief is [`ai_native_spaced_repetition_interview_coach_build_brief_v2.md`](./ai_native_spaced_repetition_interview_coach_build_brief_v2.md);
+the milestone plan with its human gates is [`MILESTONES.md`](./MILESTONES.md).
 
 > [!WARNING]
-> Local mode has no authentication. Keep the web, API, and database on your machine. Do not expose them through a tunnel, port forward, shared host, or public network.
+> **Local, single-user tool.** There is no authentication. Keep the web app, API, and database on
+> your machine; do not expose them through a tunnel, port forward, or shared host.
+
+> [!IMPORTANT]
+> Milestones 2–11 were implemented without their human gates, at the owner's instruction. All
+> content is unreviewed, the sandbox has had no human security review, and the AI interviewer has
+> never been run against a real model. See [`docs/human-gates/`](./docs/human-gates/) for what each
+> gate still requires.
+
+## Status
+
+| Milestone | Built | Human gate |
+| --- | --- | --- |
+| 0 Foundations | ✅ | Approved (local-first scope) |
+| 1 Local data, privacy controls | ✅ | Pending |
+| 2 Corpus (32 problems, 62 exercises, 64 capabilities) | ✅ | Not performed |
+| 3 Sandboxed execution + editor | ✅ | Not performed |
+| 4 Interview state machine, events, interviewer | ✅ | Not performed (no LLM run yet) |
+| 5 Evaluation and reports | ✅ | Not performed |
+| 6 Learner model | ✅ | Not performed (histories generated) |
+| 7 Remediation scheduler and reviews | ✅ | Not performed |
+| 8 Adaptive drills | ✅ | Not performed |
+| 9 Mock interviews | ✅ | Not performed |
+| 10 Solution-viewing remediation | ✅ | Not performed |
+| 11 Operability (local adaptation) | ✅ | Out of scope (no beta) |
+| 12 Beta decision | — | Needs real usage data |
 
 ## Prerequisites
 
-- Node.js 22 or newer (CI uses Node 24)
-- pnpm 11.20.0
-- Python 3.12
-- [uv](https://docs.astral.sh/uv/)
-- Docker with Compose for local PostgreSQL
-
-Docker is needed for the normal development database but not for the current unit test suite.
+- Node.js 22+ and pnpm 11.20.0
+- Python 3.12+ and [uv](https://docs.astral.sh/uv/)
+- Docker Desktop (PostgreSQL and the code sandbox)
 
 ## Set up
 
 ```bash
 cp .env.example .env
 make setup
-make services-up
-make sandbox-build   # learner code only runs in this Docker image
+make services-up     # PostgreSQL in Docker
+make sandbox-build   # learner code only ever runs in this image
 make db-migrate
-make db-seed
+make db-seed         # syncs the curated corpus into the database
 ```
 
-Run the web app, API, and execution worker:
+## Run
 
 ```bash
 make dev
 ```
 
-- Web: http://localhost:3000
-- API docs: http://127.0.0.1:8000/docs
-- Liveness: http://127.0.0.1:8000/health
-- Database readiness: http://127.0.0.1:8000/ready
-- Seeded problem API: http://127.0.0.1:8000/v1/problems
+This starts the web app (http://localhost:3000), the API (http://127.0.0.1:8000, docs at
+`/docs`), and the execution worker. If those ports are taken, set `API_PORT`, `WEB_ORIGIN`, and
+`NEXT_PUBLIC_API_URL` in `.env` (for example `API_PORT=8100` and
+`NEXT_PUBLIC_API_URL=http://127.0.0.1:8100`).
 
-To run the applications separately:
+### AI provider
 
-```bash
-pnpm dev:web
-pnpm dev:api
-```
+By default `LLM_PROVIDER=offline`: the interviewer, answer grader, and evaluator are deterministic
+built-in policies, and nothing leaves your machine. To use OpenAI, set `LLM_PROVIDER=openai` and
+`OPENAI_API_KEY` (and optionally `OPENAI_MODEL`). What is sent is listed on the `/privacy` page.
+
+## Using Reps
+
+1. **Dashboard** → *Start a 10-minute drill* (due reviews plus your weakest skills) or *Start mock
+   interview*.
+2. **Interview**: choose Practice (up to five graded hints, coaching, no timer) or Mock (45 minutes,
+   one nudge, scorecard). Talk to the interviewer, move through phases, run and submit code. The
+   pattern name is hidden so recognizing it is part of the exercise.
+3. **Report**: exact facts (tests, hints, complexity), interpretation with linked evidence, and the
+   reviews scheduled from it. Flag anything inaccurate; flagged evidence is excluded.
+4. **Reviews**: recall, explanation, trace, debug, rebuild, transfer, and unseen re-interviews,
+   each with a "why now". Missed items get a Rebuild step and come back tomorrow.
+5. **Progress**: capability bands (Weak/Developing/Reliable/Strong) with plain-language
+   explanations and an evidence trail.
+6. **Problems**: free practice; *View solution* is consentful and schedules remediation instead
+   of marking the problem solved.
 
 ## Verify
 
 ```bash
-make check
+make check                                 # lint, types, unit tests (API + web)
 pnpm build
+pnpm corpus:validate                       # run every reference and known-wrong solution
+pnpm --filter @reps/api personas           # 9 scripted interview personas
+make sandbox-test                          # adversarial suite against the Docker sandbox
+pnpm --filter @reps/web e2e                # Playwright against a running stack (make dev)
+TEST_DATABASE_URL=postgresql+psycopg://reps:reps-local-only@127.0.0.1:5432/reps_test \
+  pnpm --filter @reps/api test             # run the API suite on PostgreSQL
+scripts/verify-restore.sh                  # backup → isolated restore → row-count comparison
 ```
 
-The API unit tests use in-memory SQLite only to verify foundation behavior. PostgreSQL remains the product database and migration target.
+## Data controls
 
-Migration tests upgrade, downgrade, and re-upgrade the complete domain schema. Seed data is idempotent and contains one stable local learner plus three development-only problems. Hidden tests and reference solutions live in a separate evaluator table and are never returned by public problem or export APIs.
-
-## Local data controls
-
-- `GET /v1/me/export` exports the singleton learner's profile, attempts, capability state, interview sessions/events, and hints.
-- `DELETE /v1/me/history` permanently resets learner history while preserving the local profile and problem corpus.
-- The Settings screen provides both actions with a destructive-action confirmation.
-
-Authentication is a release blocker before shared or hosted use. The schema retains `user_id` ownership now so adding identity later does not require redefining learning evidence.
+Settings exports every learner-owned table as JSON (hidden tests and reference solutions are
+never included), rebuilds skill estimates from evidence, and resets history. A test fails if a
+new table holding learner data is not covered by export and reset. Backups written by
+`scripts/backup-db.sh` contain learner content; keep them local.
 
 ## Repository layout
 
 ```text
-apps/web                 Next.js web application
-apps/api                 FastAPI service and Alembic migrations
-packages/shared-types    Generated API contracts (future milestone)
-packages/problem-corpus  Reviewed problem definitions (Milestone 2)
-packages/prompts         Versioned AI prompts and fixtures (Milestone 4)
-infra/docker             Container infrastructure notes
-infra/sandbox            Isolated execution service boundary (Milestone 3)
-docs/decisions           Architectural decision records
+apps/web                  Next.js app (workspace, interviews, reports, reviews, drills, progress)
+apps/api                  FastAPI API, execution worker, Alembic migrations
+  app/corpus              corpus schema, loader, validator
+  app/execution           sandbox backends, job service, result normalization
+  app/interview           state machine, events, policies, interviewer, guard, personas
+  app/evaluation          facts, rules, report schema, evaluation service
+  app/learning            evidence, learner model, pipeline, outcome metrics
+  app/scheduling          remediation scheduler
+  app/reviews, app/drills review flows and drill composer
+  app/llm                 provider adapter, prompts, audit
+packages/problem-corpus   taxonomy, problems, exercises (source of truth)
+packages/prompts          versioned prompts and persona fixtures
+infra/sandbox             sandbox image and harness
+docs/                     ADRs, human-gate packets, operations, metrics, learning model
+scripts/                  backup, restore, restore verification
 ```
 
-## Product constraints
+## Documentation
 
-- Schedule capabilities, not cards.
-- Deterministic execution decides whether code works.
-- The LLM handles conversation and semantic interpretation only through validated schemas.
-- Submitted learner code never runs in the web or API process.
-- Voice, course ingestion, social features, and unrestricted generated problems are post-MVP.
-- Stop at every human gate in `MILESTONES.md`; do not code around required validation.
+- [`docs/operations.md`](./docs/operations.md): processes, metrics, SLOs, kill switches, runbooks
+- [`docs/learning-model.md`](./docs/learning-model.md): learner model, scheduler, drill composer
+- [`docs/metrics.md`](./docs/metrics.md): learning metrics and analytics event catalog
+- [`docs/threat-model.md`](./docs/threat-model.md) and ADRs in [`docs/decisions/`](./docs/decisions/)
+- [`packages/problem-corpus/CONTRIBUTING.md`](./packages/problem-corpus/CONTRIBUTING.md): authoring content
 
-## Configuration
+## Known limitations
 
-`.env.example` lists supported local variables. Startup configuration is validated by Pydantic. Do not commit `.env` or credentials.
-
-The API returns an `X-Request-ID` response header and a matching `request_id` in error bodies. Use it when reporting failures.
-
-## Contributing
-
-Keep changes scoped to the active milestone. Add tests with behavior, preserve user data, and document new configuration or operational assumptions. Architecture decisions with lasting consequences belong in `docs/decisions/`.
+- No authentication; not safe to expose beyond localhost.
+- All corpus content is unreviewed; the offline grader uses keyword rubrics and can under-credit
+  paraphrases.
+- The offline interviewer is scripted; realistic conversation requires `LLM_PROVIDER=openai`,
+  which has only been exercised against mocked responses.
+- Docker Desktop is the isolation boundary; a hosted deployment needs a microVM/gVisor sandbox
+  and a new security review.
