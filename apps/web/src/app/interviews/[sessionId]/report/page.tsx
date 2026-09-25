@@ -57,6 +57,7 @@ export default function ReportPage({ params }: { params: Promise<{ sessionId: st
   const [data, setData] = useState<InterviewReport | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [polls, setPolls] = useState(0);
   const [flagging, setFlagging] = useState<string | null>(null);
   const [reason, setReason] = useState("");
 
@@ -72,7 +73,7 @@ export default function ReportPage({ params }: { params: Promise<{ sessionId: st
   useEffect(() => { load(); }, [load]);
   useEffect(() => {
     if (!pending) return;
-    const timer = window.setInterval(load, 2500);
+    const timer = window.setInterval(() => { setPolls((count) => count + 1); load(); }, 2500);
     return () => window.clearInterval(timer);
   }, [pending, load]);
 
@@ -90,6 +91,7 @@ export default function ReportPage({ params }: { params: Promise<{ sessionId: st
   async function retry() {
     try {
       setData(await retryReport(sessionId));
+      setPending(false);
     } catch (reason_) {
       setError(errorMessage(reason_, "Retry failed."));
     }
@@ -101,6 +103,12 @@ export default function ReportPage({ params }: { params: Promise<{ sessionId: st
         <Link className="inline-flex items-center gap-2 text-sm font-semibold text-green-800 hover:underline" href="/interviews"><ArrowLeft aria-hidden size={16} /> Interviews</Link>
         {error ? <p className="mt-4 rounded-lg bg-red-50 p-3 text-red-900" role="alert">{error}</p> : null}
         {pending ? <p className="mt-8 flex items-center gap-2 text-[var(--muted)]"><LoaderCircle aria-hidden className="animate-spin" size={18} /> Preparing your report…</p> : null}
+        {pending && polls >= 4 ? (
+          <div className="mt-4">
+            <p className="text-sm text-[var(--muted)]">This is taking longer than expected.</p>
+            <Button className="mt-2" onClick={() => void retry()} variant="secondary"><RefreshCw aria-hidden className="mr-1.5" size={14} /> Generate report</Button>
+          </div>
+        ) : null}
         {data ? <Report data={data} flagging={flagging} onFlag={setFlagging} onRetry={retry} reason={reason} setReason={setReason} submitFlag={submitFlag} /> : null}
       </div>
     </AppShell>
