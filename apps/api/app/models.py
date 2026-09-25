@@ -648,3 +648,26 @@ class LLMCall(Base):
     output_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class LLMCredential(Base):
+    """A learner's AI provider key and model choice.
+
+    The key is stored in the local database (plaintext; the database never leaves this machine),
+    is never returned by the API beyond a 4-character hint, never logged, excluded from exports,
+    and kept when learning history is reset.
+    """
+
+    __tablename__ = "llm_credentials"
+
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    provider: Mapped[str] = mapped_column(String(20), primary_key=True)
+    api_key: Mapped[str | None] = mapped_column(Text)
+    model: Mapped[str | None] = mapped_column(String(120))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    __table_args__ = (
+        CheckConstraint("provider IN ('openai', 'gemini')", name="ck_llm_credentials_provider"),
+    )

@@ -79,18 +79,97 @@ def strict_json_schema(model: type[BaseModel]) -> dict[str, Any]:
     return visit(model.model_json_schema())  # type: ignore[no-any-return]
 
 
-class OpenAIProvider:
+def inline_refs(schema: dict[str, Any]) -> dict[str, Any]:
+    """Replace `$ref` pointers with their definitions (for providers without `$defs` support)."""
+    definitions = schema.get("$defs", {})
+
+    def visit(node: Any) -> Any:
+        if isinstance(node, dict):
+            if "$ref" in node:
+                return visit(definitions[node["$ref"].rsplit("/", 1)[-1]])
+            return {key: visit(value) for key, value in node.items() if key != "$defs"}
+        if isinstance(node, list):
+            return [visit(item) for item in node]
+        return node
+
+    return visit(schema)  # type: ignore[no-any-return]
+
+
+def gemini_json_schema(model: type[BaseModel]) -> dict[str, Any]:
+    """Gemini's OpenAI-compatible endpoint accepts a narrower schema dialect: no `$defs`, and
+    `additionalProperties` is not supported. Responses are still validated with Pydantic."""
+
+    def strip(node: Any) -> Any:
+        if isinstance(node, dict):
+            return {
+                key: strip(value) for key, value in node.items() if key != "additionalProperties"
+            }
+        if isinstance(node, list):
+            return [strip(item) for item in node]
+        return node
+
+    return strip(inline_refs(strict_json_schema(model)))  # type: ignore[no-any-return]
+
+
+def _parse_json(content: str) -> Any:
+    text = content.strip()
+    if text.startswith("```"):
+        text = text.split("\n", 1)[1] if "\n" in text else ""
+        text = text.rsplit("```", 1)[0]
+    return json.loads(text)
+
+
+def _provider_error(response: httpx.Response) -> str:
+    try:
+        body = response.json()
+        detail = body[0] if isinstance(body, list) else body
+        message = (detail.get("error") or {}).get("message") or ""
+    except (ValueError, AttributeError, IndexError):
+        message = ""
+    return f"{response.status_code}: {message[:300]}" if message else str(response.status_code)
+
+
+class OpenAICompatibleProvider:
+    """Chat Completions with JSON-schema structured output (OpenAI and compatible APIs)."""
+
     name = "openai"
 
-    def __init__(self, settings: Settings, client: httpx.Client | None = None) -> None:
-        if not settings.openai_api_key:
-            raise ValueError("OpenAI provider requires OPENAI_API_KEY")
-        self.model = settings.openai_model
-        self.max_retries = settings.llm_max_retries
-        self._headers = {"Authorization": f"Bearer {settings.openai_api_key}"}
-        self._client = client or httpx.Client(
-            base_url=settings.openai_base_url, timeout=settings.llm_timeout_s
-        )
+    def __init__(
+        self,
+        *,
+        api_key: str,
+        model: str,
+        base_url: str,
+        timeout_s: float = 30,
+        max_retries: int = 2,
+        client: httpx.Client | None = None,
+    ) -> None:
+        if not api_key:
+            raise ValueError(f"{self.name} provider requires an API key")
+        self.model = model
+        self.max_retries = max_retries
+        self._headers = {"Authorization": f"Bearer {api_key}"}
+        self._client = client or httpx.Client(base_url=base_url, timeout=timeout_s)
+
+    def response_format(self, schema: type[BaseModel]) -> dict[str, Any]:
+        return {
+            "type": "json_schema",
+            "json_schema": {
+                "name": schema.__name__,
+                "schema": strict_json_schema(schema),
+                "strict": True,
+            },
+        }
+
+    def list_models(self) -> list[str]:
+        try:
+            response = self._client.get("/models", headers=self._headers)
+        except httpx.HTTPError as exc:
+            raise LLMUnavailable("network_error", "Could not reach the provider.") from exc
+        if response.status_code >= 400:
+            raise LLMUnavailable("provider_rejected", _provider_error(response))
+        ids = [str(item.get("id", "")) for item in response.json().get("data", [])]
+        return sorted({item.removeprefix("models/") for item in ids if item})
 
     def generate(self, *, system: str, user: str, schema: type[T]) -> LLMResult[T]:
         messages: list[dict[str, str]] = [
@@ -109,14 +188,7 @@ class OpenAIProvider:
                         "model": self.model,
                         "messages": messages,
                         "temperature": 0.2,
-                        "response_format": {
-                            "type": "json_schema",
-                            "json_schema": {
-                                "name": schema.__name__,
-                                "schema": strict_json_schema(schema),
-                                "strict": True,
-                            },
-                        },
+                        "response_format": self.response_format(schema),
                     },
                 )
             except httpx.TimeoutException:
@@ -130,9 +202,7 @@ class OpenAIProvider:
                 time.sleep(min(2.0, 0.25 * 2**attempt))
                 continue
             if response.status_code >= 400:
-                raise LLMUnavailable(
-                    "provider_rejected", "The model provider rejected the request."
-                )
+                raise LLMUnavailable("provider_rejected", _provider_error(response))
             body = response.json()
             usage = body.get("usage") or {}
             input_tokens += int(usage.get("prompt_tokens", 0))
@@ -142,7 +212,7 @@ class OpenAIProvider:
                 last_code = "refusal"
                 continue
             try:
-                value = schema.model_validate(json.loads(message.get("content") or ""))
+                value = schema.model_validate(_parse_json(message.get("content") or ""))
             except (json.JSONDecodeError, ValidationError) as exc:
                 last_code = "malformed_output"
                 messages = [
@@ -169,9 +239,75 @@ class OpenAIProvider:
         )
 
 
-def build_provider(settings: Settings | None = None) -> LLMProvider | None:
-    """Return the configured provider, or None for deterministic offline policies."""
+class OpenAIProvider(OpenAICompatibleProvider):
+    name = "openai"
+
+
+class GeminiProvider(OpenAICompatibleProvider):
+    """Google Gemini through its OpenAI-compatible endpoint."""
+
+    name = "gemini"
+
+    def response_format(self, schema: type[BaseModel]) -> dict[str, Any]:
+        return {
+            "type": "json_schema",
+            "json_schema": {"name": schema.__name__, "schema": gemini_json_schema(schema)},
+        }
+
+
+@dataclass(frozen=True)
+class ProviderChoice:
+    """Selection made in Settings. `provider="env"` defers to `.env` configuration."""
+
+    provider: str
+    api_key: str | None = None
+    model: str | None = None
+
+
+# Set at API startup and whenever Settings change (see app.llm.runtime).
+_runtime_choice: ProviderChoice | None = None
+
+
+def set_runtime_choice(choice: ProviderChoice | None) -> None:
+    global _runtime_choice
+    _runtime_choice = choice
+
+
+def make_provider(
+    provider: str, api_key: str, model: str | None, settings: Settings | None = None
+) -> OpenAICompatibleProvider:
     settings = settings or get_settings()
-    if settings.llm_provider == "openai":
-        return OpenAIProvider(settings)
+    common = {"timeout_s": settings.llm_timeout_s, "max_retries": settings.llm_max_retries}
+    if provider == "openai":
+        return OpenAIProvider(
+            api_key=api_key,
+            model=model or settings.openai_model,
+            base_url=settings.openai_base_url,
+            **common,  # type: ignore[arg-type]
+        )
+    if provider == "gemini":
+        return GeminiProvider(
+            api_key=api_key,
+            model=model or settings.gemini_model,
+            base_url=settings.gemini_base_url,
+            **common,  # type: ignore[arg-type]
+        )
+    raise ValueError(f"unknown provider {provider}")
+
+
+def build_provider(settings: Settings | None = None) -> LLMProvider | None:
+    """Return the active provider, or None for deterministic offline policies.
+
+    A choice saved in Settings wins; otherwise `.env` (`LLM_PROVIDER`) decides.
+    """
+    choice = _runtime_choice
+    if choice is not None and choice.provider != "env":
+        if choice.provider == "offline" or not choice.api_key:
+            return None
+        return make_provider(choice.provider, choice.api_key, choice.model, settings)
+    settings = settings or get_settings()
+    if settings.llm_provider == "openai" and settings.openai_api_key:
+        return make_provider("openai", settings.openai_api_key, settings.openai_model, settings)
+    if settings.llm_provider == "gemini" and settings.gemini_api_key:
+        return make_provider("gemini", settings.gemini_api_key, settings.gemini_model, settings)
     return None

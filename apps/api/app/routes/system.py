@@ -8,6 +8,7 @@ from sqlalchemy import select
 
 from app.config import get_settings
 from app.deps import SessionDependency, UserDependency
+from app.llm.provider import build_provider
 from app.metrics import (
     evaluation_metrics,
     execution_metrics,
@@ -57,7 +58,7 @@ def system_status() -> dict[str, Any]:
             "backend": settings.execution_backend,
             "sandbox_ready": sandbox_ready() if settings.execution_enabled else False,
         },
-        "llm": {"provider": settings.llm_provider},
+        "llm": {"provider": active_llm_provider()},
         "features": {
             "interviews": settings.feature_interviews,
             "semantic_evaluation": settings.feature_semantic_evaluation,
@@ -135,3 +136,8 @@ def diagnostics(db: SessionDependency, user: UserDependency) -> dict[str, Any]:
             for call in calls
         ],
     }
+
+
+def active_llm_provider() -> str:
+    provider = build_provider()
+    return provider.name if provider is not None else "offline"

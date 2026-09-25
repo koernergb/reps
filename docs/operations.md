@@ -44,7 +44,7 @@ mode must alert on these.
 | Variable | Effect |
 | --- | --- |
 | `EXECUTION_ENABLED=false` | New executions rejected with 503; queued jobs expire |
-| `LLM_PROVIDER=offline` | No data leaves the machine; deterministic interviewer/grader/evaluator |
+| Settings → AI provider → Offline, or `LLM_PROVIDER=offline` | No data leaves the machine; deterministic interviewer/grader/evaluator |
 | `FEATURE_INTERVIEWS`, `FEATURE_MOCK_MODE`, `FEATURE_DRILLS`, `FEATURE_SCHEDULING`, `FEATURE_SEMANTIC_EVALUATION`, `FEATURE_SOLUTION_VIEWING` | Disable each surface; APIs return 503 with an actionable message |
 | `ALLOW_UNREVIEWED_CONTENT=false` | Only Gate-2-reviewed problems can be interviewed |
 
@@ -75,8 +75,10 @@ contains learner content). `scripts/verify-restore.sh` restores the newest backu
 Restore over the live DB only with `scripts/restore-db.sh <dump> reps --yes` after stopping
 `make dev`.
 
-**Key rotation.** `OPENAI_API_KEY` lives only in `.env`, is sent only in the Authorization
-header, and is never logged or stored. Rotate it at the provider, update `.env`, restart.
+**Key rotation.** Keys saved in Settings live in the `llm_credentials` table (local database,
+plaintext); keys in `.env` live only there. Either kind is sent only in the Authorization header
+and never logged or exported. Rotate at the provider, then paste the new key in Settings (or
+update `.env` and restart). "Reset history" keeps saved keys; remove them in Settings.
 
 **Deletion propagation.** "Reset history" deletes every learner-owned table (enforced by a
 test that fails when a new table with `user_id` is not registered). Logs and analytics carry no

@@ -486,3 +486,35 @@ export function getSettings(): Promise<LearnerSettings> {
 export function updateSettings(body: Partial<LearnerSettings>): Promise<LearnerSettings> {
   return apiRequest("/v1/settings", { method: "PATCH", body: JSON.stringify(body) });
 }
+
+// --- AI provider settings -------------------------------------------------------------
+
+export type LLMProviderName = "openai" | "gemini";
+export type LLMChoice = "env" | "offline" | LLMProviderName;
+export type LLMSettings = {
+  active: LLMChoice;
+  effective: string;
+  env_provider: string;
+  providers: Record<LLMProviderName, { has_key: boolean; key_hint: string | null; model: string; env_key_present: boolean }>;
+  storage_note: string;
+};
+
+export function getLLMSettings(): Promise<LLMSettings> {
+  return apiRequest("/v1/settings/llm");
+}
+
+export function updateLLMSettings(body: {
+  active?: LLMChoice;
+  openai?: { api_key?: string; clear_key?: boolean; model?: string };
+  gemini?: { api_key?: string; clear_key?: boolean; model?: string };
+}): Promise<LLMSettings> {
+  return apiRequest("/v1/settings/llm", { method: "PUT", body: JSON.stringify(body) });
+}
+
+export function listLLMModels(provider: LLMProviderName): Promise<{ provider: string; models: string[] }> {
+  return apiRequest(`/v1/settings/llm/${provider}/models`);
+}
+
+export function testLLM(provider: LLMProviderName): Promise<{ ok: boolean; model: string; latency_ms?: number; error_code: string | null; message: string }> {
+  return apiRequest("/v1/settings/llm/test", { method: "POST", body: JSON.stringify({ provider }) });
+}

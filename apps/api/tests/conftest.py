@@ -62,10 +62,13 @@ def client(seeded_engine: Engine) -> Iterator[TestClient]:
 def reset_rate_limits() -> Iterator[None]:
     from app.config import get_settings
     from app.execution.service import rate_limiter
+    from app.llm.provider import set_runtime_choice
 
     get_settings.cache_clear()
     rate_limiter.reset()
+    set_runtime_choice(None)
     yield
+    set_runtime_choice(None)
     get_settings.cache_clear()
 
 

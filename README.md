@@ -66,9 +66,16 @@ This starts the web app (http://localhost:3000), the API (http://127.0.0.1:8000,
 
 ### AI provider
 
-By default `LLM_PROVIDER=offline`: the interviewer, answer grader, and evaluator are deterministic
-built-in policies, and nothing leaves your machine. To use OpenAI, set `LLM_PROVIDER=openai` and
-`OPENAI_API_KEY` (and optionally `OPENAI_MODEL`). What is sent is listed on the `/privacy` page.
+By default the interviewer, answer grader, and evaluator are deterministic built-in policies, and
+nothing leaves your machine. To use a model, open **Settings → AI provider**, paste an OpenAI or
+Google Gemini API key, pick a model (*Load models* lists what your key can use), press *Test
+connection*, and select the provider. Keys are stored in the local database, never shown again,
+never logged, and excluded from exports. You can instead configure `LLM_PROVIDER`,
+`OPENAI_API_KEY`/`OPENAI_MODEL`, or `GEMINI_API_KEY`/`GEMINI_MODEL` in `.env`; a choice made in
+Settings takes precedence. What is sent is listed on the `/privacy` page.
+
+Gemini is called through Google's OpenAI-compatible endpoint with a simplified JSON schema; every
+reply is still validated, and failures fall back to the built-in policies.
 
 ## Using Reps
 

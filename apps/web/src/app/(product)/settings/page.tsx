@@ -3,6 +3,7 @@
 import { Download, RefreshCcw, RotateCcw, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { AIProviderSettings } from "@/components/ai-provider-settings";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { errorMessage, exportLocalData, getSettings, rebuildLearnerState, resetLocalHistory, updateSettings, type LearnerSettings } from "@/lib/api";
@@ -74,6 +75,7 @@ export default function SettingsPage() {
           <Button className="mt-6" disabled={busy} onClick={() => run(async () => { setSettings(await updateSettings(settings)); return "Settings saved."; })}><Save aria-hidden className="mr-2" size={16} /> Save</Button>
         </section>
       ) : null}
+      <AIProviderSettings />
       <section className="mt-5 rounded-2xl border bg-white p-6 sm:p-8">
         <h2 className="text-xl font-bold">Export</h2>
         <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Download everything Reps stores about your learning: attempts, capability evidence and state, interviews and events, submitted code, reports, reviews, drills, hints, and analytics. Hidden tests and reference solutions are never included.</p>

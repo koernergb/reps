@@ -42,10 +42,13 @@ class Settings(BaseSettings):
     allow_unreviewed_content: bool = True
 
     # LLM provider (Milestone 4+). Without a key, deterministic offline policies are used.
-    llm_provider: Literal["openai", "offline"] = "offline"
+    llm_provider: Literal["openai", "gemini", "offline"] = "offline"
     openai_api_key: str | None = None
     openai_model: str = "gpt-4.1-mini"
     openai_base_url: str = "https://api.openai.com/v1"
+    gemini_api_key: str | None = None
+    gemini_model: str = "gemini-2.5-flash"
+    gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai"
     llm_timeout_s: float = Field(default=30, gt=0, le=120)
     llm_max_retries: int = Field(default=2, ge=0, le=5)
 
@@ -58,6 +61,8 @@ class Settings(BaseSettings):
             )
         if self.llm_provider == "openai" and not self.openai_api_key:
             raise ValueError("LLM_PROVIDER=openai requires OPENAI_API_KEY.")
+        if self.llm_provider == "gemini" and not self.gemini_api_key:
+            raise ValueError("LLM_PROVIDER=gemini requires GEMINI_API_KEY.")
         return self
 
 

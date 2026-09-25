@@ -134,15 +134,12 @@ class Answer(BaseModel):
 
 
 def openai_provider(handler: Any, retries: int = 1) -> OpenAIProvider:
-    settings = Settings(
-        llm_provider="openai",
-        openai_api_key="test-key",
-        llm_max_retries=retries,
-        environment="test",
-        execution_backend="trusted-subprocess",
-    )
     return OpenAIProvider(
-        settings, client=httpx.Client(transport=httpx.MockTransport(handler), base_url="https://x")
+        api_key="test-key",
+        model="test-model",
+        base_url="https://x",
+        max_retries=retries,
+        client=httpx.Client(transport=httpx.MockTransport(handler), base_url="https://x"),
     )
 
 

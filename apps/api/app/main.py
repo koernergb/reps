@@ -13,6 +13,9 @@ from starlette.middleware.base import RequestResponseEndpoint
 from app.config import get_settings
 from app.db import create_database_engine, create_session_factory, database_is_ready
 from app.errors import ApiError, api_error_handler
+from app.llm.provider import set_runtime_choice
+from app.llm.runtime import refresh as refresh_llm_choice
+from app.local_mode import LOCAL_USER_ID
 from app.logging import configure_logging
 from app.metrics import request_metrics
 from app.routes.drills import router as drills_router
@@ -39,7 +42,10 @@ def create_app(engine_factory: Callable[[], Engine] = create_database_engine) ->
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.database_engine = engine_factory()
         app.state.session_factory = create_session_factory(app.state.database_engine)
+        with app.state.session_factory() as session:
+            refresh_llm_choice(session, LOCAL_USER_ID)
         yield
+        set_runtime_choice(None)
         app.state.database_engine.dispose()
 
     application = FastAPI(

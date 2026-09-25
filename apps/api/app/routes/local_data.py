@@ -25,6 +25,8 @@ class OwnedTable:
     private_columns: frozenset[str] = field(default_factory=frozenset)
     # Tables without a user_id column are owned through their interview session.
     via_session: bool = False
+    # Settings rather than learning history: exported, but kept by "reset history".
+    keep_on_reset: bool = False
 
 
 # Order matters for deletion: children before parents.
@@ -43,6 +45,7 @@ OWNED_TABLES: tuple[OwnedTable, ...] = (
     OwnedTable("drill_sessions"),
     OwnedTable("learner_capability_states"),
     OwnedTable("interview_sessions"),
+    OwnedTable("llm_credentials", private_columns=frozenset({"api_key"}), keep_on_reset=True),
 )
 EXPORT_KEYS = {
     "review_attempts": "review_attempts",
@@ -89,6 +92,8 @@ def export_user_data(session: Session, user_id: str) -> dict[str, list[dict[str,
 def delete_user_history(session: Session, user_id: str) -> dict[str, int]:
     deleted: dict[str, int] = {}
     for table in OWNED_TABLES:
+        if table.keep_on_reset:
+            continue
         rows = session.scalars(owned_query(table, user_id)).all()
         for row in rows:
             session.delete(row)
