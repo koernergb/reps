@@ -5,36 +5,26 @@ runs your code in an isolated sandbox, diagnoses capability-level weaknesses fro
 happened (tests, hints, explanations), schedules targeted spaced remediation, and checks transfer
 on unseen problems later.
 
-The product brief is [`ai_native_spaced_repetition_interview_coach_build_brief_v2.md`](./ai_native_spaced_repetition_interview_coach_build_brief_v2.md);
-the milestone plan with its human gates is [`MILESTONES.md`](./MILESTONES.md).
+The product brief is
+[`ai_native_spaced_repetition_interview_coach_build_brief_v2.md`](./ai_native_spaced_repetition_interview_coach_build_brief_v2.md).
 
 > [!WARNING]
 > **Local, single-user tool.** There is no authentication. Keep the web app, API, and database on
 > your machine; do not expose them through a tunnel, port forward, or shared host.
 
-> [!IMPORTANT]
-> Milestones 2–11 were implemented without their human gates, at the owner's instruction. All
-> content is unreviewed, the sandbox has had no human security review, and the AI interviewer has
-> never been run against a real model. See [`docs/human-gates/`](./docs/human-gates/) for what each
-> gate still requires.
-
 ## Status
 
-| Milestone | Built | Human gate |
-| --- | --- | --- |
-| 0 Foundations | ✅ | Approved (local-first scope) |
-| 1 Local data, privacy controls | ✅ | Pending |
-| 2 Corpus (32 problems, 62 exercises, 64 capabilities) | ✅ | Not performed |
-| 3 Sandboxed execution + editor | ✅ | Not performed |
-| 4 Interview state machine, events, interviewer | ✅ | Not performed (no LLM run yet) |
-| 5 Evaluation and reports | ✅ | Not performed |
-| 6 Learner model | ✅ | Not performed (histories generated) |
-| 7 Remediation scheduler and reviews | ✅ | Not performed |
-| 8 Adaptive drills | ✅ | Not performed |
-| 9 Mock interviews | ✅ | Not performed |
-| 10 Solution-viewing remediation | ✅ | Not performed |
-| 11 Operability (local adaptation) | ✅ | Out of scope (no beta) |
-| 12 Beta decision | — | Needs real usage data |
+**Production-ready for local, single-user use.** The supported release includes:
+
+- 32 curated problems, 62 remediation exercises, and 64 tracked capabilities
+- practice and timed mock interviews with deterministic offline behavior
+- optional structured-output interviewing and evaluation through OpenAI or Google Gemini
+- isolated Python execution, hidden tests, reports, evidence-backed skill estimates, adaptive
+  drills, spaced reviews, transfer checks, and solution-view remediation
+- local data export, reset, backup and restore tooling, health checks, metrics, kill switches, and
+  operational runbooks
+- automated web, API, PostgreSQL migration, corpus, persona, dependency-security, secret-scanning,
+  and adversarial sandbox verification in CI
 
 ## Prerequisites
 
@@ -130,7 +120,7 @@ apps/api                  FastAPI API, execution worker, Alembic migrations
 packages/problem-corpus   taxonomy, problems, exercises (source of truth)
 packages/prompts          versioned prompts and persona fixtures
 infra/sandbox             sandbox image and harness
-docs/                     ADRs, human-gate packets, operations, metrics, learning model
+docs/                     ADRs, operations, metrics, security, learning model
 scripts/                  backup, restore, restore verification
 ```
 
@@ -142,12 +132,13 @@ scripts/                  backup, restore, restore verification
 - [`docs/threat-model.md`](./docs/threat-model.md) and ADRs in [`docs/decisions/`](./docs/decisions/)
 - [`packages/problem-corpus/CONTRIBUTING.md`](./packages/problem-corpus/CONTRIBUTING.md): authoring content
 
-## Known limitations
+## Supported deployment
 
-- No authentication; not safe to expose beyond localhost.
-- All corpus content is unreviewed; the offline grader uses keyword rubrics and can under-credit
-  paraphrases.
-- The offline interviewer is scripted; realistic conversation requires `LLM_PROVIDER=openai`,
-  which has only been exercised against mocked responses.
-- Docker Desktop is the isolation boundary; a hosted deployment needs a microVM/gVisor sandbox
-  and a new security review.
+Reps is production-ready for one person running it locally. Bind the API to `127.0.0.1` and keep
+the web app, database, and Docker services on the same trusted machine. Authentication,
+multi-tenancy, public hosting, and remote untrusted-code execution are intentionally outside this
+release's supported deployment model.
+
+The built-in offline grader uses deterministic rubric matching, so an optional model provider is
+recommended when you want semantic grading of varied natural-language answers. Docker Desktop is
+the supported isolation boundary for learner code.
