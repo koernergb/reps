@@ -23,7 +23,7 @@ from app.main import create_app
 from app.models import Base, LLMCredential
 from app.seed import seed_database
 
-GEMINI_KEY = "AIzaSy-test-key-1234567890abcd"
+GEMINI_KEY = "test-gemini-key-not-a-secret-abcd"
 
 
 def put(client: TestClient, body: dict[str, Any]) -> Any:
