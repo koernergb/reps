@@ -16,12 +16,12 @@ pnpm corpus:validate            # schema + lint + execute every reference and kn
 pnpm corpus:report              # coverage by topic, role, difficulty, capability type, transfer group
 ```
 
-Current coverage: 44 problems across 10 patterns (each with recognition/canonical/boundary/
+Current coverage: 50 problems across 10 patterns (each with recognition/canonical/boundary/
 transfer roles where the pattern supports them), 74 exercises, 64 capabilities with no
 uncovered capability. All content is `status: development` — it has **not** passed Human
 Gate 2 review (see `docs/human-gates/gate-2-review.md`).
 
 Problems declare curriculum membership with `collections`. The corpus currently preserves the
-original 32-problem `core` track and covers 33 of the `blind-75` track.
+original 32-problem `core` track and covers 39 of the `blind-75` track.
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for the authoring and review workflow.

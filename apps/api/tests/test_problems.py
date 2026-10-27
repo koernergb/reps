@@ -79,7 +79,7 @@ def test_lists_problems_without_evaluator_material(client: TestClient) -> None:
     for field in EVALUATOR_FIELDS:
         assert field not in response.text
     assert sum("core" in item["collections"] for item in body) == 32
-    assert sum("blind-75" in item["collections"] for item in body) == 33
+    assert sum("blind-75" in item["collections"] for item in body) == 39
 
 
 def test_every_public_problem_detail_excludes_evaluator_material(client: TestClient) -> None:

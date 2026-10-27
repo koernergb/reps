@@ -1,0 +1,99 @@
+schema_version: 1
+slug: connected-components
+version: 1
+status: development
+title: Count Connected Components
+topic: graphs
+patterns: [graph-traversal]
+role: transfer
+difficulty: medium
+collections: [blind-75]
+transfer_group: graph-traversal
+prerequisites: [number-of-islands]
+related: [valid-tree]
+statement: Given `n` nodes numbered 0 through n-1 and undirected edges, return the number of connected components.
+examples:
+  - {input: {n: 5, edges: [[0, 1], [1, 2], [3, 4]]}, output: 2}
+constraints: ["0 <= n <= 100,000", "Edges contain valid, distinct endpoint pairs."]
+entrypoint: count_components
+starter_code: |
+  def count_components(n: int, edges: list[list[int]]) -> int:
+      pass
+time_complexity: O(n + e)
+space_complexity: O(n + e)
+capabilities:
+  - {slug: graphs.recognition, weight: 0.2}
+  - {slug: graphs.invariant, weight: 0.25}
+  - {slug: graphs.implementation, weight: 0.25}
+  - {slug: graphs.boundaries, weight: 0.2}
+  - {slug: graphs.complexity, weight: 0.1}
+hints:
+  - Build an undirected adjacency list.
+  - Keep one visited set across all traversals.
+  - Scan every node, including nodes absent from the edge list.
+  - Each unvisited node starts exactly one new component traversal.
+  - Mark a node visited when scheduling it so it is not added repeatedly.
+key_insight: Every traversal started from an unvisited node discovers exactly one complete connected component.
+clarifications:
+  - question: Do isolated nodes count?
+    answer: Yes; each is its own component.
+  - question: What is the answer when n is zero?
+    answer: Zero.
+follow_ups:
+  - How would union-find solve this?
+  - How would you return the nodes in each component?
+common_mistakes:
+  - {id: ignores-isolated, description: Starts traversals only from edge endpoints and misses isolated nodes., capability: graphs.boundaries}
+visible_tests:
+  - {args: [5, [[0, 1], [1, 2], [3, 4]]], expected: 2}
+  - {args: [5, [[0, 1], [1, 2], [2, 3], [3, 4]]], expected: 1}
+hidden_tests:
+  - {args: [0, []], expected: 0}
+  - {args: [4, []], expected: 4, label: isolated nodes}
+  - {args: [6, [[0, 1], [0, 2], [3, 4]]], expected: 3}
+reference_solution: |
+  def count_components(n, edges):
+      graph = [[] for _ in range(n)]
+      for a, b in edges:
+          graph[a].append(b)
+          graph[b].append(a)
+      seen = set()
+      components = 0
+      for start in range(n):
+          if start in seen:
+              continue
+          components += 1
+          seen.add(start)
+          stack = [start]
+          while stack:
+              node = stack.pop()
+              for neighbor in graph[node]:
+                  if neighbor not in seen:
+                      seen.add(neighbor)
+                      stack.append(neighbor)
+      return components
+wrong_solutions:
+  - mistake: ignores-isolated
+    expect: wrong_answer
+    code: |
+      def count_components(n, edges):
+          nodes = {value for edge in edges for value in edge}
+          if not nodes:
+              return 0
+          graph = {node: [] for node in nodes}
+          for a, b in edges:
+              graph[a].append(b)
+              graph[b].append(a)
+          seen = set()
+          count = 0
+          for start in nodes:
+              if start not in seen:
+                  count += 1
+                  stack = [start]
+                  seen.add(start)
+                  while stack:
+                      for neighbor in graph[stack.pop()]:
+                          if neighbor not in seen:
+                              seen.add(neighbor)
+                              stack.append(neighbor)
+          return count

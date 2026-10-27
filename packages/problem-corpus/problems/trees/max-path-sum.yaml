@@ -1,0 +1,85 @@
+schema_version: 1
+slug: max-path-sum
+version: 1
+status: development
+title: Maximum Path Sum in a Binary Tree
+topic: trees
+patterns: [bounded-recursion]
+role: transfer
+difficulty: hard
+collections: [blind-75]
+transfer_group: bounded-recursion
+prerequisites: [max-depth]
+related: [contains-subtree]
+statement: |
+  Return the largest sum of values along any non-empty path in a binary tree. A path follows
+  parent-child edges, visits no node twice, and may start and end anywhere.
+examples:
+  - {input: {root: [-10, 9, 20, null, null, 15, 7]}, output: 42}
+constraints: ["1 <= number of nodes <= 30,000", "-1,000 <= node value <= 1,000"]
+entrypoint: max_path_sum
+input_adapters: [tree]
+starter_code: |
+  def max_path_sum(root: "TreeNode") -> int:
+      pass
+time_complexity: O(n)
+space_complexity: O(h)
+capabilities:
+  - {slug: trees.recognition, weight: 0.15}
+  - {slug: trees.invariant, weight: 0.35}
+  - {slug: trees.implementation, weight: 0.25}
+  - {slug: trees.boundaries, weight: 0.15}
+  - {slug: trees.complexity, weight: 0.1}
+hints:
+  - Separate what a subtree can return to its parent from the best complete path it contains.
+  - A path returned upward can use at most one child branch.
+  - A complete path through a node may use both child branches.
+  - Discard a negative child contribution with `max(0, gain)`.
+  - Update a nonlocal best with `node.val + left_gain + right_gain`; return `node.val + max(left_gain, right_gain)`.
+key_insight: Each node returns its best one-branch gain upward while using both branches only to update the global answer.
+clarifications:
+  - question: May the path be empty?
+    answer: No.
+  - question: Must it pass through the root?
+    answer: No.
+follow_ups:
+  - How would you return the actual path?
+  - Why can only one branch be returned upward?
+common_mistakes:
+  - {id: allows-empty-path, description: Initializes the answer to zero and incorrectly returns zero for an all-negative tree., capability: trees.boundaries}
+visible_tests:
+  - {args: [[-10, 9, 20, null, null, 15, 7]], expected: 42}
+  - {args: [[1, 2, 3]], expected: 6}
+hidden_tests:
+  - {args: [[-3]], expected: -3, label: all negative}
+  - {args: [[2, -1]], expected: 2}
+  - {args: [[5, 4, 8, 11, null, 13, 4, 7, 2, null, null, null, 1]], expected: 48}
+reference_solution: |
+  def max_path_sum(root):
+      best = root.val
+      def gain(node):
+          nonlocal best
+          if node is None:
+              return 0
+          left = max(0, gain(node.left))
+          right = max(0, gain(node.right))
+          best = max(best, node.val + left + right)
+          return node.val + max(left, right)
+      gain(root)
+      return best
+wrong_solutions:
+  - mistake: allows-empty-path
+    expect: wrong_answer
+    code: |
+      def max_path_sum(root):
+          best = 0
+          def gain(node):
+              nonlocal best
+              if node is None:
+                  return 0
+              left = max(0, gain(node.left))
+              right = max(0, gain(node.right))
+              best = max(best, node.val + left + right)
+              return node.val + max(left, right)
+          gain(root)
+          return best
