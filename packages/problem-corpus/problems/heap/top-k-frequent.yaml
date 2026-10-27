@@ -7,6 +7,7 @@ topic: heap
 patterns: [bounded-heap, counting]
 role: transfer
 difficulty: medium
+collections: [core, blind-75]
 transfer_group: bounded-heap
 prerequisites: [kth-largest]
 related: [kth-largest, group-anagrams]

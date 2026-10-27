@@ -109,6 +109,19 @@ def dump_linked_list(node: Any) -> list[Any] | None:
     return values
 
 
+def build_linked_list_cycle(spec: dict[str, Any]) -> ListNode | None:
+    values = spec.get("values") or []
+    if not values:
+        return None
+    nodes = [ListNode(value) for value in values]
+    for index in range(len(nodes) - 1):
+        nodes[index].next = nodes[index + 1]
+    position = int(spec.get("pos", -1))
+    if position >= 0:
+        nodes[-1].next = nodes[position]
+    return nodes[0]
+
+
 def build_tree(values: list[Any] | None) -> TreeNode | None:
     if not values or values[0] is None:
         return None
@@ -152,7 +165,11 @@ def dump_tree(root: Any) -> list[Any]:
     return values
 
 
-INPUT_ADAPTERS = {"linked_list": build_linked_list, "tree": build_tree}
+INPUT_ADAPTERS = {
+    "linked_list": build_linked_list,
+    "linked_list_cycle": build_linked_list_cycle,
+    "tree": build_tree,
+}
 OUTPUT_ADAPTERS = {"linked_list": dump_linked_list, "tree": dump_tree}
 
 

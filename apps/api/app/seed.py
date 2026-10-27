@@ -67,6 +67,7 @@ def _apply_problem(
     row.role = definition.role
     row.transfer_group = definition.transfer_group
     row.patterns = list(definition.patterns)
+    row.collections = list(definition.collections)
     row.related_slugs = list(definition.related)
     evaluator = row.evaluator or ProblemEvaluator()
     evaluator.reference_solution = definition.reference_solution
@@ -137,6 +138,7 @@ def sync_corpus(session: Session, corpus: Corpus) -> dict[str, int]:
         elif (
             row.content_version != loaded.definition.version
             or row.status != loaded.definition.status
+            or row.collections != list(loaded.definition.collections)
             or row.evaluator is None
         ):
             _apply_problem(row, loaded, topics, capabilities)

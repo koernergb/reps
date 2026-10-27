@@ -35,6 +35,7 @@ export type ProblemSummary = {
   difficulty: "easy" | "medium" | "hard";
   language: string;
   status: "development" | "reviewed";
+  collections: string[];
   topic: { slug: string; name: string } | null;
   capabilities: CapabilitySummary[];
 };

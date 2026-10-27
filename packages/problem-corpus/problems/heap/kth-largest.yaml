@@ -7,6 +7,7 @@ topic: heap
 patterns: [bounded-heap]
 role: canonical
 difficulty: medium
+collections: [core]
 transfer_group: bounded-heap
 prerequisites: []
 related: [top-k-frequent]

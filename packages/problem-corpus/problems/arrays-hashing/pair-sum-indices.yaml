@@ -7,6 +7,7 @@ topic: arrays-hashing
 patterns: [hash-map, complement-lookup]
 role: recognition
 difficulty: easy
+collections: [core, blind-75]
 transfer_group: complement-lookup
 prerequisites: []
 related: [pair-sum-sorted, subarray-sum-equals-k]

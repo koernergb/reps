@@ -108,6 +108,7 @@ class Problem(TimestampMixin, Base):
     role: Mapped[str] = mapped_column(String(20), nullable=False, default="canonical")
     transfer_group: Mapped[str | None] = mapped_column(String(100), index=True)
     patterns: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    collections: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     related_slugs: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     statement: Mapped[str] = mapped_column(Text, nullable=False)
     difficulty: Mapped[str] = mapped_column(String(20), nullable=False)

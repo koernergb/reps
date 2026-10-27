@@ -7,6 +7,7 @@ topic: binary-search
 patterns: [search-on-answer]
 role: transfer
 difficulty: medium
+collections: [core]
 transfer_group: boundary-search
 prerequisites: [first-at-least]
 related: [first-at-least]

@@ -26,6 +26,36 @@ exercises:
       - Rephrase "can recolor to all R" in terms of how many B's the block contains.
       - What quantity must stay within budget?
     estimated_minutes: 1.5
+  - id: sw-debug-trade-order
+    capability: sliding-window.invariant
+    type: debug
+    problem: best-trade-once
+    from_mistake: global-extremes
+    prompt: This trade calculation ignores time order. Replace it with a one-pass earlier-buy invariant.
+    reference_answer: Maintain the minimum earlier price and compare each current price as a possible sale.
+    misconception: The global minimum and maximum always form a legal buy-then-sell transaction.
+    hints: ["The global maximum may occur before the minimum.", "What is the best legal buy for today's sale?"]
+    estimated_minutes: 3
+  - id: sw-debug-replacement-budget
+    capability: sliding-window.invariant
+    type: debug
+    problem: longest-uniform-after-replacements
+    from_mistake: distinct-budget
+    prompt: This window counts character kinds rather than replacements. Correct its feasibility test.
+    reference_answer: A window needs window length minus its maximum character frequency replacements; shrink while that exceeds k.
+    misconception: Replacement cost equals the number of distinct minority character kinds.
+    hints: ["How many positions disagree with the majority?", "Track the largest count in the window."]
+    estimated_minutes: 4
+  - id: sw-debug-cover-multiplicity
+    capability: sliding-window.implementation
+    type: debug
+    problem: smallest-covering-substring
+    from_mistake: membership-only
+    prompt: This covering-window solution treats required characters as a set. Fix it to honor duplicate requirements efficiently.
+    reference_answer: Track required and window frequency maps, expanding and shrinking with a count of satisfied character kinds.
+    misconception: Covering each distinct required character once satisfies duplicate requirements.
+    hints: ["Try source bbaa and required aba.", "When does one required character become satisfied?"]
+    estimated_minutes: 6
   - id: sw-explain-window-invariant
     capability: sliding-window.invariant
     type: explain

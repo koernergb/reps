@@ -1,0 +1,70 @@
+schema_version: 1
+slug: duplicate-present
+version: 1
+status: development
+title: Detect a Repeated Value
+topic: arrays-hashing
+patterns: [hash-set, membership]
+role: recognition
+difficulty: easy
+collections: [blind-75]
+transfer_group: set-membership-scan
+prerequisites: []
+related: [longest-consecutive-sequence]
+statement: |
+  Given a list of integers, return `True` when any value occurs at least twice and `False`
+  when every value is distinct.
+examples:
+  - input: {nums: [8, 3, 8, 1]}
+    output: true
+  - input: {nums: [4, 2, 9]}
+    output: false
+constraints: ["0 <= len(nums) <= 100,000", "-10^9 <= nums[i] <= 10^9"]
+entrypoint: duplicate_present
+comparison: exact
+starter_code: |
+  def duplicate_present(nums: list[int]) -> bool:
+      pass
+time_complexity: O(n)
+space_complexity: O(n)
+capabilities:
+  - {slug: arrays-hashing.recognition, weight: 0.35}
+  - {slug: arrays-hashing.invariant, weight: 0.2}
+  - {slug: arrays-hashing.implementation, weight: 0.25}
+  - {slug: arrays-hashing.boundaries, weight: 0.1}
+  - {slug: arrays-hashing.complexity, weight: 0.1}
+hints:
+  - What information about earlier values is enough to detect a repeat?
+  - A set can answer whether the current value appeared before.
+  - Scan once while maintaining a set of values already visited.
+  - Return immediately when a value is already in the set; otherwise insert it.
+  - "seen = set(); for value in nums: if value in seen: return True; seen.add(value)"
+key_insight: A set of previously observed values turns each duplicate check into average O(1) work.
+clarifications:
+  - {question: "Does an empty list contain a duplicate?", answer: "No."}
+follow_ups: ["How would sorting change the time and space tradeoff?"]
+common_mistakes:
+  - id: adjacent-only
+    description: Checks only neighboring values without sorting first.
+    capability: arrays-hashing.recognition
+visible_tests:
+  - {args: [[8, 3, 8, 1]], expected: true}
+  - {args: [[4, 2, 9]], expected: false}
+hidden_tests:
+  - {args: [[]], expected: false}
+  - {args: [[1, 2, 3, 1]], expected: true, label: non-adjacent repeat}
+  - {args: [[-1, 0, -1]], expected: true}
+reference_solution: |
+  def duplicate_present(nums):
+      seen = set()
+      for value in nums:
+          if value in seen:
+              return True
+          seen.add(value)
+      return False
+wrong_solutions:
+  - mistake: adjacent-only
+    expect: wrong_answer
+    code: |
+      def duplicate_present(nums):
+          return any(nums[i] == nums[i - 1] for i in range(1, len(nums)))

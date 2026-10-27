@@ -1,0 +1,70 @@
+schema_version: 1
+slug: best-trade-once
+version: 1
+status: development
+title: Best Single Trade
+topic: sliding-window
+patterns: [running-minimum, one-pass]
+role: recognition
+difficulty: easy
+collections: [blind-75]
+transfer_group: monotone-window-summary
+prerequisites: []
+related: [max-sum-window]
+statement: |
+  `prices[i]` is an asset price on day `i`. Choose one day to buy and a later day to sell.
+  Return the largest possible profit, or `0` when no profitable trade exists.
+examples:
+  - input: {prices: [7, 1, 5, 3, 6, 4]}
+    output: 5
+  - input: {prices: [7, 6, 4, 3, 1]}
+    output: 0
+constraints: ["1 <= len(prices) <= 100,000", "0 <= prices[i] <= 100,000"]
+entrypoint: best_single_trade
+comparison: exact
+starter_code: |
+  def best_single_trade(prices: list[int]) -> int:
+      pass
+time_complexity: O(n)
+space_complexity: O(1)
+capabilities:
+  - {slug: sliding-window.recognition, weight: 0.3}
+  - {slug: sliding-window.invariant, weight: 0.25}
+  - {slug: sliding-window.implementation, weight: 0.2}
+  - {slug: sliding-window.boundaries, weight: 0.15}
+  - {slug: sliding-window.complexity, weight: 0.1}
+hints:
+  - For each selling day, which earlier buying price is best?
+  - Keep the minimum price seen before the current day.
+  - Compare today's price with that running minimum.
+  - Update the best profit, then update the minimum price.
+  - "lowest = min(lowest, price); best = max(best, price - lowest)"
+key_insight: The best sale at each day uses the cheapest earlier price, which can be maintained in one pass.
+clarifications:
+  - {question: "May I sell before buying?", answer: "No; the selling day must be later."}
+follow_ups: ["How would multiple transactions change the strategy?"]
+common_mistakes:
+  - id: global-extremes
+    description: Subtracts the global minimum from the global maximum without respecting day order.
+    capability: sliding-window.invariant
+visible_tests:
+  - {args: [[7, 1, 5, 3, 6, 4]], expected: 5}
+  - {args: [[7, 6, 4, 3, 1]], expected: 0}
+hidden_tests:
+  - {args: [[2]], expected: 0}
+  - {args: [[5, 9, 1, 2]], expected: 4, label: maximum precedes minimum}
+  - {args: [[2, 4, 1, 8]], expected: 7}
+reference_solution: |
+  def best_single_trade(prices):
+      lowest = prices[0]
+      best = 0
+      for price in prices[1:]:
+          best = max(best, price - lowest)
+          lowest = min(lowest, price)
+      return best
+wrong_solutions:
+  - mistake: global-extremes
+    expect: wrong_answer
+    code: |
+      def best_single_trade(prices):
+          return max(0, max(prices) - min(prices))

@@ -131,6 +131,21 @@ def test_linked_list_and_tree_adapters() -> None:
     assert outcome.verdict == "passed"
 
 
+def test_linked_list_cycle_adapter() -> None:
+    spec = ExecutionSpec(entrypoint="has_cycle", input_adapters=("linked_list_cycle",))
+    code = (
+        "def has_cycle(head):\n    slow = fast = head\n"
+        "    while fast and fast.next:\n        slow = slow.next\n"
+        "        fast = fast.next.next\n        if slow is fast: return True\n"
+        "    return False\n"
+    )
+    tests = [
+        ConcreteTest("v1", [{"values": [3, 2, 0, -4], "pos": 1}], True),
+        ConcreteTest("v2", [{"values": [1, 1], "pos": -1}], False),
+    ]
+    assert run(code, spec, tests, []).verdict == "passed"
+
+
 def test_class_design_operations() -> None:
     spec = ExecutionSpec(entrypoint="Counter", kind="class")
     code = (

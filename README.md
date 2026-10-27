@@ -16,7 +16,8 @@ The product brief is
 
 **Production-ready for local, single-user use.** The supported release includes:
 
-- 32 curated problems, 62 remediation exercises, and 64 tracked capabilities
+- 44 curated problems, 74 remediation exercises, and 64 tracked capabilities, including 33 of
+  the Blind 75
 - practice and timed mock interviews with deterministic offline behavior
 - optional structured-output interviewing and evaluation through OpenAI or Google Gemini
 - isolated Python execution, hidden tests, reports, evidence-backed skill estimates, adaptive

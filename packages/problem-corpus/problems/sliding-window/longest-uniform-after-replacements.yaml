@@ -1,0 +1,81 @@
+schema_version: 1
+slug: longest-uniform-after-replacements
+version: 1
+status: development
+title: Longest Uniform Segment After Changes
+topic: sliding-window
+patterns: [variable-window, frequency-map]
+role: canonical
+difficulty: medium
+collections: [blind-75]
+transfer_group: replacement-budget-window
+prerequisites: [longest-unique-substring]
+related: [longest-unique-substring, max-consecutive-ones-flip-k]
+statement: |
+  Given an uppercase string `text` and integer `k`, you may replace at most `k` characters.
+  Return the maximum length of a substring that can be made entirely one repeated character.
+examples:
+  - input: {text: "ABAB", k: 2}
+    output: 4
+  - input: {text: "AABABBA", k: 1}
+    output: 4
+constraints: ["1 <= len(text) <= 100,000", "0 <= k <= len(text)", "text contains A-Z only."]
+entrypoint: longest_uniform_segment
+comparison: exact
+starter_code: |
+  def longest_uniform_segment(text: str, k: int) -> int:
+      pass
+time_complexity: O(n)
+space_complexity: O(1)
+capabilities:
+  - {slug: sliding-window.recognition, weight: 0.2}
+  - {slug: sliding-window.invariant, weight: 0.3}
+  - {slug: sliding-window.implementation, weight: 0.25}
+  - {slug: sliding-window.boundaries, weight: 0.15}
+  - {slug: sliding-window.complexity, weight: 0.1}
+hints:
+  - In a window, keep its most common character and replace everything else.
+  - Required replacements equal window length minus its highest frequency.
+  - Shrink from the left while required replacements exceed `k`.
+  - Track counts and the largest frequency observed while expanding right.
+  - "while window_size - max_frequency > k: decrement text[left] and advance left"
+key_insight: A window is feasible exactly when all but its most frequent character fit within the replacement budget.
+clarifications:
+  - {question: "Must I perform exactly k replacements?", answer: "No; use at most k."}
+follow_ups: ["Why may max_frequency remain stale without breaking the maximum length?"]
+common_mistakes:
+  - id: distinct-budget
+    description: Counts distinct character kinds instead of characters needing replacement.
+    capability: sliding-window.invariant
+visible_tests:
+  - {args: ["ABAB", 2], expected: 4}
+  - {args: ["AABABBA", 1], expected: 4}
+hidden_tests:
+  - {args: ["AAAA", 0], expected: 4}
+  - {args: ["ABCDE", 1], expected: 2}
+  - {args: ["AAABBC", 2], expected: 5}
+reference_solution: |
+  def longest_uniform_segment(text, k):
+      counts = {}
+      left = best = max_frequency = 0
+      for right, char in enumerate(text):
+          counts[char] = counts.get(char, 0) + 1
+          max_frequency = max(max_frequency, counts[char])
+          while right - left + 1 - max_frequency > k:
+              counts[text[left]] -= 1
+              left += 1
+          best = max(best, right - left + 1)
+      return best
+wrong_solutions:
+  - mistake: distinct-budget
+    expect: wrong_answer
+    code: |
+      def longest_uniform_segment(text, k):
+          counts, left, best = {}, 0, 0
+          for right, char in enumerate(text):
+              counts[char] = counts.get(char, 0) + 1
+              while len([c for c, n in counts.items() if n]) - 1 > k:
+                  counts[text[left]] -= 1
+                  left += 1
+              best = max(best, right - left + 1)
+          return best

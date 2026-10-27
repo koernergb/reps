@@ -74,3 +74,23 @@ exercises:
     hints:
       - Where does the recursive version store its state?
     estimated_minutes: 1.5
+  - id: ll-debug-cycle-identity
+    capability: linked-list.invariant
+    type: debug
+    problem: detect-list-cycle
+    from_mistake: compare-values
+    prompt: This cycle detector confuses equal values with the same node. Implement constant-space identity-based detection.
+    reference_answer: Advance slow by one and fast by two, comparing the node objects with identity until they meet or fast reaches None.
+    misconception: Encountering the same stored value means traversal revisited the same node.
+    hints: ["Values may repeat in an acyclic list.", "Use two speeds and compare nodes, not values."]
+    estimated_minutes: 4
+  - id: ll-debug-reorder-cycle
+    capability: linked-list.implementation
+    type: debug
+    problem: reorder-ends-inward
+    from_mistake: leave-cycle
+    prompt: This end-weaving implementation can create a cycle. Separate the halves and repair the merge.
+    reference_answer: Detach after the midpoint, reverse the second half, then alternate nodes while saving both next pointers.
+    misconception: The original midpoint connection cannot interfere with the alternating merge.
+    hints: ["Set the midpoint's next pointer to None.", "Save both following nodes before rewiring."]
+    estimated_minutes: 6

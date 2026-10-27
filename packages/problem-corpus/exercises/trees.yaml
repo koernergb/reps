@@ -12,6 +12,26 @@ exercises:
     hints:
       - Which traversal visits nodes in order of depth?
     estimated_minutes: 1
+  - id: tr-debug-identical-contract
+    capability: trees.invariant
+    type: debug
+    problem: same-tree-shape-values
+    from_mistake: root-values-only
+    prompt: This tree comparison stops at the root. Complete the recursive contract for shape and values.
+    reference_answer: Two missing nodes match, one missing node fails, and present nodes require equal values plus matching left and right subtrees.
+    misconception: Equal root values imply equal trees.
+    hints: ["List the two null base cases.", "Which two recursive pairs must both match?"]
+    estimated_minutes: 4
+  - id: tr-debug-subtree-depth
+    capability: trees.implementation
+    type: debug
+    problem: contains-subtree
+    from_mistake: immediate-children-only
+    prompt: This subtree search checks only one level. Separate exact comparison from recursive search.
+    reference_answer: At every root node, test exact tree equality or recursively search both child subtrees.
+    misconception: A matching subtree can begin only at the root or one of its immediate children.
+    hints: ["A match may begin at any depth.", "Use one helper for equality and one for search."]
+    estimated_minutes: 5
   - id: tr-explain-bounds
     capability: trees.invariant
     type: explain

@@ -1,0 +1,71 @@
+schema_version: 1
+slug: same-tree-shape-values
+version: 1
+status: development
+title: Identical Binary Trees
+topic: trees
+patterns: [paired-recursion, structural-comparison]
+role: canonical
+difficulty: easy
+collections: [blind-75]
+transfer_group: paired-tree-recursion
+prerequisites: [max-depth]
+related: [invert-tree]
+statement: |
+  Return `True` if two binary trees have exactly the same shape and the same value at every
+  corresponding node. Otherwise return `False`.
+examples:
+  - input: {first: [1, 2, 3], second: [1, 2, 3]}
+    output: true
+  - input: {first: [1, 2], second: [1, null, 2]}
+    output: false
+constraints: ["0 <= total nodes <= 100,000", "Node values fit in signed 32-bit integers."]
+entrypoint: identical_trees
+input_adapters: [tree, tree]
+comparison: exact
+starter_code: |
+  def identical_trees(first: TreeNode | None, second: TreeNode | None) -> bool:
+      pass
+time_complexity: O(n)
+space_complexity: O(h)
+capabilities:
+  - {slug: trees.recognition, weight: 0.2}
+  - {slug: trees.invariant, weight: 0.3}
+  - {slug: trees.implementation, weight: 0.25}
+  - {slug: trees.boundaries, weight: 0.15}
+  - {slug: trees.complexity, weight: 0.1}
+hints:
+  - Compare corresponding nodes from both trees at the same time.
+  - Two absent nodes match; exactly one absent node does not.
+  - Present nodes match only if their values and both child pairs match.
+  - State the recursive contract before writing the conjunction.
+  - "return values_equal and identical(lefts) and identical(rights)"
+key_insight: Paired recursion checks both structure and values through matching base cases and child contracts.
+clarifications:
+  - {question: "Are two empty trees identical?", answer: "Yes."}
+follow_ups: ["How would you implement the comparison iteratively?"]
+common_mistakes:
+  - id: root-values-only
+    description: Compares node values but does not recursively verify both subtrees.
+    capability: trees.invariant
+visible_tests:
+  - {args: [[1, 2, 3], [1, 2, 3]], expected: true}
+  - {args: [[1, 2], [1, null, 2]], expected: false}
+hidden_tests:
+  - {args: [[], []], expected: true}
+  - {args: [[1], [1, 2]], expected: false}
+  - {args: [[1, 2, 4], [1, 2, 3]], expected: false}
+reference_solution: |
+  def identical_trees(first, second):
+      if first is None or second is None:
+          return first is second
+      return (first.val == second.val and
+              identical_trees(first.left, second.left) and
+              identical_trees(first.right, second.right))
+wrong_solutions:
+  - mistake: root-values-only
+    expect: wrong_answer
+    code: |
+      def identical_trees(first, second):
+          if first is None or second is None: return first is second
+          return first.val == second.val

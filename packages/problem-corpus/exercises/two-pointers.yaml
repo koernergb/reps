@@ -64,3 +64,13 @@ exercises:
       - How many times do you sort?
       - What does each two-pointer sweep cost?
     estimated_minutes: 1.5
+  - id: tp-debug-reservoir-pointer
+    capability: two-pointers.invariant
+    type: debug
+    problem: max-water-span
+    from_mistake: move-taller
+    prompt: This reservoir solution moves the wrong endpoint. Fix it and explain why the other move cannot improve the area.
+    reference_answer: Move the shorter endpoint; keeping it while shrinking width cannot raise the limiting height.
+    misconception: Moving the taller wall preserves every potentially better container.
+    hints: ["Which wall limits the current area?", "Can moving only the taller wall raise that limit?"]
+    estimated_minutes: 4

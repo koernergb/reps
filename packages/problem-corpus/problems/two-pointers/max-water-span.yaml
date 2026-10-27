@@ -1,0 +1,80 @@
+schema_version: 1
+slug: max-water-span
+version: 1
+status: development
+title: Widest Bounded Reservoir
+topic: two-pointers
+patterns: [converging-pointers, greedy-elimination]
+role: transfer
+difficulty: medium
+collections: [blind-75]
+transfer_group: converging-extremes
+prerequisites: [pair-sum-sorted]
+related: [pair-sum-sorted, three-sum]
+statement: |
+  Each value in `heights` is the height of a vertical wall at that index. Choose two walls that,
+  with the baseline, hold the most water. Return that maximum area.
+examples:
+  - input: {heights: [1, 8, 6, 2, 5, 4, 8, 3, 7]}
+    output: 49
+  - input: {heights: [1, 1]}
+    output: 1
+constraints: ["2 <= len(heights) <= 100,000", "0 <= heights[i] <= 10,000"]
+entrypoint: widest_reservoir
+comparison: exact
+starter_code: |
+  def widest_reservoir(heights: list[int]) -> int:
+      pass
+time_complexity: O(n)
+space_complexity: O(1)
+capabilities:
+  - {slug: two-pointers.recognition, weight: 0.25}
+  - {slug: two-pointers.invariant, weight: 0.3}
+  - {slug: two-pointers.implementation, weight: 0.2}
+  - {slug: two-pointers.boundaries, weight: 0.1}
+  - {slug: two-pointers.complexity, weight: 0.15}
+hints:
+  - Start with the widest possible pair of walls.
+  - The shorter wall limits the area.
+  - Moving the taller wall inward cannot improve the limiting height while width shrinks.
+  - Record the area, then move whichever endpoint is shorter.
+  - "area = (right-left) * min(heights[left], heights[right]); move the shorter side."
+key_insight: After evaluating a pair, only replacing its shorter wall can possibly offset the lost width.
+clarifications:
+  - {question: "Can the container be tilted?", answer: "No; walls remain vertical."}
+follow_ups: ["Give the elimination proof for moving the shorter wall."]
+common_mistakes:
+  - id: move-taller
+    description: Moves the taller wall and discards candidates without justification.
+    capability: two-pointers.invariant
+visible_tests:
+  - {args: [[1, 8, 6, 2, 5, 4, 8, 3, 7]], expected: 49}
+  - {args: [[1, 1]], expected: 1}
+hidden_tests:
+  - {args: [[4, 3, 2, 1, 4]], expected: 16}
+  - {args: [[1, 2, 4, 3]], expected: 4}
+  - {args: [[0, 5, 0, 5]], expected: 10}
+reference_solution: |
+  def widest_reservoir(heights):
+      left, right = 0, len(heights) - 1
+      best = 0
+      while left < right:
+          best = max(best, (right - left) * min(heights[left], heights[right]))
+          if heights[left] <= heights[right]:
+              left += 1
+          else:
+              right -= 1
+      return best
+wrong_solutions:
+  - mistake: move-taller
+    expect: wrong_answer
+    code: |
+      def widest_reservoir(heights):
+          left, right, best = 0, len(heights) - 1, 0
+          while left < right:
+              best = max(best, (right-left) * min(heights[left], heights[right]))
+              if heights[left] >= heights[right]:
+                  left += 1
+              else:
+                  right -= 1
+          return best

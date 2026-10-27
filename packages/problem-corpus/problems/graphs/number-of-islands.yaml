@@ -7,6 +7,7 @@ topic: graphs
 patterns: [grid-flood-fill, connected-components]
 role: canonical
 difficulty: medium
+collections: [core, blind-75]
 transfer_group: grid-flood-fill
 prerequisites: []
 related: [rotting-oranges]

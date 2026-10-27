@@ -7,6 +7,7 @@ topic: dp-1d
 patterns: [unbounded-choice]
 role: boundary
 difficulty: medium
+collections: [core, blind-75]
 transfer_group: unbounded-choice
 prerequisites: [climbing-stairs]
 related: [house-robber]

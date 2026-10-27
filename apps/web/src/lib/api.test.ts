@@ -16,7 +16,7 @@ describe("getApiHealth", () => {
 
 describe("local product API", () => {
   it("lists problems without adding client ownership fields", async () => {
-    const payload = [{ id: "1", slug: "pair", title: "Pair", difficulty: "easy", language: "python", status: "development", topic: null, capabilities: [] }];
+    const payload = [{ id: "1", slug: "pair", title: "Pair", difficulty: "easy", language: "python", status: "development", collections: ["core", "blind-75"], topic: null, capabilities: [] }];
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(payload), { status: 200 })));
     await expect(listProblems()).resolves.toEqual(payload);
     expect(fetch).toHaveBeenCalledWith("http://127.0.0.1:8000/v1/problems", expect.objectContaining({ cache: "no-store" }));

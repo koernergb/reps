@@ -1,0 +1,77 @@
+schema_version: 1
+slug: minimum-rotated
+version: 1
+status: development
+title: Minimum in a Rotated List
+topic: binary-search
+patterns: [rotated-array, binary-search]
+role: boundary
+difficulty: medium
+collections: [blind-75]
+transfer_group: rotated-sorted-search
+prerequisites: [find-sorted-value]
+related: [search-rotated]
+statement: |
+  A strictly increasing list was rotated some number of positions. Return its minimum value in
+  O(log n) time. All values are distinct.
+examples:
+  - input: {nums: [4, 5, 6, 7, 0, 1, 2]}
+    output: 0
+  - input: {nums: [1, 2, 3]}
+    output: 1
+constraints: ["1 <= len(nums) <= 100,000", "All values are distinct."]
+entrypoint: minimum_rotated
+comparison: exact
+starter_code: |
+  def minimum_rotated(nums: list[int]) -> int:
+      pass
+time_complexity: O(log n)
+space_complexity: O(1)
+capabilities:
+  - {slug: binary-search.recognition, weight: 0.2}
+  - {slug: binary-search.invariant, weight: 0.3}
+  - {slug: binary-search.implementation, weight: 0.2}
+  - {slug: binary-search.boundaries, weight: 0.2}
+  - {slug: binary-search.complexity, weight: 0.1}
+hints:
+  - Compare the midpoint with the current right endpoint.
+  - If midpoint is greater than the right endpoint, the minimum lies strictly to its right.
+  - Otherwise the midpoint may be the minimum, so retain it.
+  - Continue until left and right identify the same position.
+  - "If nums[mid] > nums[right], left = mid + 1; else right = mid."
+key_insight: The right endpoint reveals whether the midpoint is in the high rotated segment or the low segment containing the minimum.
+clarifications:
+  - {question: "Can values repeat?", answer: "No; every value is distinct."}
+follow_ups: ["What changes when duplicate values are permitted?"]
+common_mistakes:
+  - id: discard-midpoint
+    description: Uses right = mid - 1 even when midpoint itself may be the minimum.
+    capability: binary-search.boundaries
+visible_tests:
+  - {args: [[4, 5, 6, 7, 0, 1, 2]], expected: 0}
+  - {args: [[1, 2, 3]], expected: 1}
+hidden_tests:
+  - {args: [[2, 1]], expected: 1}
+  - {args: [[3, 1, 2]], expected: 1}
+  - {args: [[1]], expected: 1}
+reference_solution: |
+  def minimum_rotated(nums):
+      left, right = 0, len(nums) - 1
+      while left < right:
+          mid = (left + right) // 2
+          if nums[mid] > nums[right]:
+              left = mid + 1
+          else:
+              right = mid
+      return nums[left]
+wrong_solutions:
+  - mistake: discard-midpoint
+    expect: wrong_answer
+    code: |
+      def minimum_rotated(nums):
+          left, right = 0, len(nums) - 1
+          while left < right:
+              mid = (left + right) // 2
+              if nums[mid] > nums[right]: left = mid + 1
+              else: right = mid - 1
+          return nums[left]

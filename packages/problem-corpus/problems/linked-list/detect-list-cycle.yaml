@@ -1,0 +1,78 @@
+schema_version: 1
+slug: detect-list-cycle
+version: 1
+status: development
+title: Detect a Linked-List Loop
+topic: linked-list
+patterns: [fast-slow-pointers, cycle-detection]
+role: canonical
+difficulty: easy
+collections: [blind-75]
+transfer_group: fast-slow-pointers
+prerequisites: [reverse-linked-list]
+related: [remove-nth-from-end]
+statement: |
+  Return `True` when following `next` pointers from `head` eventually revisits a node, and
+  `False` when traversal reaches `None`. Use O(1) extra space.
+examples:
+  - input: {head: {values: [3, 2, 0, -4], pos: 1}}
+    output: true
+    explanation: The final node points back to the node at index 1.
+  - input: {head: {values: [1, 1], pos: -1}}
+    output: false
+constraints: ["0 <= number of nodes <= 100,000", "pos is -1 or a valid node index."]
+entrypoint: has_linked_loop
+input_adapters: [linked_list_cycle]
+comparison: exact
+starter_code: |
+  def has_linked_loop(head: ListNode | None) -> bool:
+      pass
+time_complexity: O(n)
+space_complexity: O(1)
+capabilities:
+  - {slug: linked-list.recognition, weight: 0.25}
+  - {slug: linked-list.invariant, weight: 0.3}
+  - {slug: linked-list.implementation, weight: 0.2}
+  - {slug: linked-list.boundaries, weight: 0.15}
+  - {slug: linked-list.complexity, weight: 0.1}
+hints:
+  - Imagine two runners moving through the list at different speeds.
+  - In a finite loop, a faster pointer must eventually catch a slower pointer.
+  - Move `slow` one edge and `fast` two edges each iteration.
+  - Stop with `False` if `fast` or `fast.next` is `None`; return `True` if pointers meet.
+  - "while fast and fast.next: slow = slow.next; fast = fast.next.next; if slow is fast: return True"
+key_insight: Fast and slow pointers meet inside a cycle, while an acyclic list lets the fast pointer reach the end.
+clarifications:
+  - {question: "Can node values repeat?", answer: "Yes; identity, not value, determines whether a node was revisited."}
+follow_ups: ["How could you locate the first node in the cycle?"]
+common_mistakes:
+  - id: compare-values
+    description: Treats repeated values as repeated nodes.
+    capability: linked-list.invariant
+visible_tests:
+  - {args: [{values: [3, 2, 0, -4], pos: 1}], expected: true}
+  - {args: [{values: [1, 1], pos: -1}], expected: false}
+hidden_tests:
+  - {args: [{values: [], pos: -1}], expected: false}
+  - {args: [{values: [1], pos: 0}], expected: true}
+  - {args: [{values: [5, 5, 5], pos: -1}], expected: false, label: duplicate values are not a cycle}
+reference_solution: |
+  def has_linked_loop(head):
+      slow = fast = head
+      while fast is not None and fast.next is not None:
+          slow = slow.next
+          fast = fast.next.next
+          if slow is fast:
+              return True
+      return False
+wrong_solutions:
+  - mistake: compare-values
+    expect: wrong_answer
+    code: |
+      def has_linked_loop(head):
+          values = set()
+          while head is not None:
+              if head.val in values: return True
+              values.add(head.val)
+              head = head.next
+          return False

@@ -40,6 +40,7 @@ class ProblemSummary(BaseModel):
     difficulty: str
     language: str
     status: str
+    collections: list[str]
     topic: TopicSummary | None
     capabilities: list[CapabilitySummary]
 

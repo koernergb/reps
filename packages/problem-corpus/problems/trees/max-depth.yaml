@@ -7,6 +7,7 @@ topic: trees
 patterns: [tree-recursion]
 role: recognition
 difficulty: easy
+collections: [core, blind-75]
 transfer_group: tree-recursion
 prerequisites: []
 related: [invert-tree]

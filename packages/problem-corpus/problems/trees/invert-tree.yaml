@@ -7,6 +7,7 @@ topic: trees
 patterns: [tree-recursion]
 role: canonical
 difficulty: easy
+collections: [core, blind-75]
 transfer_group: tree-recursion
 prerequisites: [max-depth]
 related: [max-depth]

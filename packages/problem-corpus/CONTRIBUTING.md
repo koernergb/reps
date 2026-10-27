@@ -31,7 +31,7 @@
 - Hints escalate: directional cue → conceptual cue → partial structure → near-answer → full
   explanation. Levels 3–5 must not appear in public content.
 - Trees and linked lists use the harness adapters (`tree` = level order with `null`,
-  `linked_list` = Python list). Avoid tests that only deep recursion can fail unless the
+  `linked_list` = Python list, `linked_list_cycle` = `{values: [...], pos: index}`). Avoid tests that only deep recursion can fail unless the
   constraints say so explicitly.
 - Transfer groups link structurally related problems; a transfer item should share the
   technique but not the surface story.

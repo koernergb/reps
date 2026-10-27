@@ -7,6 +7,7 @@ topic: dp-1d
 patterns: [take-or-skip]
 role: canonical
 difficulty: medium
+collections: [core, blind-75]
 transfer_group: take-or-skip
 prerequisites: [climbing-stairs]
 related: [climbing-stairs, coin-change]

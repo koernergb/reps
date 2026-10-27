@@ -7,6 +7,7 @@ topic: graphs
 patterns: [multi-source-bfs, grid-flood-fill]
 role: transfer
 difficulty: medium
+collections: [core]
 transfer_group: grid-flood-fill
 prerequisites: [number-of-islands]
 related: [number-of-islands]

@@ -7,6 +7,7 @@ topic: arrays-hashing
 patterns: [hash-map, canonical-key]
 role: canonical
 difficulty: medium
+collections: [core, blind-75]
 transfer_group: canonical-key-bucketing
 prerequisites: []
 related: [top-k-frequent]

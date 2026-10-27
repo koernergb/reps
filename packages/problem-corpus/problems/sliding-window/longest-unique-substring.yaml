@@ -7,6 +7,7 @@ topic: sliding-window
 patterns: [variable-window, last-seen-index]
 role: canonical
 difficulty: medium
+collections: [core, blind-75]
 transfer_group: variable-window
 prerequisites: [max-sum-window]
 related: [max-consecutive-ones-flip-k]

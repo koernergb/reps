@@ -1,0 +1,101 @@
+schema_version: 1
+slug: reorder-ends-inward
+version: 1
+status: development
+title: Weave List Ends Inward
+topic: linked-list
+patterns: [fast-slow-pointers, reverse-list, merge-lists]
+role: transfer
+difficulty: medium
+collections: [blind-75]
+transfer_group: pointer-rewiring
+prerequisites: [reverse-linked-list]
+related: [reverse-linked-list, merge-two-sorted-lists]
+statement: |
+  Reorder a singly linked list from `L0 → L1 → … → Ln` into
+  `L0 → Ln → L1 → Ln-1 → …`. Reuse the existing nodes and return the head.
+examples:
+  - input: {head: [1, 2, 3, 4]}
+    output: [1, 4, 2, 3]
+  - input: {head: [1, 2, 3, 4, 5]}
+    output: [1, 5, 2, 4, 3]
+constraints: ["0 <= number of nodes <= 50,000", "Modify pointers in place."]
+entrypoint: weave_list_ends
+input_adapters: [linked_list]
+output_adapter: linked_list
+comparison: exact
+starter_code: |
+  def weave_list_ends(head: ListNode | None) -> ListNode | None:
+      pass
+time_complexity: O(n)
+space_complexity: O(1)
+capabilities:
+  - {slug: linked-list.recognition, weight: 0.2}
+  - {slug: linked-list.invariant, weight: 0.3}
+  - {slug: linked-list.implementation, weight: 0.3}
+  - {slug: linked-list.boundaries, weight: 0.1}
+  - {slug: linked-list.complexity, weight: 0.1}
+hints:
+  - The desired order alternates between the first half and the reversed second half.
+  - Find the midpoint with slow and fast pointers.
+  - Reverse the list beginning after the midpoint, then detach the first half.
+  - Merge the two halves by alternating nodes and preserving both next pointers.
+  - "Find middle → reverse second half → weave first and second nodes alternately."
+key_insight: Decompose the operation into midpoint discovery, in-place reversal, and alternating merge.
+clarifications:
+  - {question: "Should I allocate new nodes?", answer: "No; reconnect the existing nodes."}
+follow_ups: ["Which pointer assignment prevents an accidental cycle?"]
+common_mistakes:
+  - id: leave-cycle
+    description: Fails to detach the first half before weaving and creates a cycle.
+    capability: linked-list.implementation
+visible_tests:
+  - {args: [[1, 2, 3, 4]], expected: [1, 4, 2, 3]}
+  - {args: [[1, 2, 3, 4, 5]], expected: [1, 5, 2, 4, 3]}
+hidden_tests:
+  - {args: [[]], expected: []}
+  - {args: [[1]], expected: [1]}
+  - {args: [[1, 2]], expected: [1, 2]}
+  - {args: [[1, 2, 3, 4, 5, 6]], expected: [1, 6, 2, 5, 3, 4]}
+reference_solution: |
+  def weave_list_ends(head):
+      if head is None or head.next is None:
+          return head
+      slow = fast = head
+      while fast.next is not None and fast.next.next is not None:
+          slow = slow.next
+          fast = fast.next.next
+      second = slow.next
+      slow.next = None
+      previous = None
+      while second is not None:
+          following = second.next
+          second.next = previous
+          previous = second
+          second = following
+      first, second = head, previous
+      while second is not None:
+          first_next, second_next = first.next, second.next
+          first.next = second
+          second.next = first_next
+          first, second = first_next, second_next
+      return head
+wrong_solutions:
+  - mistake: leave-cycle
+    expect: timeout
+    code: |
+      def weave_list_ends(head):
+          if not head: return head
+          slow = fast = head
+          while fast and fast.next:
+              slow, fast = slow.next, fast.next.next
+          previous = None
+          while slow:
+              following = slow.next
+              slow.next = previous
+              previous, slow = slow, following
+          first, second = head, previous
+          while second and first:
+              first.next, second.next = second, first.next
+              first, second = second.next, first.next
+          return head

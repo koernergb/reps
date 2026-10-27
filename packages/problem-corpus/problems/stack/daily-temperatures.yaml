@@ -7,6 +7,7 @@ topic: stack
 patterns: [monotonic-stack]
 role: transfer
 difficulty: medium
+collections: [core]
 transfer_group: monotonic-stack
 prerequisites: [balanced-delimiters]
 related: [min-stack]

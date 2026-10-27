@@ -20,6 +20,7 @@ def to_summary(problem: Problem) -> ProblemSummary:
         difficulty=problem.difficulty,
         language=problem.language,
         status=problem.status,
+        collections=problem.collections,
         topic=TopicSummary(slug=problem.topic.slug, name=problem.topic.name)
         if problem.topic
         else None,

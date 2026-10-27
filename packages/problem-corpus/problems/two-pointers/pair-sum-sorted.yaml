@@ -7,6 +7,7 @@ topic: two-pointers
 patterns: [converging-pointers]
 role: canonical
 difficulty: easy
+collections: [core]
 transfer_group: converging-pointers
 prerequisites: [pair-sum-indices]
 related: [three-sum, pair-sum-indices]

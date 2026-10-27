@@ -41,6 +41,36 @@ exercises:
       - Try target 6 with the single value 3.
       - Which elements should the map represent at the moment of the lookup?
     estimated_minutes: 2
+  - id: ah-debug-adjacent-duplicate
+    capability: arrays-hashing.recognition
+    type: debug
+    problem: duplicate-present
+    from_mistake: adjacent-only
+    prompt: This duplicate detector misses separated repeats. Replace the adjacency assumption with the intended linear-time invariant.
+    reference_answer: Maintain a set of all earlier values, returning true when the current value is already present.
+    misconception: Duplicate values must be adjacent to be detected.
+    hints: ["Try [1, 2, 3, 1].", "What should the state represent after each element?"]
+    estimated_minutes: 3
+  - id: ah-debug-anagram-counts
+    capability: arrays-hashing.invariant
+    type: debug
+    problem: anagram-equivalent
+    from_mistake: ignore-multiplicity
+    prompt: This character comparison ignores multiplicity. Fix it so repeated letters are accounted for.
+    reference_answer: Compare complete frequency maps, or increment for the first string and decrement for the second.
+    misconception: Matching character membership is sufficient even when counts differ.
+    hints: ["Try abbc and abcc.", "A set records presence but not how many."]
+    estimated_minutes: 3
+  - id: ah-debug-product-zero
+    capability: arrays-hashing.boundaries
+    type: debug
+    problem: product-without-position
+    from_mistake: divide-total
+    prompt: Remove division from this solution and make it handle one or more zeros.
+    reference_answer: Write prefix products into the output, then multiply by a running suffix product in a reverse pass.
+    misconception: Dividing the total product is safe for every integer input.
+    hints: ["Split each answer around its index.", "Use two directional passes."]
+    estimated_minutes: 5
   - id: ah-trace-prefix-counts
     capability: arrays-hashing.invariant
     type: trace

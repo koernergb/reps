@@ -7,6 +7,7 @@ topic: stack
 patterns: [matching-stack]
 role: recognition
 difficulty: easy
+collections: [core, blind-75]
 transfer_group: matching-stack
 prerequisites: []
 related: [min-stack]

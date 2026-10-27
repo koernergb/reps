@@ -75,3 +75,13 @@ exercises:
       - Try nums = [3, 1] and target 1.
       - When left == mid, is the left half sorted?
     estimated_minutes: 4
+  - id: bs-debug-rotated-minimum
+    capability: binary-search.boundaries
+    type: debug
+    problem: minimum-rotated
+    from_mistake: discard-midpoint
+    prompt: This rotated-minimum search can discard the answer. Repair the right-boundary update.
+    reference_answer: When nums[mid] is at most nums[right], retain mid with right = mid because it may be the minimum.
+    misconception: The midpoint can always be discarded when the right half contains the minimum.
+    hints: ["Try [3, 1, 2].", "Which branch still permits mid to be the answer?"]
+    estimated_minutes: 3

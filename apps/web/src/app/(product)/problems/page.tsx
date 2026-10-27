@@ -8,6 +8,7 @@ import { errorMessage, listProblems, type ProblemSummary } from "@/lib/api";
 
 export default function ProblemsPage() {
   const [problems, setProblems] = useState<ProblemSummary[]>([]);
+  const [collection, setCollection] = useState<"all" | "core" | "blind-75">("all");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -20,18 +21,36 @@ export default function ProblemsPage() {
 
   const groups = useMemo(() => {
     const byTopic = new Map<string, ProblemSummary[]>();
-    for (const problem of problems) {
+    const visible = collection === "all" ? problems : problems.filter((problem) => problem.collections.includes(collection));
+    for (const problem of visible) {
       const key = problem.topic?.name ?? "Other";
       byTopic.set(key, [...(byTopic.get(key) ?? []), problem]);
     }
     return [...byTopic.entries()];
-  }, [problems]);
+  }, [collection, problems]);
 
   return (
     <div className="mx-auto max-w-5xl">
       <p className="text-sm font-bold uppercase tracking-[0.18em] text-green-800">Curated corpus</p>
       <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">Problems</h1>
       <p className="mt-4 max-w-2xl text-lg leading-8 text-[var(--muted)]">Browse by pattern for focused practice. Interviews and transfer checks hide the pattern so recognition is part of the test.</p>
+
+      <div className="mt-6 flex flex-wrap gap-2" aria-label="Problem collection">
+        {([
+          ["all", "All problems"],
+          ["core", "Core 32"],
+          ["blind-75", "Blind 75"],
+        ] as const).map(([value, label]) => (
+          <button
+            className={`rounded-full border px-4 py-2 text-sm font-bold transition ${collection === value ? "border-green-800 bg-green-800 text-white" : "bg-white hover:border-green-400"}`}
+            key={value}
+            onClick={() => setCollection(value)}
+            type="button"
+          >
+            {label} <span className="font-normal opacity-75">({value === "all" ? problems.length : problems.filter((problem) => problem.collections.includes(value)).length})</span>
+          </button>
+        ))}
+      </div>
 
       {loading ? <p className="mt-10 flex items-center gap-2 text-[var(--muted)]"><LoaderCircle aria-hidden className="animate-spin" size={18} /> Loading the corpus…</p> : null}
       {error ? <div className="mt-10 rounded-xl border border-red-200 bg-red-50 p-5 text-red-950" role="alert"><p className="font-bold">The local API is not ready.</p><p className="mt-2 text-sm">{error}</p><code className="mt-3 block text-xs">make services-up &amp;&amp; make db-migrate &amp;&amp; make db-seed</code></div> : null}

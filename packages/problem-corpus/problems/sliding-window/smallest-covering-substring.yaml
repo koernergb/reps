@@ -1,0 +1,92 @@
+schema_version: 1
+slug: smallest-covering-substring
+version: 1
+status: development
+title: Smallest Covering Substring
+topic: sliding-window
+patterns: [variable-window, deficit-counts]
+role: transfer
+difficulty: hard
+collections: [blind-75]
+transfer_group: constrained-cover-window
+prerequisites: [longest-unique-substring]
+related: [longest-unique-substring]
+statement: |
+  Return the shortest substring of `source` containing every character of `required` with at
+  least the required multiplicity. Return an empty string if no such substring exists.
+examples:
+  - input: {source: "ADOBECODEBANC", required: "ABC"}
+    output: "BANC"
+  - input: {source: "a", required: "aa"}
+    output: ""
+constraints: ["1 <= len(source), len(required) <= 100,000", "Inputs contain ASCII letters."]
+entrypoint: smallest_covering_substring
+comparison: exact
+starter_code: |
+  def smallest_covering_substring(source: str, required: str) -> str:
+      pass
+time_complexity: O(n + m)
+space_complexity: O(k)
+capabilities:
+  - {slug: sliding-window.recognition, weight: 0.15}
+  - {slug: sliding-window.invariant, weight: 0.35}
+  - {slug: sliding-window.implementation, weight: 0.25}
+  - {slug: sliding-window.boundaries, weight: 0.15}
+  - {slug: sliding-window.complexity, weight: 0.1}
+hints:
+  - Expand until the window covers all required character counts, then shrink it.
+  - Track how many required character kinds currently meet their target counts.
+  - A character becomes satisfied exactly when its window count reaches its required count.
+  - While every kind is satisfied, record the window and remove its leftmost character.
+  - "Use need/window maps plus formed == len(need) to detect complete coverage."
+key_insight: Alternate expansion to satisfy every deficit with contraction to find the smallest still-valid window.
+clarifications:
+  - {question: "Do repeated required characters matter?", answer: "Yes; multiplicities must be covered."}
+follow_ups: ["How would streaming input affect the storage requirements?"]
+common_mistakes:
+  - id: membership-only
+    description: Checks only character membership and ignores required multiplicity.
+    capability: sliding-window.invariant
+visible_tests:
+  - {args: ["ADOBECODEBANC", "ABC"], expected: "BANC"}
+  - {args: ["a", "aa"], expected: ""}
+hidden_tests:
+  - {args: ["aa", "aa"], expected: "aa"}
+  - {args: ["bbaa", "aba"], expected: "baa", label: repeated requirement}
+  - {args: ["xyz", "q"], expected: ""}
+reference_solution: |
+  def smallest_covering_substring(source, required):
+      need = {}
+      for char in required:
+          need[char] = need.get(char, 0) + 1
+      window, formed, left = {}, 0, 0
+      best = (len(source) + 1, 0, 0)
+      for right, char in enumerate(source):
+          window[char] = window.get(char, 0) + 1
+          if char in need and window[char] == need[char]:
+              formed += 1
+          while formed == len(need):
+              if right - left + 1 < best[0]:
+                  best = (right - left + 1, left, right + 1)
+              removed = source[left]
+              window[removed] -= 1
+              if removed in need and window[removed] < need[removed]:
+                  formed -= 1
+              left += 1
+      return "" if best[0] > len(source) else source[best[1]:best[2]]
+wrong_solutions:
+  - mistake: membership-only
+    expect: wrong_answer
+    code: |
+      def smallest_covering_substring(source, required):
+          needed = set(required)
+          best = ""
+          for left in range(len(source)):
+              seen = set()
+              for right in range(left, len(source)):
+                  seen.add(source[right])
+                  if needed <= seen:
+                      value = source[left:right + 1]
+                      if not best or len(value) < len(best): best = value
+                      break
+          return best

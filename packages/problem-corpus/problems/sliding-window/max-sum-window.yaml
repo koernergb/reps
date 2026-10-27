@@ -7,6 +7,7 @@ topic: sliding-window
 patterns: [fixed-window]
 role: recognition
 difficulty: easy
+collections: [core]
 transfer_group: fixed-window
 prerequisites: []
 related: [longest-unique-substring]

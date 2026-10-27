@@ -1,0 +1,74 @@
+schema_version: 1
+slug: anagram-equivalent
+version: 1
+status: development
+title: Same Character Inventory
+topic: arrays-hashing
+patterns: [frequency-map, counting]
+role: canonical
+difficulty: easy
+collections: [blind-75]
+transfer_group: frequency-accounting
+prerequisites: [duplicate-present]
+related: [group-anagrams]
+statement: |
+  Return `True` if strings `left` and `right` contain exactly the same characters with the
+  same multiplicities, possibly in a different order. Otherwise return `False`.
+examples:
+  - input: {left: "silent", right: "listen"}
+    output: true
+  - input: {left: "aab", right: "abb"}
+    output: false
+constraints: ["0 <= len(left), len(right) <= 100,000", "Inputs contain lowercase English letters."]
+entrypoint: same_character_inventory
+comparison: exact
+starter_code: |
+  def same_character_inventory(left: str, right: str) -> bool:
+      pass
+time_complexity: O(n)
+space_complexity: O(k)
+capabilities:
+  - {slug: arrays-hashing.recognition, weight: 0.25}
+  - {slug: arrays-hashing.invariant, weight: 0.25}
+  - {slug: arrays-hashing.implementation, weight: 0.25}
+  - {slug: arrays-hashing.boundaries, weight: 0.15}
+  - {slug: arrays-hashing.complexity, weight: 0.1}
+hints:
+  - The order is irrelevant, but the number of each character matters.
+  - Reject different lengths before counting.
+  - Count characters in one string and subtract characters from the other.
+  - A missing character or negative count proves the strings differ.
+  - "Use a frequency dictionary and require every final count to be zero."
+key_insight: Anagrams are equal multisets, so frequency counts—not merely character membership—must match.
+clarifications:
+  - {question: "Are empty strings valid?", answer: "Yes; two empty strings match."}
+follow_ups: ["How would you handle arbitrary Unicode text?"]
+common_mistakes:
+  - id: ignore-multiplicity
+    description: Compares sets and therefore ignores repeated-character counts.
+    capability: arrays-hashing.invariant
+visible_tests:
+  - {args: ["silent", "listen"], expected: true}
+  - {args: ["aab", "abb"], expected: false}
+hidden_tests:
+  - {args: ["", ""], expected: true}
+  - {args: ["aab", "ab"], expected: false}
+  - {args: ["abbc", "abcc"], expected: false, label: same character set}
+reference_solution: |
+  def same_character_inventory(left, right):
+      if len(left) != len(right):
+          return False
+      counts = {}
+      for char in left:
+          counts[char] = counts.get(char, 0) + 1
+      for char in right:
+          if counts.get(char, 0) == 0:
+              return False
+          counts[char] -= 1
+      return True
+wrong_solutions:
+  - mistake: ignore-multiplicity
+    expect: wrong_answer
+    code: |
+      def same_character_inventory(left, right):
+          return len(left) == len(right) and set(left) == set(right)

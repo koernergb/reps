@@ -7,6 +7,7 @@ topic: linked-list
 patterns: [pointer-rewiring]
 role: canonical
 difficulty: easy
+collections: [core, blind-75]
 transfer_group: pointer-rewiring
 prerequisites: []
 related: [merge-two-sorted-lists]

@@ -27,8 +27,9 @@ CapabilityType = Literal[
 Difficulty = Literal["easy", "medium", "hard"]
 ProblemRole = Literal["recognition", "canonical", "boundary", "transfer"]
 ContentStatus = Literal["development", "reviewed", "retired"]
+Collection = Literal["core", "blind-75"]
 Comparison = Literal["exact", "unordered", "nested_unordered", "float"]
-Adapter = Literal["linked_list", "tree"]
+Adapter = Literal["linked_list", "linked_list_cycle", "tree"]
 ExerciseType = Literal["recall", "recognition", "explain", "trace", "debug", "code_fragment"]
 ExpectedFailure = Literal["wrong_answer", "timeout", "error"]
 
@@ -115,6 +116,7 @@ class ProblemDef(Strict):
     patterns: list[str] = Field(min_length=1)
     role: ProblemRole
     difficulty: Difficulty
+    collections: list[Collection] = Field(min_length=1)
     transfer_group: str
     prerequisites: list[str] = []
     related: list[str] = []

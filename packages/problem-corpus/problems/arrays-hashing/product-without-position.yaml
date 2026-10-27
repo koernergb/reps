@@ -1,0 +1,77 @@
+schema_version: 1
+slug: product-without-position
+version: 1
+status: development
+title: Product Around Each Position
+topic: arrays-hashing
+patterns: [prefix-product, suffix-product]
+role: transfer
+difficulty: medium
+collections: [blind-75]
+transfer_group: bidirectional-accumulation
+prerequisites: []
+related: [subarray-sum-equals-k]
+statement: |
+  Given an integer list `nums`, return a list where output position `i` is the product of every
+  input value except `nums[i]`. Do not use division. Every result fits in a signed 32-bit integer.
+examples:
+  - input: {nums: [1, 2, 3, 4]}
+    output: [24, 12, 8, 6]
+  - input: {nums: [-1, 0, 2]}
+    output: [0, -2, 0]
+constraints: ["2 <= len(nums) <= 100,000", "-30 <= nums[i] <= 30", "Division is not allowed."]
+entrypoint: product_around_each
+comparison: exact
+starter_code: |
+  def product_around_each(nums: list[int]) -> list[int]:
+      pass
+time_complexity: O(n)
+space_complexity: O(1) excluding output
+capabilities:
+  - {slug: arrays-hashing.recognition, weight: 0.2}
+  - {slug: arrays-hashing.invariant, weight: 0.3}
+  - {slug: arrays-hashing.implementation, weight: 0.25}
+  - {slug: arrays-hashing.boundaries, weight: 0.15}
+  - {slug: arrays-hashing.complexity, weight: 0.1}
+hints:
+  - Split each answer into the product before the position and the product after it.
+  - A left-to-right pass can store every prefix product in the output.
+  - A right-to-left pass can multiply in a running suffix product.
+  - Initialize both running products to 1 so edge positions work naturally.
+  - "First write prefixes to output, then multiply output[i] by a suffix accumulator."
+key_insight: Each answer is prefix-before-i times suffix-after-i; two passes compute both without division.
+clarifications:
+  - {question: "May the input contain zero?", answer: "Yes, including multiple zeros."}
+follow_ups: ["Why does the output array not count as auxiliary space?"]
+common_mistakes:
+  - id: divide-total
+    description: Divides a total product and fails when the input contains zero.
+    capability: arrays-hashing.boundaries
+visible_tests:
+  - {args: [[1, 2, 3, 4]], expected: [24, 12, 8, 6]}
+  - {args: [[-1, 0, 2]], expected: [0, -2, 0]}
+hidden_tests:
+  - {args: [[0, 4, 0]], expected: [0, 0, 0]}
+  - {args: [[5, -2]], expected: [-2, 5]}
+  - {args: [[-1, -2, -3]], expected: [6, 3, 2]}
+reference_solution: |
+  def product_around_each(nums):
+      result = [1] * len(nums)
+      prefix = 1
+      for i, value in enumerate(nums):
+          result[i] = prefix
+          prefix *= value
+      suffix = 1
+      for i in range(len(nums) - 1, -1, -1):
+          result[i] *= suffix
+          suffix *= nums[i]
+      return result
+wrong_solutions:
+  - mistake: divide-total
+    expect: error
+    code: |
+      def product_around_each(nums):
+          total = 1
+          for value in nums:
+              total *= value
+          return [total // value for value in nums]
