@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "slug": "alien-dictionary",
+  "version": 1,
+  "status": "development",
+  "title": "Alien Dictionary",
+  "topic": "graphs",
+  "patterns": [
+    "topological-order"
+  ],
+  "role": "transfer",
+  "difficulty": "hard",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "topological-order",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Alien Dictionary",
+  "examples": [
+    {
+      "input": {
+        "words": [
+          "wrt",
+          "wrf",
+          "er",
+          "ett",
+          "rftt"
+        ]
+      },
+      "output": "wertf"
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "alien_order",
+  "input_adapters": [],
+  "starter_code": "def alien_order(*args):\n    pass",
+  "time_complexity": "O(n)",
+  "space_complexity": "O(n)",
+  "capabilities": [
+    {
+      "slug": "graphs.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "graphs.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "graphs.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "graphs.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "graphs.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "graphs.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain exactly the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "graphs.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          "wrt",
+          "wrf",
+          "er",
+          "ett",
+          "rftt"
+        ]
+      ],
+      "expected": "wertf"
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        [
+          "z",
+          "x"
+        ]
+      ],
+      "expected": "zx"
+    },
+    {
+      "args": [
+        [
+          "z",
+          "x",
+          "z"
+        ]
+      ],
+      "expected": ""
+    }
+  ],
+  "reference_solution": "def alien_order(words):\n    graph={c:set() for w in words for c in w}; indegree={c:0 for c in graph}\n    for a,b in zip(words,words[1:]):\n        if len(a)>len(b) and a.startswith(b): return ''\n        for x,y in zip(a,b):\n            if x!=y:\n                if y not in graph[x]: graph[x].add(y); indegree[y]+=1\n                break\n    queue=sorted([c for c,d in indegree.items() if d==0],reverse=True); out=[]\n    while queue:\n        c=queue.pop(); out.append(c)\n        for nxt in sorted(graph[c],reverse=True):\n            indegree[nxt]-=1\n            if indegree[nxt]==0: queue.append(nxt); queue.sort(reverse=True)\n    return ''.join(out) if len(out)==len(graph) else ''",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def alien_order(*args):\n    return None"
+    }
+  ]
+}

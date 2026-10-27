@@ -146,6 +146,15 @@ def test_linked_list_cycle_adapter() -> None:
     assert run(code, spec, tests, []).verdict == "passed"
 
 
+def test_linked_list_list_adapter() -> None:
+    spec = ExecutionSpec(
+        entrypoint="heads", input_adapters=("linked_list_list",)
+    )
+    code = "def heads(lists):\n    return [node.val if node else None for node in lists]\n"
+    tests = [ConcreteTest("v1", [[[], [1, 2], [3]]], [None, 1, 3])]
+    assert run(code, spec, tests, []).verdict == "passed"
+
+
 def test_class_design_operations() -> None:
     spec = ExecutionSpec(entrypoint="Counter", kind="class")
     code = (

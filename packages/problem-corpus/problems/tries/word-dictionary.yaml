@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "slug": "word-dictionary",
+  "version": 1,
+  "status": "development",
+  "title": "Add and Search Words",
+  "topic": "tries",
+  "patterns": [
+    "trie-wildcard-search"
+  ],
+  "role": "transfer",
+  "difficulty": "medium",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "trie-wildcard-search",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Add and Search Words",
+  "examples": [
+    {
+      "input": {
+        "operations": [
+          "WordDictionary",
+          "add_word",
+          "search"
+        ],
+        "arguments": [
+          [],
+          [
+            "bad"
+          ],
+          [
+            ".ad"
+          ]
+        ]
+      },
+      "output": [
+        null,
+        null,
+        true
+      ]
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "class",
+  "entrypoint": "WordDictionary",
+  "input_adapters": [],
+  "starter_code": "def WordDictionary(*args):\n    pass",
+  "time_complexity": "O(n)",
+  "space_complexity": "O(n)",
+  "capabilities": [
+    {
+      "slug": "tries.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "tries.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "tries.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "tries.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "tries.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "tries.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain exactly the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "tries.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          "WordDictionary",
+          "add_word",
+          "search"
+        ],
+        [
+          [],
+          [
+            "bad"
+          ],
+          [
+            ".ad"
+          ]
+        ]
+      ],
+      "expected": [
+        null,
+        null,
+        true
+      ]
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        [
+          "WordDictionary",
+          "add_word",
+          "search",
+          "search"
+        ],
+        [
+          [],
+          [
+            "bad"
+          ],
+          [
+            "pad"
+          ],
+          [
+            "b.."
+          ]
+        ]
+      ],
+      "expected": [
+        null,
+        null,
+        false,
+        true
+      ]
+    },
+    {
+      "args": [
+        [
+          "WordDictionary",
+          "add_word",
+          "search"
+        ],
+        [
+          [],
+          [
+            "a"
+          ],
+          [
+            "."
+          ]
+        ]
+      ],
+      "expected": [
+        null,
+        null,
+        true
+      ]
+    }
+  ],
+  "reference_solution": "class WordDictionary:\n    def __init__(self): self.root={}\n    def add_word(self,word):\n        node=self.root\n        for ch in word: node=node.setdefault(ch,{})\n        node['$']=True\n    def search(self,word):\n        def dfs(i,node):\n            if i==len(word): return '$' in node\n            ch=word[i]\n            if ch=='.': return any(k!='$' and dfs(i+1,v) for k,v in node.items())\n            return ch in node and dfs(i+1,node[ch])\n        return dfs(0,self.root)",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "class WordDictionary:\n    def __init__(self): self.words=set()\n    def add_word(self,w): self.words.add(w)\n    def search(self,w): return w in self.words"
+    }
+  ]
+}

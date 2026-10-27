@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "slug": "longest-increasing-subsequence",
+  "version": 1,
+  "status": "development",
+  "title": "Longest Increasing Subsequence",
+  "topic": "dp-1d",
+  "patterns": [
+    "patience-tails"
+  ],
+  "role": "transfer",
+  "difficulty": "medium",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "patience-tails",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Longest Increasing Subsequence",
+  "examples": [
+    {
+      "input": {
+        "nums": [
+          10,
+          9,
+          2,
+          5,
+          3,
+          7,
+          101,
+          18
+        ]
+      },
+      "output": 4
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "lis_length",
+  "input_adapters": [],
+  "starter_code": "def lis_length(*args):\n    pass",
+  "time_complexity": "O(n log n)",
+  "space_complexity": "O(n)",
+  "capabilities": [
+    {
+      "slug": "dp-1d.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "dp-1d.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "dp-1d.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          10,
+          9,
+          2,
+          5,
+          3,
+          7,
+          101,
+          18
+        ]
+      ],
+      "expected": 4
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        [
+          7,
+          7,
+          7
+        ]
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        [
+          0,
+          1,
+          0,
+          3,
+          2,
+          3
+        ]
+      ],
+      "expected": 4
+    }
+  ],
+  "reference_solution": "def lis_length(nums):\n    from bisect import bisect_left\n    tails=[]\n    for x in nums:\n        i=bisect_left(tails,x)\n        if i==len(tails): tails.append(x)\n        else: tails[i]=x\n    return len(tails)",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def lis_length(*args):\n    return None"
+    }
+  ]
+}

@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "slug": "string-codec",
+  "version": 1,
+  "status": "development",
+  "title": "Encode and Decode Strings",
+  "topic": "arrays-hashing",
+  "patterns": [
+    "length-prefix-encoding"
+  ],
+  "role": "transfer",
+  "difficulty": "medium",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "length-prefix-encoding",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Encode and Decode Strings",
+  "examples": [
+    {
+      "input": {
+        "operations": [
+          "StringCodec",
+          "encode",
+          "decode"
+        ],
+        "arguments": [
+          [],
+          [
+            [
+              "lint",
+              "code"
+            ]
+          ],
+          [
+            "4#lint4#code"
+          ]
+        ]
+      },
+      "output": [
+        null,
+        "4#lint4#code",
+        [
+          "lint",
+          "code"
+        ]
+      ]
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "class",
+  "entrypoint": "StringCodec",
+  "input_adapters": [],
+  "starter_code": "def StringCodec(*args):\n    pass",
+  "time_complexity": "O(total characters) per operation",
+  "space_complexity": "O(n)",
+  "capabilities": [
+    {
+      "slug": "arrays-hashing.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "arrays-hashing.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "arrays-hashing.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "arrays-hashing.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "arrays-hashing.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "arrays-hashing.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "arrays-hashing.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          "StringCodec",
+          "encode",
+          "decode"
+        ],
+        [
+          [],
+          [
+            [
+              "lint",
+              "code"
+            ]
+          ],
+          [
+            "4#lint4#code"
+          ]
+        ]
+      ],
+      "expected": [
+        null,
+        "4#lint4#code",
+        [
+          "lint",
+          "code"
+        ]
+      ]
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        [
+          "StringCodec",
+          "encode",
+          "decode"
+        ],
+        [
+          [],
+          [
+            [
+              "",
+              "a#b"
+            ]
+          ],
+          [
+            "0#3#a#b"
+          ]
+        ]
+      ],
+      "expected": [
+        null,
+        "0#3#a#b",
+        [
+          "",
+          "a#b"
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          "StringCodec",
+          "decode"
+        ],
+        [
+          [],
+          [
+            "10#0123456789"
+          ]
+        ]
+      ],
+      "expected": [
+        null,
+        [
+          "0123456789"
+        ]
+      ]
+    }
+  ],
+  "reference_solution": "class StringCodec:\n    def encode(self, strings):\n        return ''.join(str(len(s)) + '#' + s for s in strings)\n    def decode(self, data):\n        out=[]; i=0\n        while i < len(data):\n            j=i\n            while data[j] != '#': j += 1\n            size=int(data[i:j]); j += 1\n            out.append(data[j:j+size]); i=j+size\n        return out",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "class StringCodec:\n    def encode(self, strings): return '#'.join(strings)\n    def decode(self, data): return data.split('#')"
+    }
+  ]
+}

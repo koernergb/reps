@@ -1,0 +1,208 @@
+{
+  "schema_version": 1,
+  "slug": "insert-interval",
+  "version": 1,
+  "status": "development",
+  "title": "Insert Interval",
+  "topic": "intervals",
+  "patterns": [
+    "sorted-interval-merge"
+  ],
+  "role": "transfer",
+  "difficulty": "medium",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "sorted-interval-merge",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Insert Interval",
+  "examples": [
+    {
+      "input": {
+        "intervals": [
+          [
+            1,
+            3
+          ],
+          [
+            6,
+            9
+          ]
+        ],
+        "new": [
+          2,
+          5
+        ]
+      },
+      "output": [
+        [
+          1,
+          5
+        ],
+        [
+          6,
+          9
+        ]
+      ]
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "insert_interval",
+  "input_adapters": [],
+  "starter_code": "def insert_interval(*args):\n    pass",
+  "time_complexity": "O(n)",
+  "space_complexity": "O(n)",
+  "capabilities": [
+    {
+      "slug": "intervals.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "intervals.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "intervals.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "intervals.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "intervals.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "intervals.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "intervals.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            3
+          ],
+          [
+            6,
+            9
+          ]
+        ],
+        [
+          2,
+          5
+        ]
+      ],
+      "expected": [
+        [
+          1,
+          5
+        ],
+        [
+          6,
+          9
+        ]
+      ]
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        [],
+        [
+          5,
+          7
+        ]
+      ],
+      "expected": [
+        [
+          5,
+          7
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            5
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            8,
+            10
+          ],
+          [
+            12,
+            16
+          ]
+        ],
+        [
+          4,
+          8
+        ]
+      ],
+      "expected": [
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          10
+        ],
+        [
+          12,
+          16
+        ]
+      ]
+    }
+  ],
+  "reference_solution": "def insert_interval(intervals,new):\n    out=[]; i=0\n    while i<len(intervals) and intervals[i][1]<new[0]: out.append(intervals[i]); i+=1\n    while i<len(intervals) and intervals[i][0]<=new[1]: new=[min(new[0],intervals[i][0]),max(new[1],intervals[i][1])]; i+=1\n    return out+[new]+intervals[i:]",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def insert_interval(*args):\n    return None"
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "slug": "unique-paths",
+  "version": 1,
+  "status": "development",
+  "title": "Unique Paths",
+  "topic": "dp-2d",
+  "patterns": [
+    "grid-path-dp"
+  ],
+  "role": "transfer",
+  "difficulty": "medium",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "grid-path-dp",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Unique Paths",
+  "examples": [
+    {
+      "input": {
+        "rows": 3,
+        "cols": 7
+      },
+      "output": 28
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "unique_paths",
+  "input_adapters": [],
+  "starter_code": "def unique_paths(*args):\n    pass",
+  "time_complexity": "O(rows * cols)",
+  "space_complexity": "O(cols)",
+  "capabilities": [
+    {
+      "slug": "dp-2d.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-2d.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-2d.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-2d.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-2d.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "dp-2d.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "dp-2d.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        3,
+        7
+      ],
+      "expected": 28
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        1,
+        1
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        3,
+        2
+      ],
+      "expected": 3
+    }
+  ],
+  "reference_solution": "def unique_paths(rows, cols):\n    dp=[1]*cols\n    for _ in range(1,rows):\n        for c in range(1,cols): dp[c]+=dp[c-1]\n    return dp[-1]",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def unique_paths(*args):\n    return None"
+    }
+  ]
+}

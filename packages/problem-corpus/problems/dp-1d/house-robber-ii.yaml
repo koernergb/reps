@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "slug": "house-robber-ii",
+  "version": 1,
+  "status": "development",
+  "title": "House Robber II",
+  "topic": "dp-1d",
+  "patterns": [
+    "circular-take-skip"
+  ],
+  "role": "transfer",
+  "difficulty": "medium",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "circular-take-skip",
+  "prerequisites": [],
+  "related": [],
+  "statement": "House Robber II",
+  "examples": [
+    {
+      "input": {
+        "nums": [
+          2,
+          3,
+          2
+        ]
+      },
+      "output": 3
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "rob_circular",
+  "input_adapters": [],
+  "starter_code": "def rob_circular(*args):\n    pass",
+  "time_complexity": "O(n)",
+  "space_complexity": "O(1)",
+  "capabilities": [
+    {
+      "slug": "dp-1d.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "dp-1d.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "dp-1d.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          2,
+          3,
+          2
+        ]
+      ],
+      "expected": 3
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        [
+          1
+        ]
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        [
+          1,
+          2,
+          3,
+          1
+        ]
+      ],
+      "expected": 4
+    }
+  ],
+  "reference_solution": "def rob_circular(nums):\n    if len(nums)==1: return nums[0]\n    def linear(a):\n        prev=curr=0\n        for x in a: prev,curr=curr,max(curr,prev+x)\n        return curr\n    return max(linear(nums[:-1]),linear(nums[1:]))",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def rob_circular(*args):\n    return None"
+    }
+  ]
+}

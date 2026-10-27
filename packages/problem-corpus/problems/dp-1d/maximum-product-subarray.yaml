@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "slug": "maximum-product-subarray",
+  "version": 1,
+  "status": "development",
+  "title": "Maximum Product Subarray",
+  "topic": "dp-1d",
+  "patterns": [
+    "dual-extrema-dp"
+  ],
+  "role": "transfer",
+  "difficulty": "medium",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "dual-extrema-dp",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Maximum Product Subarray",
+  "examples": [
+    {
+      "input": {
+        "nums": [
+          2,
+          3,
+          -2,
+          4
+        ]
+      },
+      "output": 6
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "max_product",
+  "input_adapters": [],
+  "starter_code": "def max_product(*args):\n    pass",
+  "time_complexity": "O(n)",
+  "space_complexity": "O(1)",
+  "capabilities": [
+    {
+      "slug": "dp-1d.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "dp-1d.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "dp-1d.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          2,
+          3,
+          -2,
+          4
+        ]
+      ],
+      "expected": 6
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        [
+          -2,
+          0,
+          -1
+        ]
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        [
+          -2,
+          3,
+          -4
+        ]
+      ],
+      "expected": 24
+    }
+  ],
+  "reference_solution": "def max_product(nums):\n    hi=lo=ans=nums[0]\n    for x in nums[1:]:\n        old=hi; hi=max(x,x*hi,x*lo); lo=min(x,x*old,x*lo); ans=max(ans,hi)\n    return ans",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def max_product(*args):\n    return None"
+    }
+  ]
+}

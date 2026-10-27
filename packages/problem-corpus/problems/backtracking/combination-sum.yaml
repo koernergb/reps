@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "slug": "combination-sum",
+  "version": 1,
+  "status": "development",
+  "title": "Combination Sum",
+  "topic": "backtracking",
+  "patterns": [
+    "choice-search"
+  ],
+  "role": "transfer",
+  "difficulty": "medium",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "choice-search",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Combination Sum",
+  "examples": [
+    {
+      "input": {
+        "candidates": [
+          2,
+          3,
+          6,
+          7
+        ],
+        "target": 7
+      },
+      "output": [
+        [
+          2,
+          2,
+          3
+        ],
+        [
+          7
+        ]
+      ]
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "combination_sum",
+  "input_adapters": [],
+  "comparison": "nested_unordered",
+  "starter_code": "def combination_sum(*args):\n    pass",
+  "time_complexity": "O(n)",
+  "space_complexity": "O(n)",
+  "capabilities": [
+    {
+      "slug": "backtracking.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "backtracking.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "backtracking.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "backtracking.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "backtracking.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "backtracking.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain exactly the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "backtracking.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          2,
+          3,
+          6,
+          7
+        ],
+        7
+      ],
+      "expected": [
+        [
+          2,
+          2,
+          3
+        ],
+        [
+          7
+        ]
+      ]
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        [
+          2,
+          3,
+          5
+        ],
+        8
+      ],
+      "expected": [
+        [
+          2,
+          2,
+          2,
+          2
+        ],
+        [
+          2,
+          3,
+          3
+        ],
+        [
+          3,
+          5
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          2
+        ],
+        1
+      ],
+      "expected": []
+    }
+  ],
+  "reference_solution": "def combination_sum(candidates,target):\n    out=[]; candidates.sort()\n    def dfs(start,left,path):\n        if left==0: out.append(path[:]); return\n        for i in range(start,len(candidates)):\n            x=candidates[i]\n            if x>left: break\n            path.append(x); dfs(i,left-x,path); path.pop()\n    dfs(0,target,[]); return out",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def combination_sum(*args):\n    return None"
+    }
+  ]
+}

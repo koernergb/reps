@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "slug": "clone-graph",
+  "version": 1,
+  "status": "development",
+  "title": "Clone Graph",
+  "topic": "graphs",
+  "patterns": [
+    "graph-copy"
+  ],
+  "role": "transfer",
+  "difficulty": "medium",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "graph-copy",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Clone Graph",
+  "examples": [
+    {
+      "input": {
+        "adjacency": [
+          [
+            2,
+            4
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      },
+      "output": [
+        [
+          2,
+          4
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          1,
+          3
+        ]
+      ]
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "clone_graph",
+  "input_adapters": [],
+  "starter_code": "def clone_graph(*args):\n    pass",
+  "time_complexity": "O(n)",
+  "space_complexity": "O(n)",
+  "capabilities": [
+    {
+      "slug": "graphs.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "graphs.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "graphs.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "graphs.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "graphs.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "graphs.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain exactly the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "graphs.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          [
+            2,
+            4
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      ],
+      "expected": [
+        [
+          2,
+          4
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          1,
+          3
+        ]
+      ]
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        []
+      ],
+      "expected": []
+    },
+    {
+      "args": [
+        [
+          []
+        ]
+      ],
+      "expected": [
+        []
+      ]
+    }
+  ],
+  "reference_solution": "def clone_graph(adjacency):\n    return [neighbors[:] for neighbors in adjacency]",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def clone_graph(*args):\n    return None"
+    }
+  ]
+}

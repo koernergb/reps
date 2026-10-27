@@ -1,0 +1,213 @@
+{
+  "schema_version": 1,
+  "slug": "set-matrix-zeroes",
+  "version": 1,
+  "status": "development",
+  "title": "Set Matrix Zeroes",
+  "topic": "math-geometry",
+  "patterns": [
+    "marker-row-column"
+  ],
+  "role": "transfer",
+  "difficulty": "medium",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "marker-row-column",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Set Matrix Zeroes",
+  "examples": [
+    {
+      "input": {
+        "matrix": [
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ]
+      },
+      "output": [
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          1
+        ]
+      ]
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "set_zeroes",
+  "input_adapters": [],
+  "starter_code": "def set_zeroes(*args):\n    pass",
+  "time_complexity": "O(rows * cols)",
+  "space_complexity": "O(rows + cols)",
+  "capabilities": [
+    {
+      "slug": "math-geometry.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "math-geometry.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "math-geometry.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "math-geometry.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "math-geometry.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "math-geometry.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "math-geometry.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            0,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ]
+      ],
+      "expected": [
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          1
+        ]
+      ]
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        [
+          [
+            0,
+            1
+          ]
+        ]
+      ],
+      "expected": [
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            0,
+            3
+          ],
+          [
+            4,
+            5,
+            6
+          ]
+        ]
+      ],
+      "expected": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          6
+        ]
+      ]
+    }
+  ],
+  "reference_solution": "def set_zeroes(matrix):\n    rows=set(); cols=set()\n    for r,row in enumerate(matrix):\n        for c,x in enumerate(row):\n            if x==0: rows.add(r); cols.add(c)\n    for r,row in enumerate(matrix):\n        for c in range(len(row)):\n            if r in rows or c in cols: matrix[r][c]=0\n    return matrix",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def set_zeroes(*args):\n    return None"
+    }
+  ]
+}

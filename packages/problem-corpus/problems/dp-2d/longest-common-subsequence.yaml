@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "slug": "longest-common-subsequence",
+  "version": 1,
+  "status": "development",
+  "title": "Longest Common Subsequence",
+  "topic": "dp-2d",
+  "patterns": [
+    "sequence-alignment-dp"
+  ],
+  "role": "transfer",
+  "difficulty": "medium",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "sequence-alignment-dp",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Longest Common Subsequence",
+  "examples": [
+    {
+      "input": {
+        "a": "abcde",
+        "b": "ace"
+      },
+      "output": 3
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "lcs_length",
+  "input_adapters": [],
+  "starter_code": "def lcs_length(*args):\n    pass",
+  "time_complexity": "O(mn)",
+  "space_complexity": "O(n)",
+  "capabilities": [
+    {
+      "slug": "dp-2d.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-2d.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-2d.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-2d.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-2d.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "dp-2d.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "dp-2d.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        "abcde",
+        "ace"
+      ],
+      "expected": 3
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        "abc",
+        "abc"
+      ],
+      "expected": 3
+    },
+    {
+      "args": [
+        "abc",
+        "def"
+      ],
+      "expected": 0
+    }
+  ],
+  "reference_solution": "def lcs_length(a,b):\n    dp=[0]*(len(b)+1)\n    for x in a:\n        prev=0\n        for j,y in enumerate(b,1):\n            saved=dp[j]\n            dp[j]=prev+1 if x==y else max(dp[j],dp[j-1])\n            prev=saved\n    return dp[-1]",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def lcs_length(*args):\n    return None"
+    }
+  ]
+}

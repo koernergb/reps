@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "slug": "decode-ways",
+  "version": 1,
+  "status": "development",
+  "title": "Decode Ways",
+  "topic": "dp-1d",
+  "patterns": [
+    "prefix-decoding"
+  ],
+  "role": "transfer",
+  "difficulty": "medium",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "prefix-decoding",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Decode Ways",
+  "examples": [
+    {
+      "input": {
+        "s": "226"
+      },
+      "output": 3
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "decode_ways",
+  "input_adapters": [],
+  "starter_code": "def decode_ways(*args):\n    pass",
+  "time_complexity": "O(n)",
+  "space_complexity": "O(1)",
+  "capabilities": [
+    {
+      "slug": "dp-1d.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "dp-1d.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "dp-1d.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        "226"
+      ],
+      "expected": 3
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        "06"
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        "12"
+      ],
+      "expected": 2
+    }
+  ],
+  "reference_solution": "def decode_ways(s):\n    prev2=1; prev1=0 if s[0]=='0' else 1\n    for i in range(1,len(s)):\n        cur=(prev1 if s[i]!='0' else 0)+(prev2 if 10<=int(s[i-1:i+1])<=26 else 0)\n        prev2,prev1=prev1,cur\n    return prev1",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def decode_ways(*args):\n    return None"
+    }
+  ]
+}

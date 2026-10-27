@@ -29,7 +29,7 @@ ProblemRole = Literal["recognition", "canonical", "boundary", "transfer"]
 ContentStatus = Literal["development", "reviewed", "retired"]
 Collection = Literal["core", "blind-75"]
 Comparison = Literal["exact", "unordered", "nested_unordered", "float"]
-Adapter = Literal["linked_list", "linked_list_cycle", "tree"]
+Adapter = Literal["linked_list", "linked_list_list", "linked_list_cycle", "tree"]
 ExerciseType = Literal["recall", "recognition", "explain", "trace", "debug", "code_fragment"]
 ExpectedFailure = Literal["wrong_answer", "timeout", "error"]
 

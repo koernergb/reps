@@ -1,0 +1,195 @@
+{
+  "schema_version": 1,
+  "slug": "spiral-matrix",
+  "version": 1,
+  "status": "development",
+  "title": "Spiral Matrix",
+  "topic": "math-geometry",
+  "patterns": [
+    "shrinking-boundaries"
+  ],
+  "role": "transfer",
+  "difficulty": "medium",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "shrinking-boundaries",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Spiral Matrix",
+  "examples": [
+    {
+      "input": {
+        "matrix": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            4,
+            5,
+            6
+          ],
+          [
+            7,
+            8,
+            9
+          ]
+        ]
+      },
+      "output": [
+        1,
+        2,
+        3,
+        6,
+        9,
+        8,
+        7,
+        4,
+        5
+      ]
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "spiral_order",
+  "input_adapters": [],
+  "starter_code": "def spiral_order(*args):\n    pass",
+  "time_complexity": "O(rows * cols)",
+  "space_complexity": "O(n)",
+  "capabilities": [
+    {
+      "slug": "math-geometry.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "math-geometry.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "math-geometry.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "math-geometry.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "math-geometry.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "math-geometry.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "math-geometry.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            4,
+            5,
+            6
+          ],
+          [
+            7,
+            8,
+            9
+          ]
+        ]
+      ],
+      "expected": [
+        1,
+        2,
+        3,
+        6,
+        9,
+        8,
+        7,
+        4,
+        5
+      ]
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            2,
+            3,
+            4
+          ]
+        ]
+      ],
+      "expected": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ]
+        ]
+      ],
+      "expected": [
+        1,
+        2,
+        3
+      ]
+    }
+  ],
+  "reference_solution": "def spiral_order(matrix):\n    out=[]; top=0; bottom=len(matrix)-1; left=0; right=len(matrix[0])-1\n    while top<=bottom and left<=right:\n        out += matrix[top][left:right+1]; top+=1\n        for r in range(top,bottom+1): out.append(matrix[r][right])\n        right-=1\n        if top<=bottom: out += matrix[bottom][left:right+1][::-1]; bottom-=1\n        if left<=right:\n            for r in range(bottom,top-1,-1): out.append(matrix[r][left])\n            left+=1\n    return out",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def spiral_order(*args):\n    return None"
+    }
+  ]
+}

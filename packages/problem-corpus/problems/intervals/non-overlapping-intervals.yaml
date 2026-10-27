@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "slug": "non-overlapping-intervals",
+  "version": 1,
+  "status": "development",
+  "title": "Non-overlapping Intervals",
+  "topic": "intervals",
+  "patterns": [
+    "earliest-finish-greedy"
+  ],
+  "role": "transfer",
+  "difficulty": "medium",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "earliest-finish-greedy",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Non-overlapping Intervals",
+  "examples": [
+    {
+      "input": {
+        "intervals": [
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      },
+      "output": 1
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "erase_overlap_count",
+  "input_adapters": [],
+  "starter_code": "def erase_overlap_count(*args):\n    pass",
+  "time_complexity": "O(n log n)",
+  "space_complexity": "O(1)",
+  "capabilities": [
+    {
+      "slug": "intervals.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "intervals.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "intervals.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "intervals.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "intervals.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "intervals.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "intervals.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            1,
+            3
+          ]
+        ]
+      ],
+      "expected": 1
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      ],
+      "expected": 2
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      ],
+      "expected": 0
+    }
+  ],
+  "reference_solution": "def erase_overlap_count(intervals):\n    end=float('-inf'); removed=0\n    for start,finish in sorted(intervals,key=lambda x:x[1]):\n        if start<end: removed+=1\n        else: end=finish\n    return removed",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def erase_overlap_count(*args):\n    return None"
+    }
+  ]
+}

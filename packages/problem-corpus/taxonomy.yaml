@@ -22,6 +22,20 @@ topics:
   name: Graphs
 - slug: dp-1d
   name: 1-D Dynamic Programming
+- slug: tries
+  name: Tries
+- slug: backtracking
+  name: Backtracking
+- slug: dp-2d
+  name: 2-D Dynamic Programming
+- slug: greedy
+  name: Greedy
+- slug: intervals
+  name: Intervals
+- slug: bit-manipulation
+  name: Bit Manipulation
+- slug: math-geometry
+  name: Math & Geometry
 - slug: interview
   name: Interview skills
 capabilities:
@@ -345,3 +359,213 @@ capabilities:
   name: Solve independently
   description: Reach a working approach and implementation without hints or solution exposure.
   type: independence
+- slug: tries.recognition
+  topic: tries
+  name: Recognize the pattern for Trie
+  description: Apply prefix-tree traversal correctly, explain the maintained state, and handle relevant edge cases.
+  type: recognition
+- slug: tries.invariant
+  topic: tries
+  name: State the invariant for Trie
+  description: Apply prefix-tree traversal correctly, explain the maintained state, and handle relevant edge cases.
+  type: reasoning
+- slug: tries.implementation
+  topic: tries
+  name: Implement the pattern for Trie
+  description: Apply prefix-tree traversal correctly, explain the maintained state, and handle relevant edge cases.
+  type: implementation
+- slug: tries.boundaries
+  topic: tries
+  name: Handle edge cases for Trie
+  description: Apply prefix-tree traversal correctly, explain the maintained state, and handle relevant edge cases.
+  type: debugging
+- slug: tries.complexity
+  topic: tries
+  name: Analyze complexity for Trie
+  description: Apply prefix-tree traversal correctly, explain the maintained state, and handle relevant edge cases.
+  type: complexity
+- slug: tries.transfer
+  topic: tries
+  name: Transfer the pattern for Trie
+  description: Apply prefix-tree traversal correctly, explain the maintained state, and handle relevant edge cases.
+  type: transfer
+- slug: backtracking.recognition
+  topic: backtracking
+  name: Recognize the pattern for Backtracking
+  description: Apply search choices and undo state correctly, explain the maintained state, and handle relevant edge cases.
+  type: recognition
+- slug: backtracking.invariant
+  topic: backtracking
+  name: State the invariant for Backtracking
+  description: Apply search choices and undo state correctly, explain the maintained state, and handle relevant edge cases.
+  type: reasoning
+- slug: backtracking.implementation
+  topic: backtracking
+  name: Implement the pattern for Backtracking
+  description: Apply search choices and undo state correctly, explain the maintained state, and handle relevant edge cases.
+  type: implementation
+- slug: backtracking.boundaries
+  topic: backtracking
+  name: Handle edge cases for Backtracking
+  description: Apply search choices and undo state correctly, explain the maintained state, and handle relevant edge cases.
+  type: debugging
+- slug: backtracking.complexity
+  topic: backtracking
+  name: Analyze complexity for Backtracking
+  description: Apply search choices and undo state correctly, explain the maintained state, and handle relevant edge cases.
+  type: complexity
+- slug: backtracking.transfer
+  topic: backtracking
+  name: Transfer the pattern for Backtracking
+  description: Apply search choices and undo state correctly, explain the maintained state, and handle relevant edge cases.
+  type: transfer
+- slug: dp-2d.recognition
+  topic: dp-2d
+  name: Recognize the pattern for 2-D DP
+  description: Apply two-dimensional states and transitions correctly, explain the maintained state, and handle relevant edge cases.
+  type: recognition
+- slug: dp-2d.invariant
+  topic: dp-2d
+  name: State the invariant for 2-D DP
+  description: Apply two-dimensional states and transitions correctly, explain the maintained state, and handle relevant edge cases.
+  type: reasoning
+- slug: dp-2d.implementation
+  topic: dp-2d
+  name: Implement the pattern for 2-D DP
+  description: Apply two-dimensional states and transitions correctly, explain the maintained state, and handle relevant edge cases.
+  type: implementation
+- slug: dp-2d.boundaries
+  topic: dp-2d
+  name: Handle edge cases for 2-D DP
+  description: Apply two-dimensional states and transitions correctly, explain the maintained state, and handle relevant edge cases.
+  type: debugging
+- slug: dp-2d.complexity
+  topic: dp-2d
+  name: Analyze complexity for 2-D DP
+  description: Apply two-dimensional states and transitions correctly, explain the maintained state, and handle relevant edge cases.
+  type: complexity
+- slug: dp-2d.transfer
+  topic: dp-2d
+  name: Transfer the pattern for 2-D DP
+  description: Apply two-dimensional states and transitions correctly, explain the maintained state, and handle relevant edge cases.
+  type: transfer
+- slug: greedy.recognition
+  topic: greedy
+  name: Recognize the pattern for Greedy
+  description: Apply locally optimal choices and reachability correctly, explain the maintained state, and handle relevant edge cases.
+  type: recognition
+- slug: greedy.invariant
+  topic: greedy
+  name: State the invariant for Greedy
+  description: Apply locally optimal choices and reachability correctly, explain the maintained state, and handle relevant edge cases.
+  type: reasoning
+- slug: greedy.implementation
+  topic: greedy
+  name: Implement the pattern for Greedy
+  description: Apply locally optimal choices and reachability correctly, explain the maintained state, and handle relevant edge cases.
+  type: implementation
+- slug: greedy.boundaries
+  topic: greedy
+  name: Handle edge cases for Greedy
+  description: Apply locally optimal choices and reachability correctly, explain the maintained state, and handle relevant edge cases.
+  type: debugging
+- slug: greedy.complexity
+  topic: greedy
+  name: Analyze complexity for Greedy
+  description: Apply locally optimal choices and reachability correctly, explain the maintained state, and handle relevant edge cases.
+  type: complexity
+- slug: greedy.transfer
+  topic: greedy
+  name: Transfer the pattern for Greedy
+  description: Apply locally optimal choices and reachability correctly, explain the maintained state, and handle relevant edge cases.
+  type: transfer
+- slug: intervals.recognition
+  topic: intervals
+  name: Recognize the pattern for Intervals
+  description: Apply sorted interval boundaries correctly, explain the maintained state, and handle relevant edge cases.
+  type: recognition
+- slug: intervals.invariant
+  topic: intervals
+  name: State the invariant for Intervals
+  description: Apply sorted interval boundaries correctly, explain the maintained state, and handle relevant edge cases.
+  type: reasoning
+- slug: intervals.implementation
+  topic: intervals
+  name: Implement the pattern for Intervals
+  description: Apply sorted interval boundaries correctly, explain the maintained state, and handle relevant edge cases.
+  type: implementation
+- slug: intervals.boundaries
+  topic: intervals
+  name: Handle edge cases for Intervals
+  description: Apply sorted interval boundaries correctly, explain the maintained state, and handle relevant edge cases.
+  type: debugging
+- slug: intervals.complexity
+  topic: intervals
+  name: Analyze complexity for Intervals
+  description: Apply sorted interval boundaries correctly, explain the maintained state, and handle relevant edge cases.
+  type: complexity
+- slug: intervals.transfer
+  topic: intervals
+  name: Transfer the pattern for Intervals
+  description: Apply sorted interval boundaries correctly, explain the maintained state, and handle relevant edge cases.
+  type: transfer
+- slug: bit-manipulation.recognition
+  topic: bit-manipulation
+  name: Recognize the pattern for Bit manipulation
+  description: Apply bitwise invariants correctly, explain the maintained state, and handle relevant edge cases.
+  type: recognition
+- slug: bit-manipulation.invariant
+  topic: bit-manipulation
+  name: State the invariant for Bit manipulation
+  description: Apply bitwise invariants correctly, explain the maintained state, and handle relevant edge cases.
+  type: reasoning
+- slug: bit-manipulation.implementation
+  topic: bit-manipulation
+  name: Implement the pattern for Bit manipulation
+  description: Apply bitwise invariants correctly, explain the maintained state, and handle relevant edge cases.
+  type: implementation
+- slug: bit-manipulation.boundaries
+  topic: bit-manipulation
+  name: Handle edge cases for Bit manipulation
+  description: Apply bitwise invariants correctly, explain the maintained state, and handle relevant edge cases.
+  type: debugging
+- slug: bit-manipulation.complexity
+  topic: bit-manipulation
+  name: Analyze complexity for Bit manipulation
+  description: Apply bitwise invariants correctly, explain the maintained state, and handle relevant edge cases.
+  type: complexity
+- slug: bit-manipulation.transfer
+  topic: bit-manipulation
+  name: Transfer the pattern for Bit manipulation
+  description: Apply bitwise invariants correctly, explain the maintained state, and handle relevant edge cases.
+  type: transfer
+- slug: math-geometry.recognition
+  topic: math-geometry
+  name: Recognize the pattern for Matrix geometry
+  description: Apply in-place matrix transforms correctly, explain the maintained state, and handle relevant edge cases.
+  type: recognition
+- slug: math-geometry.invariant
+  topic: math-geometry
+  name: State the invariant for Matrix geometry
+  description: Apply in-place matrix transforms correctly, explain the maintained state, and handle relevant edge cases.
+  type: reasoning
+- slug: math-geometry.implementation
+  topic: math-geometry
+  name: Implement the pattern for Matrix geometry
+  description: Apply in-place matrix transforms correctly, explain the maintained state, and handle relevant edge cases.
+  type: implementation
+- slug: math-geometry.boundaries
+  topic: math-geometry
+  name: Handle edge cases for Matrix geometry
+  description: Apply in-place matrix transforms correctly, explain the maintained state, and handle relevant edge cases.
+  type: debugging
+- slug: math-geometry.complexity
+  topic: math-geometry
+  name: Analyze complexity for Matrix geometry
+  description: Apply in-place matrix transforms correctly, explain the maintained state, and handle relevant edge cases.
+  type: complexity
+- slug: math-geometry.transfer
+  topic: math-geometry
+  name: Transfer the pattern for Matrix geometry
+  description: Apply in-place matrix transforms correctly, explain the maintained state, and handle relevant edge cases.
+  type: transfer

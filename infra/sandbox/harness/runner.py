@@ -97,6 +97,10 @@ def build_linked_list(values: list[Any] | None) -> ListNode | None:
     return head
 
 
+def build_linked_list_list(groups: list[list[Any]] | None) -> list[ListNode | None]:
+    return [build_linked_list(values) for values in (groups or [])]
+
+
 def dump_linked_list(node: Any) -> list[Any] | None:
     values: list[Any] = []
     seen = 0
@@ -167,6 +171,7 @@ def dump_tree(root: Any) -> list[Any]:
 
 INPUT_ADAPTERS = {
     "linked_list": build_linked_list,
+    "linked_list_list": build_linked_list_list,
     "linked_list_cycle": build_linked_list_cycle,
     "tree": build_tree,
 }

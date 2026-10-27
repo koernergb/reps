@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "slug": "median-data-stream",
+  "version": 1,
+  "status": "development",
+  "title": "Find Median From Data Stream",
+  "topic": "heap",
+  "patterns": [
+    "two-heaps"
+  ],
+  "role": "transfer",
+  "difficulty": "hard",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "two-heaps",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Find Median From Data Stream",
+  "examples": [
+    {
+      "input": {
+        "operations": [
+          "MedianFinder",
+          "add_num",
+          "add_num",
+          "find_median"
+        ],
+        "arguments": [
+          [],
+          [
+            1
+          ],
+          [
+            2
+          ],
+          []
+        ]
+      },
+      "output": [
+        null,
+        null,
+        null,
+        1.5
+      ]
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "class",
+  "entrypoint": "MedianFinder",
+  "input_adapters": [],
+  "starter_code": "def MedianFinder(*args):\n    pass",
+  "time_complexity": "O(log n) add, O(1) median",
+  "space_complexity": "O(n)",
+  "capabilities": [
+    {
+      "slug": "heap.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "heap.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "heap.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "heap.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "heap.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "heap.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain exactly the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "heap.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          "MedianFinder",
+          "add_num",
+          "add_num",
+          "find_median"
+        ],
+        [
+          [],
+          [
+            1
+          ],
+          [
+            2
+          ],
+          []
+        ]
+      ],
+      "expected": [
+        null,
+        null,
+        null,
+        1.5
+      ]
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        [
+          "MedianFinder",
+          "add_num",
+          "add_num",
+          "add_num",
+          "find_median"
+        ],
+        [
+          [],
+          [
+            2
+          ],
+          [
+            3
+          ],
+          [
+            4
+          ],
+          []
+        ]
+      ],
+      "expected": [
+        null,
+        null,
+        null,
+        null,
+        3
+      ]
+    },
+    {
+      "args": [
+        [
+          "MedianFinder",
+          "add_num",
+          "add_num",
+          "find_median"
+        ],
+        [
+          [],
+          [
+            -1
+          ],
+          [
+            -2
+          ],
+          []
+        ]
+      ],
+      "expected": [
+        null,
+        null,
+        null,
+        -1.5
+      ]
+    }
+  ],
+  "reference_solution": "class MedianFinder:\n    def __init__(self): self.low=[]; self.high=[]\n    def add_num(self,num):\n        import heapq\n        heapq.heappush(self.low,-num)\n        heapq.heappush(self.high,-heapq.heappop(self.low))\n        if len(self.high)>len(self.low): heapq.heappush(self.low,-heapq.heappop(self.high))\n    def find_median(self):\n        if len(self.low)>len(self.high): return -self.low[0]\n        return (-self.low[0]+self.high[0])/2",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "class MedianFinder:\n    def __init__(self): self.values=[]\n    def add_num(self,n): self.values.append(n)\n    def find_median(self): return self.values[len(self.values)//2]"
+    }
+  ]
+}

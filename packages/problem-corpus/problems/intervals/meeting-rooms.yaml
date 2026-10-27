@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "slug": "meeting-rooms",
+  "version": 1,
+  "status": "development",
+  "title": "Meeting Rooms",
+  "topic": "intervals",
+  "patterns": [
+    "sorted-interval-scan"
+  ],
+  "role": "transfer",
+  "difficulty": "easy",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "sorted-interval-scan",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Meeting Rooms",
+  "examples": [
+    {
+      "input": {
+        "intervals": [
+          [
+            0,
+            30
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            15,
+            20
+          ]
+        ]
+      },
+      "output": false
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "can_attend_meetings",
+  "input_adapters": [],
+  "starter_code": "def can_attend_meetings(*args):\n    pass",
+  "time_complexity": "O(n log n)",
+  "space_complexity": "O(n)",
+  "capabilities": [
+    {
+      "slug": "intervals.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "intervals.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "intervals.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "intervals.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "intervals.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "intervals.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "intervals.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          [
+            0,
+            30
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            15,
+            20
+          ]
+        ]
+      ],
+      "expected": false
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        [
+          [
+            7,
+            10
+          ],
+          [
+            2,
+            4
+          ]
+        ]
+      ],
+      "expected": true
+    },
+    {
+      "args": [
+        []
+      ],
+      "expected": true
+    }
+  ],
+  "reference_solution": "def can_attend_meetings(intervals):\n    ordered=sorted(intervals)\n    return all(ordered[i-1][1]<=ordered[i][0] for i in range(1,len(ordered)))",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def can_attend_meetings(*args):\n    return None"
+    }
+  ]
+}

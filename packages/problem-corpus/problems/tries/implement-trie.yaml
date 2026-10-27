@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "slug": "implement-trie",
+  "version": 1,
+  "status": "development",
+  "title": "Implement Trie Prefix Tree",
+  "topic": "tries",
+  "patterns": [
+    "prefix-tree"
+  ],
+  "role": "transfer",
+  "difficulty": "medium",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "prefix-tree",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Implement Trie Prefix Tree",
+  "examples": [
+    {
+      "input": {
+        "operations": [
+          "Trie",
+          "insert",
+          "search",
+          "starts_with"
+        ],
+        "arguments": [
+          [],
+          [
+            "apple"
+          ],
+          [
+            "apple"
+          ],
+          [
+            "app"
+          ]
+        ]
+      },
+      "output": [
+        null,
+        null,
+        true,
+        true
+      ]
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "class",
+  "entrypoint": "Trie",
+  "input_adapters": [],
+  "starter_code": "def Trie(*args):\n    pass",
+  "time_complexity": "O(n)",
+  "space_complexity": "O(n)",
+  "capabilities": [
+    {
+      "slug": "tries.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "tries.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "tries.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "tries.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "tries.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "tries.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain exactly the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "tries.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          "Trie",
+          "insert",
+          "search",
+          "starts_with"
+        ],
+        [
+          [],
+          [
+            "apple"
+          ],
+          [
+            "apple"
+          ],
+          [
+            "app"
+          ]
+        ]
+      ],
+      "expected": [
+        null,
+        null,
+        true,
+        true
+      ]
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        [
+          "Trie",
+          "insert",
+          "search",
+          "starts_with"
+        ],
+        [
+          [],
+          [
+            "apple"
+          ],
+          [
+            "app"
+          ],
+          [
+            "apple"
+          ]
+        ]
+      ],
+      "expected": [
+        null,
+        null,
+        false,
+        true
+      ]
+    },
+    {
+      "args": [
+        [
+          "Trie",
+          "insert",
+          "starts_with"
+        ],
+        [
+          [],
+          [
+            "ab"
+          ],
+          [
+            "a"
+          ]
+        ]
+      ],
+      "expected": [
+        null,
+        null,
+        true
+      ]
+    }
+  ],
+  "reference_solution": "class Trie:\n    def __init__(self): self.root={}\n    def insert(self,word):\n        node=self.root\n        for ch in word: node=node.setdefault(ch,{})\n        node['$']=True\n    def search(self,word):\n        node=self.root\n        for ch in word:\n            if ch not in node: return False\n            node=node[ch]\n        return '$' in node\n    def starts_with(self,prefix):\n        node=self.root\n        for ch in prefix:\n            if ch not in node: return False\n            node=node[ch]\n        return True",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "class Trie:\n    def __init__(self): self.words=set()\n    def insert(self,w): self.words.add(w)\n    def search(self,w): return w in self.words\n    def starts_with(self,p): return p in self.words"
+    }
+  ]
+}

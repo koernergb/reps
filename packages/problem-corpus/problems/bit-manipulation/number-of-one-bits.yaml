@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "slug": "number-of-one-bits",
+  "version": 1,
+  "status": "development",
+  "title": "Number of 1 Bits",
+  "topic": "bit-manipulation",
+  "patterns": [
+    "clear-lowest-set-bit"
+  ],
+  "role": "transfer",
+  "difficulty": "easy",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "clear-lowest-set-bit",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Number of 1 Bits",
+  "examples": [
+    {
+      "input": {
+        "n": 11
+      },
+      "output": 3
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "count_one_bits",
+  "input_adapters": [],
+  "starter_code": "def count_one_bits(*args):\n    pass",
+  "time_complexity": "O(n)",
+  "space_complexity": "O(1)",
+  "capabilities": [
+    {
+      "slug": "bit-manipulation.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "bit-manipulation.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "bit-manipulation.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "bit-manipulation.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "bit-manipulation.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "bit-manipulation.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "bit-manipulation.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        11
+      ],
+      "expected": 3
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        0
+      ],
+      "expected": 0
+    },
+    {
+      "args": [
+        4294967293
+      ],
+      "expected": 31
+    }
+  ],
+  "reference_solution": "def count_one_bits(n):\n    count=0\n    while n: n &= n-1; count+=1\n    return count",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def count_one_bits(*args):\n    return None"
+    }
+  ]
+}

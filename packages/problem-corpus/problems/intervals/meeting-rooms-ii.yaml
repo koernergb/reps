@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "slug": "meeting-rooms-ii",
+  "version": 1,
+  "status": "development",
+  "title": "Meeting Rooms II",
+  "topic": "intervals",
+  "patterns": [
+    "sweep-line"
+  ],
+  "role": "transfer",
+  "difficulty": "medium",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "sweep-line",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Meeting Rooms II",
+  "examples": [
+    {
+      "input": {
+        "intervals": [
+          [
+            0,
+            30
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            15,
+            20
+          ]
+        ]
+      },
+      "output": 2
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "min_meeting_rooms",
+  "input_adapters": [],
+  "starter_code": "def min_meeting_rooms(*args):\n    pass",
+  "time_complexity": "O(n log n)",
+  "space_complexity": "O(n)",
+  "capabilities": [
+    {
+      "slug": "intervals.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "intervals.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "intervals.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "intervals.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "intervals.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "intervals.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "intervals.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          [
+            0,
+            30
+          ],
+          [
+            5,
+            10
+          ],
+          [
+            15,
+            20
+          ]
+        ]
+      ],
+      "expected": 2
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        [
+          [
+            7,
+            10
+          ],
+          [
+            2,
+            4
+          ]
+        ]
+      ],
+      "expected": 1
+    },
+    {
+      "args": [
+        []
+      ],
+      "expected": 0
+    }
+  ],
+  "reference_solution": "def min_meeting_rooms(intervals):\n    starts=sorted(x[0] for x in intervals); ends=sorted(x[1] for x in intervals)\n    used=best=j=0\n    for start in starts:\n        while j<len(ends) and ends[j]<=start: used-=1; j+=1\n        used+=1; best=max(best,used)\n    return best",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def min_meeting_rooms(*args):\n    return None"
+    }
+  ]
+}

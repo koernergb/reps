@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "slug": "tree-codec",
+  "version": 1,
+  "status": "development",
+  "title": "Serialize and Deserialize a Binary Tree",
+  "topic": "trees",
+  "patterns": [
+    "tree-serialization"
+  ],
+  "role": "transfer",
+  "difficulty": "hard",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "tree-serialization",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Serialize and Deserialize a Binary Tree",
+  "examples": [
+    {
+      "input": {
+        "operations": [
+          "TreeCodec",
+          "serialize",
+          "deserialize"
+        ],
+        "arguments": [
+          [],
+          [
+            [
+              1,
+              2,
+              3,
+              null,
+              null,
+              4,
+              5
+            ]
+          ],
+          [
+            "1,2,3,#,#,4,5"
+          ]
+        ]
+      },
+      "output": [
+        null,
+        "1,2,3,#,#,4,5",
+        [
+          1,
+          2,
+          3,
+          null,
+          null,
+          4,
+          5
+        ]
+      ]
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "class",
+  "entrypoint": "TreeCodec",
+  "input_adapters": [],
+  "starter_code": "def TreeCodec(*args):\n    pass",
+  "time_complexity": "O(n)",
+  "space_complexity": "O(n)",
+  "capabilities": [
+    {
+      "slug": "trees.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "trees.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "trees.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "trees.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "trees.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "trees.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain exactly the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "trees.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          "TreeCodec",
+          "serialize",
+          "deserialize"
+        ],
+        [
+          [],
+          [
+            [
+              1,
+              2,
+              3,
+              null,
+              null,
+              4,
+              5
+            ]
+          ],
+          [
+            "1,2,3,#,#,4,5"
+          ]
+        ]
+      ],
+      "expected": [
+        null,
+        "1,2,3,#,#,4,5",
+        [
+          1,
+          2,
+          3,
+          null,
+          null,
+          4,
+          5
+        ]
+      ]
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        [
+          "TreeCodec",
+          "serialize",
+          "deserialize"
+        ],
+        [
+          [],
+          [
+            []
+          ],
+          [
+            ""
+          ]
+        ]
+      ],
+      "expected": [
+        null,
+        "",
+        []
+      ]
+    },
+    {
+      "args": [
+        [
+          "TreeCodec",
+          "deserialize"
+        ],
+        [
+          [],
+          [
+            "1,#,2"
+          ]
+        ]
+      ],
+      "expected": [
+        null,
+        [
+          1,
+          null,
+          2
+        ]
+      ]
+    }
+  ],
+  "reference_solution": "class TreeCodec:\n    def serialize(self, values):\n        end=len(values)\n        while end and values[end-1] is None: end-=1\n        return ','.join('#' if x is None else str(x) for x in values[:end])\n    def deserialize(self, data):\n        if not data: return []\n        return [None if x=='#' else int(x) for x in data.split(',')]",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "error",
+      "code": "class TreeCodec:\n    def serialize(self, values): return ','.join(map(str,values))\n    def deserialize(self, data): return [int(x) for x in data.split(',')]"
+    }
+  ]
+}

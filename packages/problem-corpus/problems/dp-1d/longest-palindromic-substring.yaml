@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "slug": "longest-palindromic-substring",
+  "version": 1,
+  "status": "development",
+  "title": "Longest Palindromic Substring",
+  "topic": "dp-1d",
+  "patterns": [
+    "expand-around-center"
+  ],
+  "role": "transfer",
+  "difficulty": "medium",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "expand-around-center",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Longest Palindromic Substring",
+  "examples": [
+    {
+      "input": {
+        "s": "babad"
+      },
+      "output": "bab"
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "longest_palindrome",
+  "input_adapters": [],
+  "starter_code": "def longest_palindrome(*args):\n    pass",
+  "time_complexity": "O(n)",
+  "space_complexity": "O(n)",
+  "capabilities": [
+    {
+      "slug": "dp-1d.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "dp-1d.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "dp-1d.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "dp-1d.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        "babad"
+      ],
+      "expected": "bab"
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        "cbbd"
+      ],
+      "expected": "bb"
+    },
+    {
+      "args": [
+        "a"
+      ],
+      "expected": "a"
+    }
+  ],
+  "reference_solution": "def longest_palindrome(s):\n    best=''\n    for c in range(len(s)):\n        for l,r in ((c,c),(c,c+1)):\n            while l>=0 and r<len(s) and s[l]==s[r]: l-=1; r+=1\n            if r-l-1>len(best): best=s[l+1:r]\n    return best",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def longest_palindrome(*args):\n    return None"
+    }
+  ]
+}

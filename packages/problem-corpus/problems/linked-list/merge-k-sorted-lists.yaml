@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "slug": "merge-k-sorted-lists",
+  "version": 1,
+  "status": "development",
+  "title": "Merge K Sorted Lists",
+  "topic": "linked-list",
+  "patterns": [
+    "heap-multiway-merge"
+  ],
+  "role": "transfer",
+  "difficulty": "hard",
+  "collections": [
+    "blind-75"
+  ],
+  "transfer_group": "heap-multiway-merge",
+  "prerequisites": [],
+  "related": [],
+  "statement": "Merge K Sorted Lists",
+  "examples": [
+    {
+      "input": {
+        "lists": [
+          [
+            1,
+            4,
+            5
+          ],
+          [
+            1,
+            3,
+            4
+          ],
+          [
+            2,
+            6
+          ]
+        ]
+      },
+      "output": [
+        1,
+        1,
+        2,
+        3,
+        4,
+        4,
+        5,
+        6
+      ]
+    }
+  ],
+  "constraints": [
+    "Input size is within practical interview limits."
+  ],
+  "kind": "function",
+  "entrypoint": "merge_k_lists",
+  "input_adapters": [
+    "linked_list_list"
+  ],
+  "output_adapter": "linked_list",
+  "starter_code": "def merge_k_lists(*args):\n    pass",
+  "time_complexity": "O(N log k)",
+  "space_complexity": "O(k)",
+  "capabilities": [
+    {
+      "slug": "linked-list.recognition",
+      "weight": 0.2
+    },
+    {
+      "slug": "linked-list.invariant",
+      "weight": 0.2
+    },
+    {
+      "slug": "linked-list.implementation",
+      "weight": 0.2
+    },
+    {
+      "slug": "linked-list.boundaries",
+      "weight": 0.2
+    },
+    {
+      "slug": "linked-list.complexity",
+      "weight": 0.1
+    },
+    {
+      "slug": "linked-list.transfer",
+      "weight": 0.1
+    }
+  ],
+  "hints": [
+    "Identify the state that summarizes the work already done.",
+    "Write the invariant before writing the loop or recursion.",
+    "Choose base cases that cover the smallest valid inputs.",
+    "Update state only after saving any value still needed.",
+    "Trace one ordinary case and one boundary case."
+  ],
+  "key_insight": "Maintain exactly the state needed to extend a correct partial solution.",
+  "clarifications": [
+    {
+      "question": "Should the stated output contract be followed exactly?",
+      "answer": "Yes."
+    }
+  ],
+  "follow_ups": [
+    "Can you reduce the auxiliary space?"
+  ],
+  "common_mistakes": [
+    {
+      "id": "incomplete-state",
+      "description": "Tracks too little state to preserve the required invariant.",
+      "capability": "linked-list.invariant"
+    }
+  ],
+  "visible_tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            4,
+            5
+          ],
+          [
+            1,
+            3,
+            4
+          ],
+          [
+            2,
+            6
+          ]
+        ]
+      ],
+      "expected": [
+        1,
+        1,
+        2,
+        3,
+        4,
+        4,
+        5,
+        6
+      ]
+    }
+  ],
+  "hidden_tests": [
+    {
+      "args": [
+        []
+      ],
+      "expected": []
+    },
+    {
+      "args": [
+        [
+          [],
+          [
+            1
+          ],
+          [
+            -1,
+            2
+          ]
+        ]
+      ],
+      "expected": [
+        -1,
+        1,
+        2
+      ]
+    }
+  ],
+  "reference_solution": "def merge_k_lists(lists):\n    import heapq\n    heap=[]; serial=0\n    for node in lists:\n        if node: heapq.heappush(heap,(node.val,serial,node)); serial+=1\n    dummy=ListNode(0); tail=dummy\n    while heap:\n        _,_,node=heapq.heappop(heap); tail.next=node; tail=node\n        if node.next: heapq.heappush(heap,(node.next.val,serial,node.next)); serial+=1\n    return dummy.next",
+  "wrong_solutions": [
+    {
+      "mistake": "incomplete-state",
+      "expect": "wrong_answer",
+      "code": "def merge_k_lists(*args):\n    return None"
+    }
+  ]
+}

@@ -48,6 +48,13 @@ def test_corpus_meets_milestone_two_size_and_coverage() -> None:
         "heap",
         "graphs",
         "dp-1d",
+        "tries",
+        "backtracking",
+        "dp-2d",
+        "greedy",
+        "intervals",
+        "bit-manipulation",
+        "math-geometry",
     ):
         assert report["by_topic"][topic] >= 2, topic
     for problem in corpus.problems.values():
