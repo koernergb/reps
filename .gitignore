@@ -6,6 +6,7 @@
 coverage/
 .coverage
 node_modules/
+.pnpm-store/
 dist/
 *.tsbuildinfo
 
