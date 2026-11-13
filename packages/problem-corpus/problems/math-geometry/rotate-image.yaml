@@ -1,207 +1,123 @@
-{
-  "schema_version": 1,
-  "slug": "rotate-image",
-  "version": 1,
-  "status": "development",
-  "title": "Rotate Image",
-  "topic": "math-geometry",
-  "patterns": [
-    "matrix-transform"
-  ],
-  "role": "transfer",
-  "difficulty": "medium",
-  "collections": [
-    "blind-75"
-  ],
-  "transfer_group": "matrix-transform",
-  "prerequisites": [],
-  "related": [],
-  "statement": "Rotate Image",
-  "examples": [
-    {
-      "input": {
-        "matrix": [
-          [
-            1,
-            2,
-            3
-          ],
-          [
-            4,
-            5,
-            6
-          ],
-          [
-            7,
-            8,
-            9
-          ]
-        ]
-      },
-      "output": [
-        [
-          7,
-          4,
-          1
-        ],
-        [
-          8,
-          5,
-          2
-        ],
-        [
-          9,
-          6,
-          3
-        ]
-      ]
-    }
-  ],
-  "constraints": [
-    "Input size is within practical interview limits."
-  ],
-  "kind": "function",
-  "entrypoint": "rotate_image",
-  "input_adapters": [],
-  "starter_code": "def rotate_image(*args):\n    pass",
-  "time_complexity": "O(n^2)",
-  "space_complexity": "O(1)",
-  "capabilities": [
-    {
-      "slug": "math-geometry.recognition",
-      "weight": 0.2
-    },
-    {
-      "slug": "math-geometry.invariant",
-      "weight": 0.2
-    },
-    {
-      "slug": "math-geometry.implementation",
-      "weight": 0.2
-    },
-    {
-      "slug": "math-geometry.boundaries",
-      "weight": 0.2
-    },
-    {
-      "slug": "math-geometry.complexity",
-      "weight": 0.1
-    },
-    {
-      "slug": "math-geometry.transfer",
-      "weight": 0.1
-    }
-  ],
-  "hints": [
-    "Identify the state that summarizes the work already done.",
-    "Write the invariant before writing the loop or recursion.",
-    "Choose base cases that cover the smallest valid inputs.",
-    "Update state only after saving any value still needed.",
-    "Trace one ordinary case and one boundary case."
-  ],
-  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
-  "clarifications": [
-    {
-      "question": "Should the stated output contract be followed exactly?",
-      "answer": "Yes."
-    }
-  ],
-  "follow_ups": [
-    "Can you reduce the auxiliary space?"
-  ],
-  "common_mistakes": [
-    {
-      "id": "incomplete-state",
-      "description": "Tracks too little state to preserve the required invariant.",
-      "capability": "math-geometry.invariant"
-    }
-  ],
-  "visible_tests": [
-    {
-      "args": [
-        [
-          [
-            1,
-            2,
-            3
-          ],
-          [
-            4,
-            5,
-            6
-          ],
-          [
-            7,
-            8,
-            9
-          ]
-        ]
-      ],
-      "expected": [
-        [
-          7,
-          4,
-          1
-        ],
-        [
-          8,
-          5,
-          2
-        ],
-        [
-          9,
-          6,
-          3
-        ]
-      ]
-    }
-  ],
-  "hidden_tests": [
-    {
-      "args": [
-        [
-          [
-            1
-          ]
-        ]
-      ],
-      "expected": [
-        [
-          1
-        ]
-      ]
-    },
-    {
-      "args": [
-        [
-          [
-            1,
-            2
-          ],
-          [
-            3,
-            4
-          ]
-        ]
-      ],
-      "expected": [
-        [
-          3,
-          1
-        ],
-        [
-          4,
-          2
-        ]
-      ]
-    }
-  ],
-  "reference_solution": "def rotate_image(matrix):\n    matrix[:] = [list(row) for row in zip(*matrix[::-1])]\n    return matrix",
-  "wrong_solutions": [
-    {
-      "mistake": "incomplete-state",
-      "expect": "wrong_answer",
-      "code": "def rotate_image(*args):\n    return None"
-    }
-  ]
-}
+schema_version: 1
+slug: rotate-image
+version: 2
+status: development
+title: Rotate Image
+topic: math-geometry
+patterns:
+- matrix-transform
+role: transfer
+difficulty: medium
+collections:
+- blind-75
+transfer_group: matrix-transform
+prerequisites: []
+related: []
+statement: Return the square `matrix` rotated 90 degrees clockwise. Perform the transformation in place and also return the matrix used by the exercise harness.
+examples:
+- input:
+    matrix:
+    - - 1
+      - 2
+      - 3
+    - - 4
+      - 5
+      - 6
+    - - 7
+      - 8
+      - 9
+  output:
+  - - 7
+    - 4
+    - 1
+  - - 8
+    - 5
+    - 2
+  - - 9
+    - 6
+    - 3
+constraints:
+- The total input size is at most 10,000 elements.
+- The input structure is valid and rectangular where a matrix is supplied.
+kind: function
+entrypoint: rotate_image
+input_adapters: []
+starter_code: "def rotate_image(*args):\n    pass"
+time_complexity: O(n^2)
+space_complexity: O(1)
+capabilities:
+- slug: math-geometry.recognition
+  weight: 0.2
+- slug: math-geometry.invariant
+  weight: 0.2
+- slug: math-geometry.implementation
+  weight: 0.2
+- slug: math-geometry.boundaries
+  weight: 0.2
+- slug: math-geometry.complexity
+  weight: 0.1
+- slug: math-geometry.transfer
+  weight: 0.1
+hints:
+- State precisely what information must be preserved after processing part of the input.
+- Transpose across the main diagonal, then reverse every row.
+- 'Boundary check: Reversing rows before transposing produces the opposite rotation.'
+- Trace the sample and the smallest valid input before coding.
+- Before finishing, verify the claimed time and space complexity against the implementation.
+key_insight: Transpose across the main diagonal, then reverse every row.
+clarifications:
+- question: What exact contract should `rotate_image` implement?
+  answer: Return the square `matrix` rotated 90 degrees clockwise. Perform the transformation in place and also return the matrix used by the exercise harness.
+- question: Which boundary condition is easiest to overlook?
+  answer: Reversing rows before transposing produces the opposite rotation.
+follow_ups:
+- Justify the claimed O(n^2) time and O(1) space bounds.
+- 'Design a test that exposes this failure: Reversing rows before transposing produces the opposite rotation.'
+common_mistakes:
+- id: contract-boundary
+  description: Reversing rows before transposing produces the opposite rotation.
+  capability: math-geometry.recognition
+- id: sample-overfit
+  description: Handles the sample shape but does not implement the general contract.
+  capability: math-geometry.recognition
+visible_tests:
+- args:
+  - - - 1
+      - 2
+      - 3
+    - - 4
+      - 5
+      - 6
+    - - 7
+      - 8
+      - 9
+  expected:
+  - - 7
+    - 4
+    - 1
+  - - 8
+    - 5
+    - 2
+  - - 9
+    - 6
+    - 3
+hidden_tests:
+- args:
+  - - - 1
+  expected:
+  - - 1
+- args:
+  - - - 1
+      - 2
+    - - 3
+      - 4
+  expected:
+  - - 3
+    - 1
+  - - 4
+    - 2
+reference_solution: "def rotate_image(matrix):\n    matrix[:] = [list(row) for row in zip(*matrix[::-1])]\n    return matrix"
+wrong_solutions:
+- mistake: sample-overfit
+  expect: wrong_answer
+  code: "def rotate_image(*args):\n    return [[7, 4, 1], [8, 5, 2], [9, 6, 3]]"

@@ -1,137 +1,93 @@
-{
-  "schema_version": 1,
-  "slug": "missing-number",
-  "version": 1,
-  "status": "development",
-  "title": "Missing Number",
-  "topic": "bit-manipulation",
-  "patterns": [
-    "xor-cancellation"
-  ],
-  "role": "transfer",
-  "difficulty": "easy",
-  "collections": [
-    "blind-75"
-  ],
-  "transfer_group": "xor-cancellation",
-  "prerequisites": [],
-  "related": [],
-  "statement": "Missing Number",
-  "examples": [
-    {
-      "input": {
-        "nums": [
-          3,
-          0,
-          1
-        ]
-      },
-      "output": 2
-    }
-  ],
-  "constraints": [
-    "Input size is within practical interview limits."
-  ],
-  "kind": "function",
-  "entrypoint": "missing_number",
-  "input_adapters": [],
-  "starter_code": "def missing_number(*args):\n    pass",
-  "time_complexity": "O(n)",
-  "space_complexity": "O(1)",
-  "capabilities": [
-    {
-      "slug": "bit-manipulation.recognition",
-      "weight": 0.2
-    },
-    {
-      "slug": "bit-manipulation.invariant",
-      "weight": 0.2
-    },
-    {
-      "slug": "bit-manipulation.implementation",
-      "weight": 0.2
-    },
-    {
-      "slug": "bit-manipulation.boundaries",
-      "weight": 0.2
-    },
-    {
-      "slug": "bit-manipulation.complexity",
-      "weight": 0.1
-    },
-    {
-      "slug": "bit-manipulation.transfer",
-      "weight": 0.1
-    }
-  ],
-  "hints": [
-    "Identify the state that summarizes the work already done.",
-    "Write the invariant before writing the loop or recursion.",
-    "Choose base cases that cover the smallest valid inputs.",
-    "Update state only after saving any value still needed.",
-    "Trace one ordinary case and one boundary case."
-  ],
-  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
-  "clarifications": [
-    {
-      "question": "Should the stated output contract be followed exactly?",
-      "answer": "Yes."
-    }
-  ],
-  "follow_ups": [
-    "Can you reduce the auxiliary space?"
-  ],
-  "common_mistakes": [
-    {
-      "id": "incomplete-state",
-      "description": "Tracks too little state to preserve the required invariant.",
-      "capability": "bit-manipulation.invariant"
-    }
-  ],
-  "visible_tests": [
-    {
-      "args": [
-        [
-          3,
-          0,
-          1
-        ]
-      ],
-      "expected": 2
-    }
-  ],
-  "hidden_tests": [
-    {
-      "args": [
-        [
-          0
-        ]
-      ],
-      "expected": 1
-    },
-    {
-      "args": [
-        [
-          9,
-          6,
-          4,
-          2,
-          3,
-          5,
-          7,
-          0,
-          1
-        ]
-      ],
-      "expected": 8
-    }
-  ],
-  "reference_solution": "def missing_number(nums):\n    answer=len(nums)\n    for i,x in enumerate(nums): answer ^= i ^ x\n    return answer",
-  "wrong_solutions": [
-    {
-      "mistake": "incomplete-state",
-      "expect": "wrong_answer",
-      "code": "def missing_number(*args):\n    return None"
-    }
-  ]
-}
+schema_version: 1
+slug: missing-number
+version: 2
+status: development
+title: Missing Number
+topic: bit-manipulation
+patterns:
+- xor-cancellation
+role: transfer
+difficulty: easy
+collections:
+- blind-75
+transfer_group: xor-cancellation
+prerequisites: []
+related: []
+statement: '`nums` contains `n` distinct values selected from the range `[0, n]`. Return the single value from that range that is absent.'
+examples:
+- input:
+    nums:
+    - 3
+    - 0
+    - 1
+  output: 2
+constraints:
+- 1 <= input length <= 20,000 where a sequence is supplied.
+- Inputs fit signed 32-bit values unless the statement specifies unsigned values.
+kind: function
+entrypoint: missing_number
+input_adapters: []
+starter_code: "def missing_number(*args):\n    pass"
+time_complexity: O(n)
+space_complexity: O(1)
+capabilities:
+- slug: bit-manipulation.recognition
+  weight: 0.2
+- slug: bit-manipulation.invariant
+  weight: 0.2
+- slug: bit-manipulation.implementation
+  weight: 0.2
+- slug: bit-manipulation.boundaries
+  weight: 0.2
+- slug: bit-manipulation.complexity
+  weight: 0.1
+- slug: bit-manipulation.transfer
+  weight: 0.1
+hints:
+- State precisely what information must be preserved after processing part of the input.
+- XOR every index and value (or compare expected and actual sums) so paired values cancel.
+- 'Boundary check: Using the array length as the largest included value causes an off-by-one error when `n` is missing.'
+- Trace the sample and the smallest valid input before coding.
+- Before finishing, verify the claimed time and space complexity against the implementation.
+key_insight: XOR every index and value (or compare expected and actual sums) so paired values cancel.
+clarifications:
+- question: What exact contract should `missing_number` implement?
+  answer: '`nums` contains `n` distinct values selected from the range `[0, n]`. Return the single value from that range that is absent.'
+- question: Which boundary condition is easiest to overlook?
+  answer: Using the array length as the largest included value causes an off-by-one error when `n` is missing.
+follow_ups:
+- Justify the claimed O(n) time and O(1) space bounds.
+- 'Design a test that exposes this failure: Using the array length as the largest included value causes an off-by-one error when `n` is missing.'
+common_mistakes:
+- id: contract-boundary
+  description: Using the array length as the largest included value causes an off-by-one error when `n` is missing.
+  capability: bit-manipulation.recognition
+- id: sample-overfit
+  description: Handles the sample shape but does not implement the general contract.
+  capability: bit-manipulation.recognition
+visible_tests:
+- args:
+  - - 3
+    - 0
+    - 1
+  expected: 2
+hidden_tests:
+- args:
+  - - 0
+  expected: 1
+- args:
+  - - 9
+    - 6
+    - 4
+    - 2
+    - 3
+    - 5
+    - 7
+    - 0
+    - 1
+  expected: 8
+reference_solution: "def missing_number(nums):\n    answer=len(nums)\n    for i,x in enumerate(nums): answer ^= i ^ x\n    return answer"
+wrong_solutions:
+- mistake: sample-overfit
+  expect: wrong_answer
+  code: "def missing_number(*args):\n    return 2"

@@ -1,117 +1,80 @@
-{
-  "schema_version": 1,
-  "slug": "reverse-bits",
-  "version": 1,
-  "status": "development",
-  "title": "Reverse Bits",
-  "topic": "bit-manipulation",
-  "patterns": [
-    "fixed-width-bit-scan"
-  ],
-  "role": "transfer",
-  "difficulty": "easy",
-  "collections": [
-    "blind-75"
-  ],
-  "transfer_group": "fixed-width-bit-scan",
-  "prerequisites": [],
-  "related": [],
-  "statement": "Reverse Bits",
-  "examples": [
-    {
-      "input": {
-        "n": 43261596
-      },
-      "output": 964176192
-    }
-  ],
-  "constraints": [
-    "Input size is within practical interview limits."
-  ],
-  "kind": "function",
-  "entrypoint": "reverse_bits",
-  "input_adapters": [],
-  "starter_code": "def reverse_bits(*args):\n    pass",
-  "time_complexity": "O(1)",
-  "space_complexity": "O(1)",
-  "capabilities": [
-    {
-      "slug": "bit-manipulation.recognition",
-      "weight": 0.2
-    },
-    {
-      "slug": "bit-manipulation.invariant",
-      "weight": 0.2
-    },
-    {
-      "slug": "bit-manipulation.implementation",
-      "weight": 0.2
-    },
-    {
-      "slug": "bit-manipulation.boundaries",
-      "weight": 0.2
-    },
-    {
-      "slug": "bit-manipulation.complexity",
-      "weight": 0.1
-    },
-    {
-      "slug": "bit-manipulation.transfer",
-      "weight": 0.1
-    }
-  ],
-  "hints": [
-    "Identify the state that summarizes the work already done.",
-    "Write the invariant before writing the loop or recursion.",
-    "Choose base cases that cover the smallest valid inputs.",
-    "Update state only after saving any value still needed.",
-    "Trace one ordinary case and one boundary case."
-  ],
-  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
-  "clarifications": [
-    {
-      "question": "Should the stated output contract be followed exactly?",
-      "answer": "Yes."
-    }
-  ],
-  "follow_ups": [
-    "Can you reduce the auxiliary space?"
-  ],
-  "common_mistakes": [
-    {
-      "id": "incomplete-state",
-      "description": "Tracks too little state to preserve the required invariant.",
-      "capability": "bit-manipulation.invariant"
-    }
-  ],
-  "visible_tests": [
-    {
-      "args": [
-        43261596
-      ],
-      "expected": 964176192
-    }
-  ],
-  "hidden_tests": [
-    {
-      "args": [
-        0
-      ],
-      "expected": 0
-    },
-    {
-      "args": [
-        4294967293
-      ],
-      "expected": 3221225471
-    }
-  ],
-  "reference_solution": "def reverse_bits(n):\n    out=0\n    for _ in range(32): out=(out<<1)|(n&1); n>>=1\n    return out",
-  "wrong_solutions": [
-    {
-      "mistake": "incomplete-state",
-      "expect": "wrong_answer",
-      "code": "def reverse_bits(*args):\n    return None"
-    }
-  ]
-}
+schema_version: 1
+slug: reverse-bits
+version: 2
+status: development
+title: Reverse Bits
+topic: bit-manipulation
+patterns:
+- fixed-width-bit-scan
+role: transfer
+difficulty: easy
+collections:
+- blind-75
+transfer_group: fixed-width-bit-scan
+prerequisites: []
+related: []
+statement: Reverse all 32 bits of unsigned integer `n` and return the resulting unsigned integer. Leading zeroes in the input become trailing zeroes in the result.
+examples:
+- input:
+    n: 43261596
+  output: 964176192
+constraints:
+- 1 <= input length <= 20,000 where a sequence is supplied.
+- Inputs fit signed 32-bit values unless the statement specifies unsigned values.
+kind: function
+entrypoint: reverse_bits
+input_adapters: []
+starter_code: "def reverse_bits(*args):\n    pass"
+time_complexity: O(1)
+space_complexity: O(1)
+capabilities:
+- slug: bit-manipulation.recognition
+  weight: 0.2
+- slug: bit-manipulation.invariant
+  weight: 0.2
+- slug: bit-manipulation.implementation
+  weight: 0.2
+- slug: bit-manipulation.boundaries
+  weight: 0.2
+- slug: bit-manipulation.complexity
+  weight: 0.1
+- slug: bit-manipulation.transfer
+  weight: 0.1
+hints:
+- State precisely what information must be preserved after processing part of the input.
+- Perform exactly 32 shifts, taking the current low bit from the input and appending it to the result.
+- 'Boundary check: Stopping when `n` becomes zero loses the fixed-width leading zero positions.'
+- Trace the sample and the smallest valid input before coding.
+- Before finishing, verify the claimed time and space complexity against the implementation.
+key_insight: Perform exactly 32 shifts, taking the current low bit from the input and appending it to the result.
+clarifications:
+- question: What exact contract should `reverse_bits` implement?
+  answer: Reverse all 32 bits of unsigned integer `n` and return the resulting unsigned integer. Leading zeroes in the input become trailing zeroes in the result.
+- question: Which boundary condition is easiest to overlook?
+  answer: Stopping when `n` becomes zero loses the fixed-width leading zero positions.
+follow_ups:
+- Justify the claimed O(1) time and O(1) space bounds.
+- 'Design a test that exposes this failure: Stopping when `n` becomes zero loses the fixed-width leading zero positions.'
+common_mistakes:
+- id: contract-boundary
+  description: Stopping when `n` becomes zero loses the fixed-width leading zero positions.
+  capability: bit-manipulation.recognition
+- id: sample-overfit
+  description: Handles the sample shape but does not implement the general contract.
+  capability: bit-manipulation.recognition
+visible_tests:
+- args:
+  - 43261596
+  expected: 964176192
+hidden_tests:
+- args:
+  - 0
+  expected: 0
+- args:
+  - 4294967293
+  expected: 3221225471
+reference_solution: "def reverse_bits(n):\n    out=0\n    for _ in range(32): out=(out<<1)|(n&1); n>>=1\n    return out"
+wrong_solutions:
+- mistake: sample-overfit
+  expect: wrong_answer
+  code: "def reverse_bits(*args):\n    return 964176192"

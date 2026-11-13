@@ -1,172 +1,110 @@
-{
-  "schema_version": 1,
-  "slug": "word-search",
-  "version": 1,
-  "status": "development",
-  "title": "Word Search",
-  "topic": "backtracking",
-  "patterns": [
-    "grid-backtracking"
-  ],
-  "role": "transfer",
-  "difficulty": "medium",
-  "collections": [
-    "blind-75"
-  ],
-  "transfer_group": "grid-backtracking",
-  "prerequisites": [],
-  "related": [],
-  "statement": "Word Search",
-  "examples": [
-    {
-      "input": {
-        "board": [
-          [
-            "A",
-            "B",
-            "C",
-            "E"
-          ],
-          [
-            "S",
-            "F",
-            "C",
-            "S"
-          ],
-          [
-            "A",
-            "D",
-            "E",
-            "E"
-          ]
-        ],
-        "word": "ABCCED"
-      },
-      "output": true
-    }
-  ],
-  "constraints": [
-    "Input size is within practical interview limits."
-  ],
-  "kind": "function",
-  "entrypoint": "word_exists",
-  "input_adapters": [],
-  "starter_code": "def word_exists(*args):\n    pass",
-  "time_complexity": "O(rows * cols * 4^word)",
-  "space_complexity": "O(n)",
-  "capabilities": [
-    {
-      "slug": "backtracking.recognition",
-      "weight": 0.2
-    },
-    {
-      "slug": "backtracking.invariant",
-      "weight": 0.2
-    },
-    {
-      "slug": "backtracking.implementation",
-      "weight": 0.2
-    },
-    {
-      "slug": "backtracking.boundaries",
-      "weight": 0.2
-    },
-    {
-      "slug": "backtracking.complexity",
-      "weight": 0.1
-    },
-    {
-      "slug": "backtracking.transfer",
-      "weight": 0.1
-    }
-  ],
-  "hints": [
-    "Identify the state that summarizes the work already done.",
-    "Write the invariant before writing the loop or recursion.",
-    "Choose base cases that cover the smallest valid inputs.",
-    "Update state only after saving any value still needed.",
-    "Trace one ordinary case and one boundary case."
-  ],
-  "key_insight": "Maintain exactly the state needed to extend a correct partial solution.",
-  "clarifications": [
-    {
-      "question": "Should the stated output contract be followed exactly?",
-      "answer": "Yes."
-    }
-  ],
-  "follow_ups": [
-    "Can you reduce the auxiliary space?"
-  ],
-  "common_mistakes": [
-    {
-      "id": "incomplete-state",
-      "description": "Tracks too little state to preserve the required invariant.",
-      "capability": "backtracking.invariant"
-    }
-  ],
-  "visible_tests": [
-    {
-      "args": [
-        [
-          [
-            "A",
-            "B",
-            "C",
-            "E"
-          ],
-          [
-            "S",
-            "F",
-            "C",
-            "S"
-          ],
-          [
-            "A",
-            "D",
-            "E",
-            "E"
-          ]
-        ],
-        "ABCCED"
-      ],
-      "expected": true
-    }
-  ],
-  "hidden_tests": [
-    {
-      "args": [
-        [
-          [
-            "A",
-            "B"
-          ],
-          [
-            "C",
-            "D"
-          ]
-        ],
-        "ABCD"
-      ],
-      "expected": false
-    },
-    {
-      "args": [
-        [
-          [
-            "a"
-          ]
-        ],
-        "a"
-      ],
-      "expected": true
-    }
-  ],
-  "reference_solution": "def word_exists(board,word):\n    rows=len(board); cols=len(board[0])\n    def dfs(r,c,i):\n        if i==len(word): return True\n        if not (0<=r<rows and 0<=c<cols) or board[r][c]!=word[i]: return False\n        ch=board[r][c]; board[r][c]='#'\n        found=any(dfs(r+dr,c+dc,i+1) for dr,dc in ((1,0),(-1,0),(0,1),(0,-1)))\n        board[r][c]=ch; return found\n    return any(dfs(r,c,0) for r in range(rows) for c in range(cols))",
-  "wrong_solutions": [
-    {
-      "mistake": "incomplete-state",
-      "expect": "wrong_answer",
-      "code": "def word_exists(*args):\n    return None"
-    }
-  ]
-}
+schema_version: 1
+slug: word-search
+version: 2
+status: development
+title: Word Search
+topic: backtracking
+patterns:
+- grid-backtracking
+role: transfer
+difficulty: medium
+collections:
+- blind-75
+transfer_group: grid-backtracking
+prerequisites: []
+related: []
+statement: Return whether `word` can be formed in a rectangular character grid by moving horizontally or vertically between adjacent cells. A cell may be used at most once in one path.
+examples:
+- input:
+    board:
+    - - A
+      - B
+      - C
+      - E
+    - - S
+      - F
+      - C
+      - S
+    - - A
+      - D
+      - E
+      - E
+    word: ABCCED
+  output: true
+constraints:
+- The total input size is at most 10,000 elements.
+- The input structure is valid and rectangular where a matrix is supplied.
+kind: function
+entrypoint: word_exists
+input_adapters: []
+starter_code: "def word_exists(*args):\n    pass"
+time_complexity: O(rows * cols * 4^word)
+space_complexity: O(n)
+capabilities:
+- slug: backtracking.recognition
+  weight: 0.2
+- slug: backtracking.invariant
+  weight: 0.2
+- slug: backtracking.implementation
+  weight: 0.2
+- slug: backtracking.boundaries
+  weight: 0.2
+- slug: backtracking.complexity
+  weight: 0.1
+- slug: backtracking.transfer
+  weight: 0.1
+hints:
+- State precisely what information must be preserved after processing part of the input.
+- Start DFS from each matching cell, mark a cell during the current path, and restore it when backtracking.
+- 'Boundary check: A global visited set incorrectly prevents a cell from participating in a different candidate path.'
+- Trace the sample and the smallest valid input before coding.
+- Before finishing, verify the claimed time and space complexity against the implementation.
+key_insight: Start DFS from each matching cell, mark a cell during the current path, and restore it when backtracking.
+clarifications:
+- question: What exact contract should `word_exists` implement?
+  answer: Return whether `word` can be formed in a rectangular character grid by moving horizontally or vertically between adjacent cells. A cell may be used at most once in one path.
+- question: Which boundary condition is easiest to overlook?
+  answer: A global visited set incorrectly prevents a cell from participating in a different candidate path.
+follow_ups:
+- Justify the claimed O(rows * cols * 4^word) time and O(n) space bounds.
+- 'Design a test that exposes this failure: A global visited set incorrectly prevents a cell from participating in a different candidate path.'
+common_mistakes:
+- id: contract-boundary
+  description: A global visited set incorrectly prevents a cell from participating in a different candidate path.
+  capability: backtracking.recognition
+- id: sample-overfit
+  description: Handles the sample shape but does not implement the general contract.
+  capability: backtracking.recognition
+visible_tests:
+- args:
+  - - - A
+      - B
+      - C
+      - E
+    - - S
+      - F
+      - C
+      - S
+    - - A
+      - D
+      - E
+      - E
+  - ABCCED
+  expected: true
+hidden_tests:
+- args:
+  - - - A
+      - B
+    - - C
+      - D
+  - ABCD
+  expected: false
+- args:
+  - - - a
+  - a
+  expected: true
+reference_solution: "def word_exists(board,word):\n    rows=len(board); cols=len(board[0])\n    def dfs(r,c,i):\n        if i==len(word): return True\n        if not (0<=r<rows and 0<=c<cols) or board[r][c]!=word[i]: return False\n        ch=board[r][c]; board[r][c]='#'\n        found=any(dfs(r+dr,c+dc,i+1) for dr,dc in ((1,0),(-1,0),(0,1),(0,-1)))\n        board[r][c]=ch; return found\n    return any(dfs(r,c,0) for r in range(rows) for c in range(cols))"
+wrong_solutions:
+- mistake: sample-overfit
+  expect: wrong_answer
+  code: "def word_exists(*args):\n    return True"

@@ -1,201 +1,115 @@
-{
-  "schema_version": 1,
-  "slug": "merge-intervals",
-  "version": 1,
-  "status": "development",
-  "title": "Merge Intervals",
-  "topic": "intervals",
-  "patterns": [
-    "sorted-interval-merge"
-  ],
-  "role": "transfer",
-  "difficulty": "medium",
-  "collections": [
-    "blind-75"
-  ],
-  "transfer_group": "sorted-interval-merge",
-  "prerequisites": [],
-  "related": [],
-  "statement": "Merge Intervals",
-  "examples": [
-    {
-      "input": {
-        "intervals": [
-          [
-            1,
-            3
-          ],
-          [
-            2,
-            6
-          ],
-          [
-            8,
-            10
-          ],
-          [
-            15,
-            18
-          ]
-        ]
-      },
-      "output": [
-        [
-          1,
-          6
-        ],
-        [
-          8,
-          10
-        ],
-        [
-          15,
-          18
-        ]
-      ]
-    }
-  ],
-  "constraints": [
-    "Input size is within practical interview limits."
-  ],
-  "kind": "function",
-  "entrypoint": "merge_intervals",
-  "input_adapters": [],
-  "starter_code": "def merge_intervals(*args):\n    pass",
-  "time_complexity": "O(n log n)",
-  "space_complexity": "O(n)",
-  "capabilities": [
-    {
-      "slug": "intervals.recognition",
-      "weight": 0.2
-    },
-    {
-      "slug": "intervals.invariant",
-      "weight": 0.2
-    },
-    {
-      "slug": "intervals.implementation",
-      "weight": 0.2
-    },
-    {
-      "slug": "intervals.boundaries",
-      "weight": 0.2
-    },
-    {
-      "slug": "intervals.complexity",
-      "weight": 0.1
-    },
-    {
-      "slug": "intervals.transfer",
-      "weight": 0.1
-    }
-  ],
-  "hints": [
-    "Identify the state that summarizes the work already done.",
-    "Write the invariant before writing the loop or recursion.",
-    "Choose base cases that cover the smallest valid inputs.",
-    "Update state only after saving any value still needed.",
-    "Trace one ordinary case and one boundary case."
-  ],
-  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
-  "clarifications": [
-    {
-      "question": "Should the stated output contract be followed exactly?",
-      "answer": "Yes."
-    }
-  ],
-  "follow_ups": [
-    "Can you reduce the auxiliary space?"
-  ],
-  "common_mistakes": [
-    {
-      "id": "incomplete-state",
-      "description": "Tracks too little state to preserve the required invariant.",
-      "capability": "intervals.invariant"
-    }
-  ],
-  "visible_tests": [
-    {
-      "args": [
-        [
-          [
-            1,
-            3
-          ],
-          [
-            2,
-            6
-          ],
-          [
-            8,
-            10
-          ],
-          [
-            15,
-            18
-          ]
-        ]
-      ],
-      "expected": [
-        [
-          1,
-          6
-        ],
-        [
-          8,
-          10
-        ],
-        [
-          15,
-          18
-        ]
-      ]
-    }
-  ],
-  "hidden_tests": [
-    {
-      "args": [
-        [
-          [
-            1,
-            4
-          ],
-          [
-            4,
-            5
-          ]
-        ]
-      ],
-      "expected": [
-        [
-          1,
-          5
-        ]
-      ]
-    },
-    {
-      "args": [
-        [
-          [
-            1,
-            4
-          ]
-        ]
-      ],
-      "expected": [
-        [
-          1,
-          4
-        ]
-      ]
-    }
-  ],
-  "reference_solution": "def merge_intervals(intervals):\n    out=[]\n    for start,end in sorted(intervals):\n        if out and start<=out[-1][1]: out[-1][1]=max(out[-1][1],end)\n        else: out.append([start,end])\n    return out",
-  "wrong_solutions": [
-    {
-      "mistake": "incomplete-state",
-      "expect": "wrong_answer",
-      "code": "def merge_intervals(*args):\n    return None"
-    }
-  ]
-}
+schema_version: 1
+slug: merge-intervals
+version: 2
+status: development
+title: Merge Intervals
+topic: intervals
+patterns:
+- sorted-interval-merge
+role: transfer
+difficulty: medium
+collections:
+- blind-75
+transfer_group: sorted-interval-merge
+prerequisites: []
+related: []
+statement: Merge all overlapping intervals and return the disjoint intervals sorted by start. Intervals sharing an endpoint are considered overlapping.
+examples:
+- input:
+    intervals:
+    - - 1
+      - 3
+    - - 2
+      - 6
+    - - 8
+      - 10
+    - - 15
+      - 18
+  output:
+  - - 1
+    - 6
+  - - 8
+    - 10
+  - - 15
+    - 18
+constraints:
+- 0 <= input length <= 20,000.
+- All intervals and collections satisfy the structural contract in the statement.
+kind: function
+entrypoint: merge_intervals
+input_adapters: []
+starter_code: "def merge_intervals(*args):\n    pass"
+time_complexity: O(n log n)
+space_complexity: O(n)
+capabilities:
+- slug: intervals.recognition
+  weight: 0.2
+- slug: intervals.invariant
+  weight: 0.2
+- slug: intervals.implementation
+  weight: 0.2
+- slug: intervals.boundaries
+  weight: 0.2
+- slug: intervals.complexity
+  weight: 0.1
+- slug: intervals.transfer
+  weight: 0.1
+hints:
+- State precisely what information must be preserved after processing part of the input.
+- Sort by start, then either extend the last merged end or begin a new interval.
+- 'Boundary check: Failing to sort first means an interval can overlap an earlier merged range without being adjacent in the input.'
+- Trace the sample and the smallest valid input before coding.
+- Before finishing, verify the claimed time and space complexity against the implementation.
+key_insight: Sort by start, then either extend the last merged end or begin a new interval.
+clarifications:
+- question: What exact contract should `merge_intervals` implement?
+  answer: Merge all overlapping intervals and return the disjoint intervals sorted by start. Intervals sharing an endpoint are considered overlapping.
+- question: Which boundary condition is easiest to overlook?
+  answer: Failing to sort first means an interval can overlap an earlier merged range without being adjacent in the input.
+follow_ups:
+- Justify the claimed O(n log n) time and O(n) space bounds.
+- 'Design a test that exposes this failure: Failing to sort first means an interval can overlap an earlier merged range without being adjacent in the input.'
+common_mistakes:
+- id: contract-boundary
+  description: Failing to sort first means an interval can overlap an earlier merged range without being adjacent in the input.
+  capability: intervals.recognition
+- id: sample-overfit
+  description: Handles the sample shape but does not implement the general contract.
+  capability: intervals.recognition
+visible_tests:
+- args:
+  - - - 1
+      - 3
+    - - 2
+      - 6
+    - - 8
+      - 10
+    - - 15
+      - 18
+  expected:
+  - - 1
+    - 6
+  - - 8
+    - 10
+  - - 15
+    - 18
+hidden_tests:
+- args:
+  - - - 1
+      - 4
+    - - 4
+      - 5
+  expected:
+  - - 1
+    - 5
+- args:
+  - - - 1
+      - 4
+  expected:
+  - - 1
+    - 4
+reference_solution: "def merge_intervals(intervals):\n    out=[]\n    for start,end in sorted(intervals):\n        if out and start<=out[-1][1]: out[-1][1]=max(out[-1][1],end)\n        else: out.append([start,end])\n    return out"
+wrong_solutions:
+- mistake: sample-overfit
+  expect: wrong_answer
+  code: "def merge_intervals(*args):\n    return [[1, 6], [8, 10], [15, 18]]"

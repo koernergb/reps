@@ -1,146 +1,102 @@
-{
-  "schema_version": 1,
-  "slug": "longest-increasing-subsequence",
-  "version": 1,
-  "status": "development",
-  "title": "Longest Increasing Subsequence",
-  "topic": "dp-1d",
-  "patterns": [
-    "patience-tails"
-  ],
-  "role": "transfer",
-  "difficulty": "medium",
-  "collections": [
-    "blind-75"
-  ],
-  "transfer_group": "patience-tails",
-  "prerequisites": [],
-  "related": [],
-  "statement": "Longest Increasing Subsequence",
-  "examples": [
-    {
-      "input": {
-        "nums": [
-          10,
-          9,
-          2,
-          5,
-          3,
-          7,
-          101,
-          18
-        ]
-      },
-      "output": 4
-    }
-  ],
-  "constraints": [
-    "Input size is within practical interview limits."
-  ],
-  "kind": "function",
-  "entrypoint": "lis_length",
-  "input_adapters": [],
-  "starter_code": "def lis_length(*args):\n    pass",
-  "time_complexity": "O(n log n)",
-  "space_complexity": "O(n)",
-  "capabilities": [
-    {
-      "slug": "dp-1d.recognition",
-      "weight": 0.2
-    },
-    {
-      "slug": "dp-1d.invariant",
-      "weight": 0.2
-    },
-    {
-      "slug": "dp-1d.implementation",
-      "weight": 0.2
-    },
-    {
-      "slug": "dp-1d.boundaries",
-      "weight": 0.2
-    },
-    {
-      "slug": "dp-1d.complexity",
-      "weight": 0.1
-    },
-    {
-      "slug": "dp-1d.transfer",
-      "weight": 0.1
-    }
-  ],
-  "hints": [
-    "Identify the state that summarizes the work already done.",
-    "Write the invariant before writing the loop or recursion.",
-    "Choose base cases that cover the smallest valid inputs.",
-    "Update state only after saving any value still needed.",
-    "Trace one ordinary case and one boundary case."
-  ],
-  "key_insight": "Maintain only the state needed to extend a correct partial solution.",
-  "clarifications": [
-    {
-      "question": "Should the stated output contract be followed exactly?",
-      "answer": "Yes."
-    }
-  ],
-  "follow_ups": [
-    "Can you reduce the auxiliary space?"
-  ],
-  "common_mistakes": [
-    {
-      "id": "incomplete-state",
-      "description": "Tracks too little state to preserve the required invariant.",
-      "capability": "dp-1d.invariant"
-    }
-  ],
-  "visible_tests": [
-    {
-      "args": [
-        [
-          10,
-          9,
-          2,
-          5,
-          3,
-          7,
-          101,
-          18
-        ]
-      ],
-      "expected": 4
-    }
-  ],
-  "hidden_tests": [
-    {
-      "args": [
-        [
-          7,
-          7,
-          7
-        ]
-      ],
-      "expected": 1
-    },
-    {
-      "args": [
-        [
-          0,
-          1,
-          0,
-          3,
-          2,
-          3
-        ]
-      ],
-      "expected": 4
-    }
-  ],
-  "reference_solution": "def lis_length(nums):\n    from bisect import bisect_left\n    tails=[]\n    for x in nums:\n        i=bisect_left(tails,x)\n        if i==len(tails): tails.append(x)\n        else: tails[i]=x\n    return len(tails)",
-  "wrong_solutions": [
-    {
-      "mistake": "incomplete-state",
-      "expect": "wrong_answer",
-      "code": "def lis_length(*args):\n    return None"
-    }
-  ]
-}
+schema_version: 1
+slug: longest-increasing-subsequence
+version: 2
+status: development
+title: Longest Increasing Subsequence
+topic: dp-1d
+patterns:
+- patience-tails
+role: transfer
+difficulty: medium
+collections:
+- blind-75
+transfer_group: patience-tails
+prerequisites: []
+related: []
+statement: Return the length of the longest strictly increasing subsequence of `nums`. The chosen values need not be contiguous but must retain their original order.
+examples:
+- input:
+    nums:
+    - 10
+    - 9
+    - 2
+    - 5
+    - 3
+    - 7
+    - 101
+    - 18
+  output: 4
+constraints:
+- 1 <= input length <= 20,000 where a sequence is supplied.
+- Inputs fit signed 32-bit values unless the statement specifies unsigned values.
+kind: function
+entrypoint: lis_length
+input_adapters: []
+starter_code: "def lis_length(*args):\n    pass"
+time_complexity: O(n log n)
+space_complexity: O(n)
+capabilities:
+- slug: dp-1d.recognition
+  weight: 0.2
+- slug: dp-1d.invariant
+  weight: 0.2
+- slug: dp-1d.implementation
+  weight: 0.2
+- slug: dp-1d.boundaries
+  weight: 0.2
+- slug: dp-1d.complexity
+  weight: 0.1
+- slug: dp-1d.transfer
+  weight: 0.1
+hints:
+- State precisely what information must be preserved after processing part of the input.
+- Maintain the smallest possible tail for an increasing subsequence of each length and replace tails by binary search.
+- 'Boundary check: Using an upper-bound search treats equal values as increasing and overstates the length.'
+- Trace the sample and the smallest valid input before coding.
+- Before finishing, verify the claimed time and space complexity against the implementation.
+key_insight: Maintain the smallest possible tail for an increasing subsequence of each length and replace tails by binary search.
+clarifications:
+- question: What exact contract should `lis_length` implement?
+  answer: Return the length of the longest strictly increasing subsequence of `nums`. The chosen values need not be contiguous but must retain their original order.
+- question: Which boundary condition is easiest to overlook?
+  answer: Using an upper-bound search treats equal values as increasing and overstates the length.
+follow_ups:
+- Justify the claimed O(n log n) time and O(n) space bounds.
+- 'Design a test that exposes this failure: Using an upper-bound search treats equal values as increasing and overstates the length.'
+common_mistakes:
+- id: contract-boundary
+  description: Using an upper-bound search treats equal values as increasing and overstates the length.
+  capability: dp-1d.recognition
+- id: sample-overfit
+  description: Handles the sample shape but does not implement the general contract.
+  capability: dp-1d.recognition
+visible_tests:
+- args:
+  - - 10
+    - 9
+    - 2
+    - 5
+    - 3
+    - 7
+    - 101
+    - 18
+  expected: 4
+hidden_tests:
+- args:
+  - - 7
+    - 7
+    - 7
+  expected: 1
+- args:
+  - - 0
+    - 1
+    - 0
+    - 3
+    - 2
+    - 3
+  expected: 4
+reference_solution: "def lis_length(nums):\n    from bisect import bisect_left\n    tails=[]\n    for x in nums:\n        i=bisect_left(tails,x)\n        if i==len(tails): tails.append(x)\n        else: tails[i]=x\n    return len(tails)"
+wrong_solutions:
+- mistake: sample-overfit
+  expect: wrong_answer
+  code: "def lis_length(*args):\n    return 4"

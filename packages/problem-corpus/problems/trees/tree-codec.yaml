@@ -1,216 +1,140 @@
-{
-  "schema_version": 1,
-  "slug": "tree-codec",
-  "version": 1,
-  "status": "development",
-  "title": "Serialize and Deserialize a Binary Tree",
-  "topic": "trees",
-  "patterns": [
-    "tree-serialization"
-  ],
-  "role": "transfer",
-  "difficulty": "hard",
-  "collections": [
-    "blind-75"
-  ],
-  "transfer_group": "tree-serialization",
-  "prerequisites": [],
-  "related": [],
-  "statement": "Serialize and Deserialize a Binary Tree",
-  "examples": [
-    {
-      "input": {
-        "operations": [
-          "TreeCodec",
-          "serialize",
-          "deserialize"
-        ],
-        "arguments": [
-          [],
-          [
-            [
-              1,
-              2,
-              3,
-              null,
-              null,
-              4,
-              5
-            ]
-          ],
-          [
-            "1,2,3,#,#,4,5"
-          ]
-        ]
-      },
-      "output": [
-        null,
-        "1,2,3,#,#,4,5",
-        [
-          1,
-          2,
-          3,
-          null,
-          null,
-          4,
-          5
-        ]
-      ]
-    }
-  ],
-  "constraints": [
-    "Input size is within practical interview limits."
-  ],
-  "kind": "class",
-  "entrypoint": "TreeCodec",
-  "input_adapters": [],
-  "starter_code": "def TreeCodec(*args):\n    pass",
-  "time_complexity": "O(n)",
-  "space_complexity": "O(n)",
-  "capabilities": [
-    {
-      "slug": "trees.recognition",
-      "weight": 0.2
-    },
-    {
-      "slug": "trees.invariant",
-      "weight": 0.2
-    },
-    {
-      "slug": "trees.implementation",
-      "weight": 0.2
-    },
-    {
-      "slug": "trees.boundaries",
-      "weight": 0.2
-    },
-    {
-      "slug": "trees.complexity",
-      "weight": 0.1
-    },
-    {
-      "slug": "trees.transfer",
-      "weight": 0.1
-    }
-  ],
-  "hints": [
-    "Identify the state that summarizes the work already done.",
-    "Write the invariant before writing the loop or recursion.",
-    "Choose base cases that cover the smallest valid inputs.",
-    "Update state only after saving any value still needed.",
-    "Trace one ordinary case and one boundary case."
-  ],
-  "key_insight": "Maintain exactly the state needed to extend a correct partial solution.",
-  "clarifications": [
-    {
-      "question": "Should the stated output contract be followed exactly?",
-      "answer": "Yes."
-    }
-  ],
-  "follow_ups": [
-    "Can you reduce the auxiliary space?"
-  ],
-  "common_mistakes": [
-    {
-      "id": "incomplete-state",
-      "description": "Tracks too little state to preserve the required invariant.",
-      "capability": "trees.invariant"
-    }
-  ],
-  "visible_tests": [
-    {
-      "args": [
-        [
-          "TreeCodec",
-          "serialize",
-          "deserialize"
-        ],
-        [
-          [],
-          [
-            [
-              1,
-              2,
-              3,
-              null,
-              null,
-              4,
-              5
-            ]
-          ],
-          [
-            "1,2,3,#,#,4,5"
-          ]
-        ]
-      ],
-      "expected": [
-        null,
-        "1,2,3,#,#,4,5",
-        [
-          1,
-          2,
-          3,
-          null,
-          null,
-          4,
-          5
-        ]
-      ]
-    }
-  ],
-  "hidden_tests": [
-    {
-      "args": [
-        [
-          "TreeCodec",
-          "serialize",
-          "deserialize"
-        ],
-        [
-          [],
-          [
-            []
-          ],
-          [
-            ""
-          ]
-        ]
-      ],
-      "expected": [
-        null,
-        "",
-        []
-      ]
-    },
-    {
-      "args": [
-        [
-          "TreeCodec",
-          "deserialize"
-        ],
-        [
-          [],
-          [
-            "1,#,2"
-          ]
-        ]
-      ],
-      "expected": [
-        null,
-        [
-          1,
-          null,
-          2
-        ]
-      ]
-    }
-  ],
-  "reference_solution": "class TreeCodec:\n    def serialize(self, values):\n        end=len(values)\n        while end and values[end-1] is None: end-=1\n        return ','.join('#' if x is None else str(x) for x in values[:end])\n    def deserialize(self, data):\n        if not data: return []\n        return [None if x=='#' else int(x) for x in data.split(',')]",
-  "wrong_solutions": [
-    {
-      "mistake": "incomplete-state",
-      "expect": "error",
-      "code": "class TreeCodec:\n    def serialize(self, values): return ','.join(map(str,values))\n    def deserialize(self, data): return [int(x) for x in data.split(',')]"
-    }
-  ]
-}
+schema_version: 1
+slug: tree-codec
+version: 2
+status: development
+title: Serialize and Deserialize a Binary Tree
+topic: trees
+patterns:
+- tree-serialization
+role: transfer
+difficulty: hard
+collections:
+- blind-75
+transfer_group: tree-serialization
+prerequisites: []
+related: []
+statement: Implement `TreeCodec.serialize` and `TreeCodec.deserialize` for level-order tree lists. Serialization uses comma-separated values and `#` null markers with unnecessary trailing nulls removed; an empty tree serializes to an empty string.
+examples:
+- input:
+    operations:
+    - TreeCodec
+    - serialize
+    - deserialize
+    arguments:
+    - []
+    - - - 1
+        - 2
+        - 3
+        - null
+        - null
+        - 4
+        - 5
+    - - 1,2,3,#,#,4,5
+  output:
+  - null
+  - 1,2,3,#,#,4,5
+  - - 1
+    - 2
+    - 3
+    - null
+    - null
+    - 4
+    - 5
+constraints:
+- At most 20,000 operations are issued.
+- Inputs follow the method contracts shown in the examples.
+kind: class
+entrypoint: TreeCodec
+input_adapters: []
+starter_code: "def TreeCodec(*args):\n    pass"
+time_complexity: O(n)
+space_complexity: O(n)
+capabilities:
+- slug: trees.recognition
+  weight: 0.2
+- slug: trees.invariant
+  weight: 0.2
+- slug: trees.implementation
+  weight: 0.2
+- slug: trees.boundaries
+  weight: 0.2
+- slug: trees.complexity
+  weight: 0.1
+- slug: trees.transfer
+  weight: 0.1
+hints:
+- State precisely what information must be preserved after processing part of the input.
+- Preserve null positions during breadth-first traversal so child relationships survive the round trip.
+- 'Boundary check: Dropping internal null markers changes which parent owns later children.'
+- Trace the sample and the smallest valid input before coding.
+- Before finishing, verify the claimed time and space complexity against the implementation.
+key_insight: Preserve null positions during breadth-first traversal so child relationships survive the round trip.
+clarifications:
+- question: What exact contract should `TreeCodec` implement?
+  answer: Implement `TreeCodec.serialize` and `TreeCodec.deserialize` for level-order tree lists. Serialization uses comma-separated values and `#` null markers with unnecessary trailing nulls removed; an empty tree serializes to an empty string.
+- question: Which boundary condition is easiest to overlook?
+  answer: Dropping internal null markers changes which parent owns later children.
+follow_ups:
+- Justify the claimed O(n) time and O(n) space bounds.
+- 'Design a test that exposes this failure: Dropping internal null markers changes which parent owns later children.'
+common_mistakes:
+- id: contract-boundary
+  description: Dropping internal null markers changes which parent owns later children.
+  capability: trees.recognition
+- id: sample-overfit
+  description: Handles the sample shape but does not implement the general contract.
+  capability: trees.recognition
+- id: incomplete-state
+  description: Dropping internal null markers changes which parent owns later children.
+  capability: trees.recognition
+visible_tests:
+- args:
+  - - TreeCodec
+    - serialize
+    - deserialize
+  - - []
+    - - - 1
+        - 2
+        - 3
+        - null
+        - null
+        - 4
+        - 5
+    - - 1,2,3,#,#,4,5
+  expected:
+  - null
+  - 1,2,3,#,#,4,5
+  - - 1
+    - 2
+    - 3
+    - null
+    - null
+    - 4
+    - 5
+hidden_tests:
+- args:
+  - - TreeCodec
+    - serialize
+    - deserialize
+  - - []
+    - - []
+    - - ''
+  expected:
+  - null
+  - ''
+  - []
+- args:
+  - - TreeCodec
+    - deserialize
+  - - []
+    - - 1,#,2
+  expected:
+  - null
+  - - 1
+    - null
+    - 2
+reference_solution: "class TreeCodec:\n    def serialize(self, values):\n        end=len(values)\n        while end and values[end-1] is None: end-=1\n        return ','.join('#' if x is None else str(x) for x in values[:end])\n    def deserialize(self, data):\n        if not data: return []\n        return [None if x=='#' else int(x) for x in data.split(',')]"
+wrong_solutions:
+- mistake: incomplete-state
+  expect: error
+  code: "class TreeCodec:\n    def serialize(self, values): return ','.join(map(str,values))\n    def deserialize(self, data): return [int(x) for x in data.split(',')]"
