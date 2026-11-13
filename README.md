@@ -1,9 +1,9 @@
 # Reps
 
-Reps is an adaptive technical-interview coach. It interviews you on curated Python problems,
-runs your code in an isolated sandbox, diagnoses capability-level weaknesses from what actually
-happened (tests, hints, explanations), schedules targeted spaced remediation, and checks transfer
-on unseen problems later.
+Reps is an AI-native, local-first spaced-repetition system with a deeply integrated technical
+interview coach. You can study any course with cards generated from your notes or written by hand,
+while the coding coach interviews you on curated Python problems, diagnoses capability-level
+weaknesses, and schedules targeted remediation.
 
 The product brief is
 [`ai_native_spaced_repetition_interview_coach_build_brief_v2.md`](./ai_native_spaced_repetition_interview_coach_build_brief_v2.md).
@@ -18,6 +18,9 @@ The product brief is
 
 - 86 curated problems, 74 remediation exercises, and 106 tracked capabilities, including all 75 of
   the Blind 75
+- general-purpose courses, concepts, notes, and basic, reversed, cloze, typed, explain, and compare
+  cards with adaptive Again/Hard/Good/Easy scheduling
+- AI card generation from pasted notes with a mandatory draft-review step, plus CSV import/export
 - practice and timed mock interviews with deterministic offline behavior
 - optional structured-output interviewing and evaluation through OpenAI or Google Gemini
 - isolated Python execution, hidden tests, reports, evidence-backed skill estimates, adaptive
@@ -83,6 +86,9 @@ reply is still validated, and failures fall back to the built-in policies.
    explanations and an evidence trail.
 6. **Problems**: free practice; *View solution* is consentful and schedules remediation instead
    of marking the problem solved.
+7. **Study**: create a course, add cards manually, or paste notes to generate draft cards. Approve
+   generated cards after checking them, then use *Review due cards* for the daily queue. Reps tracks
+   each concept in the same evidence-backed learning model used by the coding coach.
 
 ## Verify
 

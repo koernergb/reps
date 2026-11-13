@@ -164,6 +164,69 @@ export function getSystemStatus(): Promise<SystemStatus> {
   return apiRequest<SystemStatus>("/v1/system/status");
 }
 
+// --- Generic study --------------------------------------------------------------------
+
+export type StudyCourse = {
+  id: string;
+  name: string;
+  description: string;
+  color: string;
+  status: "active" | "archived";
+  due_count: number;
+  card_count: number;
+  default_concept_id?: string;
+};
+
+export type StudyConcept = { id: string; name: string; description: string; unit_id: string | null };
+export type StudyUnit = { id: string; name: string; description: string };
+export type StudyCard = {
+  id: string;
+  course_id: string;
+  unit_id: string | null;
+  concept_id: string;
+  source_id: string | null;
+  concept: string;
+  card_type: "basic" | "reversed" | "cloze" | "typed" | "explain" | "compare";
+  prompt: string;
+  answer: string;
+  accepted_answers: string[];
+  tags: string[];
+  status: "draft" | "active" | "suspended" | "archived";
+  origin: "manual" | "imported" | "generated";
+  review_count: number;
+  next_review_at: string | null;
+};
+
+export type StudyCourseDetail = StudyCourse & { units: StudyUnit[]; concepts: StudyConcept[]; cards: StudyCard[] };
+
+export function listStudyCourses(): Promise<StudyCourse[]> { return apiRequest("/v1/study/courses"); }
+export function createStudyCourse(body: { name: string; description: string }): Promise<StudyCourse> {
+  return apiRequest("/v1/study/courses", { method: "POST", body: JSON.stringify(body) });
+}
+export function getStudyCourse(id: string): Promise<StudyCourseDetail> { return apiRequest(`/v1/study/courses/${encodeURIComponent(id)}`); }
+export function createStudyUnit(courseId: string, body: { name: string; description: string }): Promise<StudyUnit> {
+  return apiRequest(`/v1/study/courses/${encodeURIComponent(courseId)}/units`, { method: "POST", body: JSON.stringify(body) });
+}
+export function createStudyConcept(courseId: string, body: { name: string; description: string; unit_id?: string }): Promise<StudyConcept> {
+  return apiRequest(`/v1/study/courses/${encodeURIComponent(courseId)}/concepts`, { method: "POST", body: JSON.stringify(body) });
+}
+export function createStudyCard(courseId: string, body: { concept_id: string; card_type: StudyCard["card_type"]; prompt: string; answer: string; tags: string[] }): Promise<StudyCard> {
+  return apiRequest(`/v1/study/courses/${encodeURIComponent(courseId)}/cards`, { method: "POST", body: JSON.stringify(body) });
+}
+export function updateStudyCard(id: string, body: Partial<Pick<StudyCard, "prompt" | "answer" | "status" | "card_type" | "tags" | "accepted_answers">>): Promise<StudyCard> {
+  return apiRequest(`/v1/study/cards/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(body) });
+}
+export function createStudySource(courseId: string, body: { title: string; body: string }): Promise<{ id: string; title: string }> {
+  return apiRequest(`/v1/study/courses/${encodeURIComponent(courseId)}/sources`, { method: "POST", body: JSON.stringify(body) });
+}
+export function generateStudyCards(sourceId: string): Promise<{ cards: StudyCard[]; provider: string; model: string }> {
+  return apiRequest(`/v1/study/sources/${encodeURIComponent(sourceId)}/generate`, { method: "POST" });
+}
+export function getStudyQueue(): Promise<{ due: StudyCard[]; count: number }> { return apiRequest("/v1/study/queue"); }
+export function reviewStudyCard(id: string, body: { answer: string; rating: "again" | "hard" | "good" | "easy" }): Promise<{ correctness: number; rating: string; interval_days: number; next_review_at: string; expected_answer: string }> {
+  return apiRequest(`/v1/study/cards/${encodeURIComponent(id)}/review`, { method: "POST", body: JSON.stringify(body) });
+}
+
 export function createExecution(body: { problem_slug: string; code: string; kind: "run" | "submit"; idempotency_key: string; session_id?: string }): Promise<Execution> {
   return apiRequest<Execution>("/v1/executions", { method: "POST", body: JSON.stringify(body) });
 }

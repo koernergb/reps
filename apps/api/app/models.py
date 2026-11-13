@@ -535,6 +535,9 @@ class ReviewTask(Base):
     problem_id: Mapped[str | None] = mapped_column(
         ForeignKey("problems.id", ondelete="SET NULL"), index=True
     )
+    study_card_id: Mapped[str | None] = mapped_column(
+        ForeignKey("study_cards.id", ondelete="CASCADE"), index=True
+    )
     task_type: Mapped[str] = mapped_column(String(32), nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
     due_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
@@ -553,6 +556,7 @@ class ReviewTask(Base):
     capability: Mapped[Capability] = relationship()
     exercise: Mapped[Exercise | None] = relationship()
     problem: Mapped[Problem | None] = relationship()
+    study_card: Mapped[StudyCard | None] = relationship()
 
     __table_args__ = (
         CheckConstraint(
@@ -567,6 +571,149 @@ class ReviewTask(Base):
             unique=True,
             postgresql_where=text("status IN ('pending', 'snoozed')"),
             sqlite_where=text("status IN ('pending', 'snoozed')"),
+        ),
+    )
+
+
+class StudyCourse(TimestampMixin, Base):
+    __tablename__ = "study_courses"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(160), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    color: Mapped[str] = mapped_column(String(20), nullable=False, default="#166534")
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="active")
+
+    units: Mapped[list[StudyUnit]] = relationship(cascade="all, delete-orphan")
+    concepts: Mapped[list[StudyConcept]] = relationship(cascade="all, delete-orphan")
+    cards: Mapped[list[StudyCard]] = relationship(cascade="all, delete-orphan")
+
+    __table_args__ = (
+        CheckConstraint("status IN ('active', 'archived')", name="ck_study_courses_status"),
+    )
+
+
+class StudyUnit(TimestampMixin, Base):
+    __tablename__ = "study_units"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    course_id: Mapped[str] = mapped_column(
+        ForeignKey("study_courses.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(160), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+
+class StudyConcept(TimestampMixin, Base):
+    __tablename__ = "study_concepts"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    course_id: Mapped[str] = mapped_column(
+        ForeignKey("study_courses.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    unit_id: Mapped[str | None] = mapped_column(
+        ForeignKey("study_units.id", ondelete="SET NULL"), index=True
+    )
+    capability_id: Mapped[str] = mapped_column(
+        ForeignKey("capabilities.id", ondelete="CASCADE"), nullable=False, unique=True
+    )
+    name: Mapped[str] = mapped_column(String(160), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False, default="")
+
+
+class StudySource(TimestampMixin, Base):
+    __tablename__ = "study_sources"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    course_id: Mapped[str] = mapped_column(
+        ForeignKey("study_courses.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    source_type: Mapped[str] = mapped_column(String(30), nullable=False, default="notes")
+
+
+class StudyCard(TimestampMixin, Base):
+    __tablename__ = "study_cards"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    course_id: Mapped[str] = mapped_column(
+        ForeignKey("study_courses.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    unit_id: Mapped[str | None] = mapped_column(
+        ForeignKey("study_units.id", ondelete="SET NULL"), index=True
+    )
+    concept_id: Mapped[str] = mapped_column(
+        ForeignKey("study_concepts.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    source_id: Mapped[str | None] = mapped_column(
+        ForeignKey("study_sources.id", ondelete="SET NULL"), index=True
+    )
+    card_type: Mapped[str] = mapped_column(String(24), nullable=False, default="basic")
+    prompt: Mapped[str] = mapped_column(Text, nullable=False)
+    answer: Mapped[str] = mapped_column(Text, nullable=False)
+    accepted_answers: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    tags: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="active")
+    origin: Mapped[str] = mapped_column(String(20), nullable=False, default="manual")
+    stability_days: Mapped[float] = mapped_column(Float, nullable=False, default=0)
+    review_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    lapses: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    last_reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    next_review_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+
+    concept: Mapped[StudyConcept] = relationship()
+
+    __table_args__ = (
+        CheckConstraint(
+            "card_type IN ('basic', 'reversed', 'cloze', 'typed', 'explain', 'compare')",
+            name="ck_study_cards_type",
+        ),
+        CheckConstraint(
+            "status IN ('draft', 'active', 'suspended', 'archived')",
+            name="ck_study_cards_status",
+        ),
+    )
+
+
+class StudyReview(Base):
+    __tablename__ = "study_reviews"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    card_id: Mapped[str] = mapped_column(
+        ForeignKey("study_cards.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    task_id: Mapped[str | None] = mapped_column(
+        ForeignKey("review_tasks.id", ondelete="SET NULL"), index=True
+    )
+    answer: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    rating: Mapped[str] = mapped_column(String(10), nullable=False)
+    correctness: Mapped[float] = mapped_column(Float, nullable=False)
+    interval_days: Mapped[float] = mapped_column(Float, nullable=False)
+    reviewed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    __table_args__ = (
+        CheckConstraint(
+            "rating IN ('again', 'hard', 'good', 'easy')", name="ck_study_reviews_rating"
         ),
     )
 

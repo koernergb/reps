@@ -28,6 +28,7 @@ from app.routes.reports import router as reports_router
 from app.routes.reviews import router as reviews_router
 from app.routes.settings import router as settings_router
 from app.routes.solutions import router as solutions_router
+from app.routes.study import router as study_router
 from app.routes.system import router as system_router
 from app.schemas import ErrorDetail, ErrorResponse, HealthResponse
 
@@ -74,6 +75,7 @@ def create_app(engine_factory: Callable[[], Engine] = create_database_engine) ->
     application.include_router(learner_router)
     application.include_router(solutions_router)
     application.include_router(settings_router)
+    application.include_router(study_router)
     application.include_router(system_router)
     application.add_exception_handler(ApiError, api_error_handler)
 

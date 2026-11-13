@@ -10,7 +10,7 @@ from app.deps import SessionDependency, UserDependency
 from app.errors import ApiError
 from app.execution.service import rate_limiter
 from app.local_mode import get_local_user
-from app.models import Base, InterviewSession
+from app.models import Base, Capability, InterviewSession, StudyConcept
 from app.schemas import LocalDataExport, LocalProfile, ResetResult
 
 router = APIRouter(prefix="/v1/me", tags=["local data"])
@@ -31,6 +31,7 @@ class OwnedTable:
 
 # Order matters for deletion: children before parents.
 OWNED_TABLES: tuple[OwnedTable, ...] = (
+    OwnedTable("study_reviews"),
     OwnedTable("diagnosis_flags"),
     OwnedTable("interview_evaluations"),
     OwnedTable("llm_calls"),
@@ -42,6 +43,11 @@ OWNED_TABLES: tuple[OwnedTable, ...] = (
     OwnedTable("analytics_events"),
     OwnedTable("review_attempts"),
     OwnedTable("review_tasks"),
+    OwnedTable("study_cards"),
+    OwnedTable("study_sources"),
+    OwnedTable("study_concepts"),
+    OwnedTable("study_units"),
+    OwnedTable("study_courses"),
     OwnedTable("drill_sessions"),
     OwnedTable("learner_capability_states"),
     OwnedTable("interview_sessions"),
@@ -90,6 +96,11 @@ def export_user_data(session: Session, user_id: str) -> dict[str, list[dict[str,
 
 
 def delete_user_history(session: Session, user_id: str) -> dict[str, int]:
+    study_capability_ids = list(
+        session.scalars(
+            select(StudyConcept.capability_id).where(StudyConcept.user_id == user_id)
+        )
+    )
     deleted: dict[str, int] = {}
     for table in OWNED_TABLES:
         if table.keep_on_reset:
@@ -99,6 +110,10 @@ def delete_user_history(session: Session, user_id: str) -> dict[str, int]:
             session.delete(row)
         session.flush()
         deleted[table.name] = len(rows)
+    for capability_id in study_capability_ids:
+        capability = session.get(Capability, capability_id)
+        if capability is not None:
+            session.delete(capability)
     session.commit()
     return deleted
 

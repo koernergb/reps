@@ -1,8 +1,9 @@
-import { BrainCircuit, Code2, LayoutDashboard, MessagesSquare, Repeat2, Settings, TrendingUp } from "lucide-react";
+import { BookOpen, BrainCircuit, Code2, LayoutDashboard, MessagesSquare, Repeat2, Settings, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
 const navigation = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/study", label: "Study", icon: BookOpen },
   { href: "/drills", label: "Drills", icon: BrainCircuit },
   { href: "/reviews", label: "Reviews", icon: Repeat2 },
   { href: "/interviews", label: "Interviews", icon: MessagesSquare },
