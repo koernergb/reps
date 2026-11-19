@@ -9,8 +9,11 @@
 - `pnpm corpus:validate` — schema, lint, and execution of every reference solution against
   visible, hidden, and example tests (run twice for determinism); every known-wrong solution
   is rejected by hidden tests for its declared reason.
-- `pnpm corpus:report` — 32 problems, 62 exercises, all 64 capabilities covered.
-- Known gap: ten transfer groups have a single member; transfer selection falls back to
+- `pnpm corpus:report` — 86 problems, 74 exercises, and 106 capabilities, including the complete
+  Blind 75 collection.
+- Automated scaffold checks reject title-only statements, generic constraints and insights,
+  incomplete hint ladders, missing misconception coverage, and insufficient executable tests.
+- Known gap: several transfer groups have a single member; transfer selection falls back to
   `related` problems and same-topic transfer-role problems.
 
 ## Required human validation (still outstanding)
@@ -24,4 +27,4 @@
 
 | Problem | Reviewer | Corrections | Status |
 | --- | --- | --- | --- |
-| (all 32) | — | — | development |
+| (all 86) | — | — | development |

@@ -1,7 +1,7 @@
 """MVP learning-outcome metrics (definitions and denominators in docs/metrics.md).
 
 These are descriptive, per-learner numbers for the local tool. They are not causal claims and
-should not be optimized against until the definitions are reviewed (Milestone 11 rule).
+should not be optimized against until the definitions are reviewed with real personal-use data.
 """
 
 from __future__ import annotations

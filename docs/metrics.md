@@ -3,7 +3,7 @@
 ## Learning outcomes (`GET /v1/learner/metrics`)
 
 Descriptive per-learner numbers. They are not causal claims; do not optimize for them until the
-definitions have been reviewed with real data (Milestone 11 rule).
+definitions have been reviewed with real personal-use data.
 
 | Metric | Definition | Denominator / notes |
 | --- | --- | --- |

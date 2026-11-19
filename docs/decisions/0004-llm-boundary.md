@@ -7,7 +7,7 @@
 
 Create explicit backend services for interviewing, grading, misconception detection, hint generation, and post-interview evaluation. Define versioned Pydantic output schemas and prompt metadata. Keep a narrow provider adapter so model selection can change without changing product routes or stored domain events.
 
-Use OpenAI as the initial backend provider. Select the exact model through the Milestone 4 evaluation harness, not by intuition. Store provider, model snapshot/alias, prompt version, schema version, latency, token use, and validation outcome for every material result.
+Use OpenAI as the initial backend provider. Keep model selection user-configurable and validate model changes against the structured-output test suite. Store provider, model snapshot/alias, prompt version, schema version, latency, token use, and validation outcome for every material result.
 
 ## Guardrails
 
@@ -26,8 +26,9 @@ Use OpenAI as the initial backend provider. Select the exact model through the M
   generated from Pydantic models (`app/llm/provider.py`), per-request auth, bounded retries with
   backoff for 429/5xx/timeouts, and schema-error feedback for malformed output. Exhausted retries
   raise `LLMUnavailable`; callers fall back and record `llm_fallback` events.
-- The model is configurable (`OPENAI_MODEL`, default `gpt-4.1-mini` as a placeholder). **No model
-  has been selected through the evaluation harness yet**; that remains a Gate 4/5 task.
+- The model is configurable (`OPENAI_MODEL`, default `gpt-4.1-mini`). The default is a practical
+  local-use starting point, not a claim that it is universally optimal; users can select any model
+  their provider key supports after testing the connection in Settings.
 - Every call is audited in `llm_calls` (task, provider, model, prompt id `<task>/<version>+<sha8>`,
   schema version, status, error code, latency, tokens, attempts), without content.
 - Prompts live in `packages/prompts/`; untrusted content is fenced; hidden tests and reference

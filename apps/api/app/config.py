@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     api_host: str = "127.0.0.1"
     api_port: int = Field(default=8000, ge=1, le=65535)
 
-    # Code execution (Milestone 3). Learner code only ever runs in the Docker sandbox.
+    # Learner code only ever runs in the Docker sandbox.
     execution_enabled: bool = True
     execution_backend: Literal["docker", "trusted-subprocess"] = "docker"
     sandbox_image: str = "reps-sandbox:dev"
@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     execution_job_ttl_s: int = Field(default=90, ge=10, le=3600)
     worker_concurrency: int = Field(default=2, ge=1, le=16)
 
-    # Feature flags (Milestone 11). All default on for the local single-user tool.
+    # Feature flags. All default on for the local single-user tool.
     feature_interviews: bool = True
     feature_semantic_evaluation: bool = True
     feature_scheduling: bool = True
@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     feature_solution_viewing: bool = True
     allow_unreviewed_content: bool = True
 
-    # LLM provider (Milestone 4+). Without a key, deterministic offline policies are used.
+    # Without a key, deterministic offline policies are used.
     llm_provider: Literal["openai", "gemini", "offline"] = "offline"
     openai_api_key: str | None = None
     openai_model: str = "gpt-4.1-mini"

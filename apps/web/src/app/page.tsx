@@ -1,12 +1,12 @@
-import { ArrowRight, BrainCircuit, Code2, Repeat2 } from "lucide-react";
+import { ArrowRight, BookOpen, BrainCircuit, Repeat2 } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 
 const steps = [
-  { icon: Code2, title: "Practice", text: "Work through a realistic technical interview." },
-  { icon: BrainCircuit, title: "Diagnose", text: "Turn mistakes and hints into capability-level evidence." },
-  { icon: Repeat2, title: "Revisit", text: "Train weak skills later, then prove transfer independently." },
+  { icon: BookOpen, title: "Capture", text: "Write cards or turn your own notes into drafts you approve." },
+  { icon: BrainCircuit, title: "Practice", text: "Study any course or rehearse a realistic coding interview." },
+  { icon: Repeat2, title: "Remember", text: "Review each idea when your recall is likely to fade." },
 ];
 
 export default function Home() {
@@ -14,16 +14,16 @@ export default function Home() {
     <main className="mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-8 sm:px-10">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xl font-bold"><span className="grid size-9 place-items-center rounded-xl bg-green-800 text-white">R</span>Reps</div>
-        <Button asChild variant="ghost"><Link href="/sign-in">Sign in</Link></Button>
+        <Button asChild variant="ghost"><Link href="/sign-in">Continue locally</Link></Button>
       </header>
       <section className="grid flex-1 items-center gap-12 py-20 lg:grid-cols-[1.15fr_0.85fr]">
         <div>
-          <p className="mb-5 text-sm font-bold uppercase tracking-[0.2em] text-green-800">Practice that remembers</p>
-          <h1 className="max-w-3xl text-5xl font-bold leading-[1.02] tracking-[-0.045em] sm:text-7xl">Turn interview mistakes into durable skill.</h1>
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-[var(--muted)]">Reps observes how you reason, finds the capability behind each struggle, and schedules the right follow-up until you can solve an unseen problem on your own.</p>
+          <p className="mb-5 text-sm font-bold uppercase tracking-[0.2em] text-green-800">Study that remembers how you learn</p>
+          <h1 className="max-w-3xl text-5xl font-bold leading-[1.02] tracking-[-0.045em] sm:text-7xl">Build durable knowledge, not a pile of cards.</h1>
+          <p className="mt-7 max-w-2xl text-lg leading-8 text-[var(--muted)]">Reps combines source-grounded AI card drafting, adaptive spaced repetition, and a complete coding-interview coach in one private learning system.</p>
           <div className="mt-9 flex flex-wrap gap-3">
-            <Button asChild><Link href="/dashboard">Open product shell <ArrowRight aria-hidden className="ml-2" size={17} /></Link></Button>
-            <Button asChild variant="secondary"><Link href="/problems">Browse problems</Link></Button>
+            <Button asChild><Link href="/study">Open study workspace <ArrowRight aria-hidden className="ml-2" size={17} /></Link></Button>
+            <Button asChild variant="secondary"><Link href="/problems">Practice Blind 75</Link></Button>
           </div>
         </div>
         <div className="rounded-3xl border bg-white p-5 shadow-[0_24px_80px_rgba(20,50,30,0.10)] sm:p-8">

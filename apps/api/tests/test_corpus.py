@@ -32,7 +32,7 @@ def test_repository_corpus_passes_lint() -> None:
     assert report.errors == []
 
 
-def test_corpus_meets_milestone_two_size_and_coverage() -> None:
+def test_corpus_meets_size_and_capability_coverage_contract() -> None:
     corpus = get_corpus()
     report = coverage(corpus)
     assert report["problems"] >= 25
@@ -59,6 +59,21 @@ def test_corpus_meets_milestone_two_size_and_coverage() -> None:
         assert report["by_topic"][topic] >= 2, topic
     for problem in corpus.problems.values():
         assert problem.definition.wrong_solutions, problem.definition.slug
+
+
+def test_repository_corpus_has_no_scaffold_content() -> None:
+    generic_constraint = "Input size is within practical interview limits."
+    generic_insight = "Maintain exactly the state needed to extend a correct partial solution."
+    for problem in get_corpus().problems.values():
+        definition = problem.definition
+        slug = definition.slug
+        assert definition.statement.strip() != definition.title.strip(), slug
+        assert generic_constraint not in definition.constraints, slug
+        assert definition.key_insight != generic_insight, slug
+        assert len(definition.hints) >= 5, slug
+        assert definition.common_mistakes, slug
+        assert len(problem.visible_tests) >= 1, slug
+        assert len(problem.hidden_tests) >= 2, slug
 
 
 def test_schema_rejects_unbounded_timeouts_and_missing_hints() -> None:
