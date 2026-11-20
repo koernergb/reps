@@ -10,6 +10,7 @@ const base = {
   providers: {
     openai: { has_key: false, key_hint: null, model: "gpt-4.1-mini", env_key_present: false },
     gemini: { has_key: false, key_hint: null, model: "gemini-2.5-flash", env_key_present: false },
+    groq: { has_key: false, key_hint: null, model: "openai/gpt-oss-20b", env_key_present: false },
   },
   storage_note: "Keys are stored locally.",
 };

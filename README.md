@@ -70,15 +70,17 @@ ports are taken, set `API_PORT`, `WEB_ORIGIN`, and `NEXT_PUBLIC_API_URL` in `.en
 ### AI provider
 
 By default the interviewer, answer grader, and evaluator are deterministic built-in policies, and
-nothing leaves your machine. To use a model, open **Settings → AI provider**, paste an OpenAI or
-Google Gemini API key, pick a model (*Load models* lists what your key can use), press *Test
-connection*, and select the provider. Keys are stored in the local database, never shown again,
-never logged, and excluded from exports. You can instead configure `LLM_PROVIDER`,
-`OPENAI_API_KEY`/`OPENAI_MODEL`, or `GEMINI_API_KEY`/`GEMINI_MODEL` in `.env`; a choice made in
-Settings takes precedence. What is sent is listed on the `/privacy` page.
+nothing leaves your machine. To use a model, open **Settings → AI provider**, paste an OpenAI,
+Google Gemini, or Groq API key, pick a model (*Load models* lists what your key can use), press
+*Test connection*, and select the provider. Keys are stored in the local database, never shown
+again, never logged, and excluded from exports. You can instead configure `LLM_PROVIDER`,
+`OPENAI_API_KEY`/`OPENAI_MODEL`, `GEMINI_API_KEY`/`GEMINI_MODEL`, or
+`GROQ_API_KEY`/`GROQ_MODEL` in `.env`; a choice made in Settings takes precedence. What is sent is
+listed on the `/privacy` page.
 
-Gemini is called through Google's OpenAI-compatible endpoint with a simplified JSON schema; every
-reply is still validated, and failures fall back to the built-in policies.
+Gemini is called through Google's OpenAI-compatible endpoint with a simplified JSON schema; Groq
+uses its OpenAI-compatible Chat Completions API. Every reply is still validated, and failures fall
+back to the built-in policies.
 
 ## Using Reps
 

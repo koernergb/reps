@@ -126,11 +126,23 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
       ...init,
       headers: init?.body ? { "Content-Type": "application/json", ...init.headers } : init?.headers,
     });
-  } catch {
-    throw new ApiRequestError(0, { code: "api_unreachable", message: "Cannot reach the Reps API. Start it with `make dev`.", request_id: "none" });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new ApiRequestError(0, {
+        code: "request_timeout",
+        message: "The request timed out. Try again, or pick a different model if the provider is overloaded.",
+        request_id: "none",
+      });
+    }
+    throw new ApiRequestError(0, { code: "api_unreachable", message: "Cannot reach the Reps API. Start it with `make start`.", request_id: "none" });
   }
   if (!response.ok) throw await parseError(response);
-  return response.json() as Promise<T>;
+  if (response.status === 204 || response.headers.get("content-length") === "0") {
+    return undefined as T;
+  }
+  const text = await response.text();
+  if (!text) return undefined as T;
+  return JSON.parse(text) as T;
 }
 
 export function errorMessage(error: unknown, fallback: string): string {
@@ -215,6 +227,9 @@ export function createStudyCard(courseId: string, body: { concept_id: string; ca
 }
 export function updateStudyCard(id: string, body: Partial<Pick<StudyCard, "prompt" | "answer" | "status" | "card_type" | "tags" | "accepted_answers">>): Promise<StudyCard> {
   return apiRequest(`/v1/study/cards/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(body) });
+}
+export async function deleteStudyCard(id: string): Promise<void> {
+  await apiRequest(`/v1/study/cards/${encodeURIComponent(id)}`, { method: "DELETE" });
 }
 export function createStudySource(courseId: string, body: { title: string; body: string }): Promise<{ id: string; title: string }> {
   return apiRequest(`/v1/study/courses/${encodeURIComponent(courseId)}/sources`, { method: "POST", body: JSON.stringify(body) });
@@ -553,7 +568,7 @@ export function updateSettings(body: Partial<LearnerSettings>): Promise<LearnerS
 
 // --- AI provider settings -------------------------------------------------------------
 
-export type LLMProviderName = "openai" | "gemini";
+export type LLMProviderName = "openai" | "gemini" | "groq";
 export type LLMChoice = "env" | "offline" | LLMProviderName;
 export type LLMSettings = {
   active: LLMChoice;
@@ -571,14 +586,19 @@ export function updateLLMSettings(body: {
   active?: LLMChoice;
   openai?: { api_key?: string; clear_key?: boolean; model?: string };
   gemini?: { api_key?: string; clear_key?: boolean; model?: string };
+  groq?: { api_key?: string; clear_key?: boolean; model?: string };
 }): Promise<LLMSettings> {
   return apiRequest("/v1/settings/llm", { method: "PUT", body: JSON.stringify(body) });
 }
 
 export function listLLMModels(provider: LLMProviderName): Promise<{ provider: string; models: string[] }> {
-  return apiRequest(`/v1/settings/llm/${provider}/models`);
+  return apiRequest(`/v1/settings/llm/${provider}/models`, { signal: AbortSignal.timeout(20_000) });
 }
 
 export function testLLM(provider: LLMProviderName): Promise<{ ok: boolean; model: string; latency_ms?: number; error_code: string | null; message: string }> {
-  return apiRequest("/v1/settings/llm/test", { method: "POST", body: JSON.stringify({ provider }) });
+  return apiRequest("/v1/settings/llm/test", {
+    method: "POST",
+    body: JSON.stringify({ provider }),
+    signal: AbortSignal.timeout(20_000),
+  });
 }

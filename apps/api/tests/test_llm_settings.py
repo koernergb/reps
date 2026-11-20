@@ -13,6 +13,7 @@ from app.evaluation.schemas import SemanticEvaluation
 from app.llm import provider as provider_module
 from app.llm.provider import (
     GeminiProvider,
+    GroqProvider,
     OpenAIProvider,
     _parse_json,
     build_provider,
@@ -116,8 +117,18 @@ def mock_gemini(monkeypatch: pytest.MonkeyPatch, handler: Any) -> list[httpx.Req
 
     original = provider_module.make_provider
 
-    def factory(provider: str, api_key: str, model: str | None, settings: Any = None) -> Any:
-        client = original(provider, api_key, model, settings)
+    def factory(
+        provider: str,
+        api_key: str,
+        model: str | None,
+        settings: Any = None,
+        *,
+        timeout_s: float | None = None,
+        max_retries: int | None = None,
+    ) -> Any:
+        client = original(
+            provider, api_key, model, settings, timeout_s=timeout_s, max_retries=max_retries
+        )
         client._client = httpx.Client(
             transport=httpx.MockTransport(wrapped), base_url="https://gemini.test"
         )
@@ -179,6 +190,50 @@ def test_connection_test_reports_provider_errors(
     assert result["ok"] is False and result["error_code"] == "provider_rejected"
     assert "API key not valid" in result["message"]
     assert client.get("/v1/settings/llm/openai/models").status_code == 422
+
+
+def test_groq_provider_can_be_selected(client: TestClient) -> None:
+    key = "gsk_test-groq-key-not-a-secret-wxyz"
+    body = put(
+        client, {"groq": {"api_key": key, "model": "openai/gpt-oss-20b"}, "active": "groq"}
+    ).json()
+    assert body["active"] == "groq" and body["effective"] == "groq"
+    assert body["providers"]["groq"] == {
+        "has_key": True,
+        "key_hint": "…wxyz",
+        "model": "openai/gpt-oss-20b",
+        "env_key_present": False,
+    }
+    assert key not in str(body)
+    active = build_provider()
+    assert isinstance(active, GroqProvider) and active.model == "openai/gpt-oss-20b"
+
+
+def test_connection_test_surfaces_overload_without_long_retries(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    put(client, {"gemini": {"api_key": GEMINI_KEY, "model": "gemini-3.8-flash"}})
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        return httpx.Response(
+            503,
+            json=[
+                {
+                    "error": {
+                        "message": "This model is currently experiencing high demand.",
+                        "status": "UNAVAILABLE",
+                    }
+                }
+            ],
+        )
+
+    mock_gemini(monkeypatch, handler)
+    result = client.post("/v1/settings/llm/test", json={"provider": "gemini"}).json()
+    assert result["ok"] is False and result["error_code"] == "provider_error"
+    assert "high demand" in result["message"]
+    assert calls["n"] == 1
 
 
 def test_gemini_schema_is_self_contained() -> None:

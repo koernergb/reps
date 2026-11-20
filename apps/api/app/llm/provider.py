@@ -179,6 +179,7 @@ class OpenAICompatibleProvider:
         started = time.perf_counter()
         input_tokens = output_tokens = 0
         last_code = "unknown"
+        last_detail = "The model did not return a usable response."
         for attempt in range(1, self.max_retries + 2):
             try:
                 response = self._client.post(
@@ -193,12 +194,15 @@ class OpenAICompatibleProvider:
                 )
             except httpx.TimeoutException:
                 last_code = "timeout"
+                last_detail = f"Timed out waiting for {self.model}."
                 continue
             except httpx.HTTPError:
                 last_code = "network_error"
+                last_detail = "Could not reach the provider."
                 continue
             if response.status_code == 429 or response.status_code >= 500:
                 last_code = "rate_limited" if response.status_code == 429 else "provider_error"
+                last_detail = _provider_error(response)
                 time.sleep(min(2.0, 0.25 * 2**attempt))
                 continue
             if response.status_code >= 400:
@@ -210,11 +214,13 @@ class OpenAICompatibleProvider:
             message = body["choices"][0]["message"]
             if message.get("refusal"):
                 last_code = "refusal"
+                last_detail = "The model refused to answer."
                 continue
             try:
                 value = schema.model_validate(_parse_json(message.get("content") or ""))
             except (json.JSONDecodeError, ValidationError) as exc:
                 last_code = "malformed_output"
+                last_detail = f"Malformed structured output: {str(exc)[:200]}"
                 messages = [
                     *messages[:2],
                     {"role": "assistant", "content": str(message.get("content"))[:4000]},
@@ -234,9 +240,7 @@ class OpenAICompatibleProvider:
                 output_tokens=output_tokens,
                 attempts=attempt,
             )
-        raise LLMUnavailable(
-            last_code, "The model did not return a usable response.", attempts=self.max_retries + 1
-        )
+        raise LLMUnavailable(last_code, last_detail, attempts=self.max_retries + 1)
 
 
 class OpenAIProvider(OpenAICompatibleProvider):
@@ -253,6 +257,12 @@ class GeminiProvider(OpenAICompatibleProvider):
             "type": "json_schema",
             "json_schema": {"name": schema.__name__, "schema": gemini_json_schema(schema)},
         }
+
+
+class GroqProvider(OpenAICompatibleProvider):
+    """Groq through its OpenAI-compatible Chat Completions API."""
+
+    name = "groq"
 
 
 @dataclass(frozen=True)
@@ -274,10 +284,19 @@ def set_runtime_choice(choice: ProviderChoice | None) -> None:
 
 
 def make_provider(
-    provider: str, api_key: str, model: str | None, settings: Settings | None = None
+    provider: str,
+    api_key: str,
+    model: str | None,
+    settings: Settings | None = None,
+    *,
+    timeout_s: float | None = None,
+    max_retries: int | None = None,
 ) -> OpenAICompatibleProvider:
     settings = settings or get_settings()
-    common = {"timeout_s": settings.llm_timeout_s, "max_retries": settings.llm_max_retries}
+    common = {
+        "timeout_s": settings.llm_timeout_s if timeout_s is None else timeout_s,
+        "max_retries": settings.llm_max_retries if max_retries is None else max_retries,
+    }
     if provider == "openai":
         return OpenAIProvider(
             api_key=api_key,
@@ -290,6 +309,13 @@ def make_provider(
             api_key=api_key,
             model=model or settings.gemini_model,
             base_url=settings.gemini_base_url,
+            **common,  # type: ignore[arg-type]
+        )
+    if provider == "groq":
+        return GroqProvider(
+            api_key=api_key,
+            model=model or settings.groq_model,
+            base_url=settings.groq_base_url,
             **common,  # type: ignore[arg-type]
         )
     raise ValueError(f"unknown provider {provider}")
@@ -310,4 +336,6 @@ def build_provider(settings: Settings | None = None) -> LLMProvider | None:
         return make_provider("openai", settings.openai_api_key, settings.openai_model, settings)
     if settings.llm_provider == "gemini" and settings.gemini_api_key:
         return make_provider("gemini", settings.gemini_api_key, settings.gemini_model, settings)
+    if settings.llm_provider == "groq" and settings.groq_api_key:
+        return make_provider("groq", settings.groq_api_key, settings.groq_model, settings)
     return None

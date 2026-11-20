@@ -10,6 +10,7 @@ import { cn } from "@/lib/cn";
 const PROVIDERS: Record<LLMProviderName, { label: string; keyUrl: string; keyLabel: string }> = {
   openai: { label: "OpenAI", keyUrl: "https://platform.openai.com/api-keys", keyLabel: "OpenAI API key" },
   gemini: { label: "Google Gemini", keyUrl: "https://aistudio.google.com/apikey", keyLabel: "Gemini API key" },
+  groq: { label: "Groq", keyUrl: "https://console.groq.com/keys", keyLabel: "Groq API key" },
 };
 
 type TestResult = Awaited<ReturnType<typeof testLLM>>;
@@ -120,6 +121,7 @@ export function AIProviderSettings() {
     { value: "offline", label: "Offline", detail: "Built-in rule-based interviewer and grader. Nothing leaves your machine." },
     { value: "openai", label: "OpenAI", detail: settings.providers.openai.has_key ? settings.providers.openai.model : "Add a key below first", disabled: !settings.providers.openai.has_key },
     { value: "gemini", label: "Google Gemini", detail: settings.providers.gemini.has_key ? settings.providers.gemini.model : "Add a key below first", disabled: !settings.providers.gemini.has_key },
+    { value: "groq", label: "Groq", detail: settings.providers.groq.has_key ? settings.providers.groq.model : "Free-tier friendly; add a key below first", disabled: !settings.providers.groq.has_key },
     { value: "env", label: "Use .env", detail: `Follow LLM_PROVIDER in .env (currently ${settings.env_provider}).` },
   ];
   return (

@@ -37,6 +37,25 @@ def test_course_card_and_review_flow(client: TestClient) -> None:
     assert client.get("/v1/study/queue").json()["count"] == 0
 
 
+def test_discard_draft_card(client: TestClient) -> None:
+    course_id, concept_id = create_course(client)
+    card = client.post(
+        f"/v1/study/courses/{course_id}/cards",
+        json={
+            "concept_id": concept_id,
+            "card_type": "basic",
+            "prompt": "Temporary draft?",
+            "answer": "Yes",
+            "status": "draft",
+        },
+    )
+    assert card.status_code == 201
+    card_id = card.json()["id"]
+    assert client.delete(f"/v1/study/cards/{card_id}").status_code == 204
+    detail = client.get(f"/v1/study/courses/{course_id}").json()
+    assert all(item["id"] != card_id for item in detail["cards"])
+
+
 def test_generated_cards_require_a_provider(client: TestClient) -> None:
     course_id, _ = create_course(client)
     source = client.post(

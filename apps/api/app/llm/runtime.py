@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app.llm.provider import ProviderChoice, set_runtime_choice
 from app.models import LLMCredential, User
 
-PROVIDERS = ("openai", "gemini")
+PROVIDERS = ("openai", "gemini", "groq")
 CHOICES = ("env", "offline", *PROVIDERS)
 
 

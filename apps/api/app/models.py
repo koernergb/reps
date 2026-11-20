@@ -817,5 +817,7 @@ class LLMCredential(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     __table_args__ = (
-        CheckConstraint("provider IN ('openai', 'gemini')", name="ck_llm_credentials_provider"),
+        CheckConstraint(
+            "provider IN ('openai', 'gemini', 'groq')", name="ck_llm_credentials_provider"
+        ),
     )

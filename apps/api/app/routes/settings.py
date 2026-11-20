@@ -55,8 +55,9 @@ def update(body: SettingsUpdate, db: SessionDependency, user: UserDependency) ->
 
 # --- AI provider ---------------------------------------------------------------------------
 
-ProviderName = Literal["openai", "gemini"]
-LABELS = {"openai": "an OpenAI", "gemini": "a Gemini"}
+ProviderName = Literal["openai", "gemini", "groq"]
+LABELS = {"openai": "an OpenAI", "gemini": "a Gemini", "groq": "a Groq"}
+GROQ_SKIP_MODELS = ("whisper", "tts", "guard", "playai", "orpheus")
 
 
 class CredentialUpdate(BaseModel):
@@ -66,9 +67,10 @@ class CredentialUpdate(BaseModel):
 
 
 class LLMSettingsUpdate(BaseModel):
-    active: Literal["env", "offline", "openai", "gemini"] | None = None
+    active: Literal["env", "offline", "openai", "gemini", "groq"] | None = None
     openai: CredentialUpdate | None = None
     gemini: CredentialUpdate | None = None
+    groq: CredentialUpdate | None = None
 
 
 class TestRequest(BaseModel):
@@ -86,8 +88,16 @@ def key_hint(key: str | None) -> str | None:
 def llm_view(db: SessionDependency, user: UserDependency) -> dict[str, Any]:
     settings = get_app_settings()
     stored = runtime.credentials(db, user.id)
-    env_keys = {"openai": settings.openai_api_key, "gemini": settings.gemini_api_key}
-    env_models = {"openai": settings.openai_model, "gemini": settings.gemini_model}
+    env_keys = {
+        "openai": settings.openai_api_key,
+        "gemini": settings.gemini_api_key,
+        "groq": settings.groq_api_key,
+    }
+    env_models = {
+        "openai": settings.openai_model,
+        "gemini": settings.gemini_model,
+        "groq": settings.groq_model,
+    }
     active = runtime.active_choice(user)
     effective = settings.llm_provider if active == "env" else active
     providers = {}
@@ -146,33 +156,56 @@ def update_llm_settings(
     return llm_view(db, user)
 
 
-def saved_provider(db: SessionDependency, user_id: str, provider: str) -> Any:
+def saved_provider(
+    db: SessionDependency,
+    user_id: str,
+    provider: str,
+    *,
+    timeout_s: float | None = None,
+    max_retries: int | None = None,
+) -> Any:
     row = runtime.credentials(db, user_id).get(provider)
     if not (row and row.api_key):
         raise ApiError(422, "api_key_required", f"Save {LABELS[provider]} API key first.")
-    return make_provider(provider, row.api_key, row.model)
+    return make_provider(
+        provider,
+        row.api_key,
+        row.model,
+        timeout_s=timeout_s,
+        max_retries=max_retries,
+    )
 
 
 @router.get("/llm/{provider}/models")
 def list_llm_models(
     provider: ProviderName, db: SessionDependency, user: UserDependency
 ) -> dict[str, Any]:
-    client = saved_provider(db, user.id, provider)
+    client = saved_provider(db, user.id, provider, timeout_s=15, max_retries=0)
     try:
         models = client.list_models()
     except LLMUnavailable as exc:
         raise ApiError(502, exc.code, f"Could not list models: {exc}") from exc
     if provider == "openai":
         models = [item for item in models if item.startswith(("gpt-", "o", "chatgpt"))]
-    else:
+    elif provider == "gemini":
         models = [item for item in models if item.startswith("gemini")]
+    else:
+        models = [
+            item
+            for item in models
+            if not any(skip in item.lower() for skip in GROQ_SKIP_MODELS)
+        ]
     return {"provider": provider, "models": models}
 
 
 @router.post("/llm/test")
 def test_llm(body: TestRequest, db: SessionDependency, user: UserDependency) -> dict[str, Any]:
-    """Send one tiny structured request with the saved key and model."""
-    client = saved_provider(db, user.id, body.provider)
+    """Send one tiny structured request with the saved key and model.
+
+    Uses a short timeout and no retries so Settings fails fast with the provider's message
+    instead of appearing to hang through the normal interview retry budget.
+    """
+    client = saved_provider(db, user.id, body.provider, timeout_s=12, max_retries=0)
     try:
         result = client.generate(
             system="You are a connectivity check. Reply with JSON only.",

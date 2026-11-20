@@ -349,6 +349,14 @@ def update_card(
     return card_view(card)
 
 
+@router.delete("/cards/{card_id}", status_code=204)
+def delete_card(card_id: str, db: SessionDependency, user: UserDependency) -> Response:
+    card = owned(db, StudyCard, card_id, user.id)
+    db.delete(card)
+    db.commit()
+    return Response(status_code=204)
+
+
 @router.post("/courses/{course_id}/sources", status_code=201)
 def add_source(
     course_id: str, body: SourceInput, db: SessionDependency, user: UserDependency

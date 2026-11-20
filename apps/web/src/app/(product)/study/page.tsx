@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, Check, FileText, LoaderCircle, Plus, Sparkles } from "lucide-react";
+import { BookOpen, Check, FileText, LoaderCircle, Plus, Sparkles, X } from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 
@@ -9,6 +9,7 @@ import {
   createStudyCard,
   createStudyCourse,
   createStudySource,
+  deleteStudyCard,
   errorMessage,
   generateStudyCards,
   getStudyCourse,
@@ -62,7 +63,8 @@ export default function StudyPage() {
   async function addCard(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!course) return;
-    const data = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const data = new FormData(form);
     setBusy(true);
     try {
       await createStudyCard(course.id, {
@@ -72,7 +74,7 @@ export default function StudyPage() {
         answer: String(data.get("answer")),
         tags: String(data.get("tags")).split(",").map((tag) => tag.trim()).filter(Boolean),
       });
-      event.currentTarget.reset();
+      form.reset();
       setCourse(await getStudyCourse(course.id));
       await loadCourses();
     } catch (reason) { setError(errorMessage(reason, "Could not create the card.")); } finally { setBusy(false); }
@@ -81,22 +83,38 @@ export default function StudyPage() {
   async function generate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!course) return;
-    const data = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const data = new FormData(form);
     setBusy(true);
     setError(null);
     try {
       const source = await createStudySource(course.id, { title: String(data.get("title")), body: String(data.get("notes")) });
       await generateStudyCards(source.id);
       setCourse(await getStudyCourse(course.id));
-      event.currentTarget.reset();
+      form.reset();
     } catch (reason) { setError(errorMessage(reason, "Could not generate cards.")); } finally { setBusy(false); }
   }
 
   async function activate(card: StudyCard) {
     setBusy(true);
+    setError(null);
     try { await updateStudyCard(card.id, { status: "active" }); if (course) setCourse(await getStudyCourse(course.id)); }
     catch (reason) { setError(errorMessage(reason, "Could not activate that card.")); }
     finally { setBusy(false); }
+  }
+
+  async function discard(card: StudyCard) {
+    setBusy(true);
+    setError(null);
+    try {
+      await deleteStudyCard(card.id);
+      if (course) setCourse(await getStudyCourse(course.id));
+      await loadCourses();
+    } catch (reason) {
+      setError(errorMessage(reason, "Could not discard that draft."));
+    } finally {
+      setBusy(false);
+    }
   }
 
   if (loading) return <p className="flex items-center gap-2 text-[var(--muted)]"><LoaderCircle className="animate-spin" size={18} /> Loading your study library…</p>;
@@ -136,14 +154,14 @@ export default function StudyPage() {
               {courses.map((item) => <button className={`w-full rounded-xl border p-4 text-left ${course?.id === item.id ? "border-green-700 bg-green-50" : "bg-white hover:border-green-300"}`} key={item.id} onClick={() => void selectCourse(item.id)} type="button"><span className="font-bold">{item.name}</span><span className="mt-1 block text-xs text-[var(--muted)]">{item.due_count} due · {item.card_count} cards</span></button>)}
             </div>
           </aside>
-          {course ? <CourseWorkspace busy={busy} course={course} onActivate={activate} onAddCard={addCard} onGenerate={generate} /> : null}
+          {course ? <CourseWorkspace busy={busy} course={course} onActivate={activate} onAddCard={addCard} onDiscard={discard} onGenerate={generate} /> : null}
         </div>
       )}
     </div>
   );
 }
 
-function CourseWorkspace({ course, busy, onAddCard, onGenerate, onActivate }: { course: StudyCourseDetail; busy: boolean; onAddCard: (event: FormEvent<HTMLFormElement>) => Promise<void>; onGenerate: (event: FormEvent<HTMLFormElement>) => Promise<void>; onActivate: (card: StudyCard) => Promise<void> }) {
+function CourseWorkspace({ course, busy, onAddCard, onGenerate, onActivate, onDiscard }: { course: StudyCourseDetail; busy: boolean; onAddCard: (event: FormEvent<HTMLFormElement>) => Promise<void>; onGenerate: (event: FormEvent<HTMLFormElement>) => Promise<void>; onActivate: (card: StudyCard) => Promise<void>; onDiscard: (card: StudyCard) => Promise<void> }) {
   const drafts = course.cards.filter((card) => card.status === "draft");
   return (
     <section className="min-w-0">
@@ -166,7 +184,30 @@ function CourseWorkspace({ course, busy, onAddCard, onGenerate, onActivate }: { 
           <div className="mt-4 grid gap-3"><input aria-label="Source title" className={inputClass} name="title" placeholder="Lecture 7 — Virtual memory" required /><textarea aria-label="Source notes" className={inputClass} name="notes" placeholder="Paste lecture notes, a study guide, or your own summary…" required rows={8} /><Button disabled={busy} type="submit">{busy ? <LoaderCircle className="animate-spin" size={16} /> : <Sparkles size={16} />} Generate card drafts</Button></div>
         </form>
       </div>
-      {drafts.length ? <section className="mt-6"><h3 className="flex items-center gap-2 text-lg font-bold"><FileText size={18} /> Drafts awaiting approval ({drafts.length})</h3><div className="mt-3 grid gap-3">{drafts.map((card) => <article className="rounded-xl border border-amber-200 bg-amber-50/60 p-4" key={card.id}><p className="text-xs font-bold uppercase tracking-wider text-amber-900">{card.concept} · {card.card_type}</p><p className="mt-2 font-semibold">{card.prompt}</p><p className="mt-2 text-sm text-[var(--muted)]">{card.answer}</p><Button className="mt-3" disabled={busy} onClick={() => void onActivate(card)} variant="secondary"><Check size={15} /> Approve and schedule</Button></article>)}</div></section> : null}
+      {drafts.length ? (
+        <section className="mt-6">
+          <h3 className="flex items-center gap-2 text-lg font-bold"><FileText size={18} /> Drafts awaiting approval ({drafts.length})</h3>
+          <div className="mt-3 grid gap-3">
+            {drafts.map((card) => (
+              <article className="relative rounded-xl border border-amber-200 bg-amber-50/60 p-4 pr-12" key={card.id}>
+                <button
+                  aria-label="Discard draft"
+                  className="absolute right-3 top-3 rounded-lg p-1.5 text-amber-900/70 hover:bg-amber-100 hover:text-amber-950 disabled:opacity-50"
+                  disabled={busy}
+                  onClick={() => void onDiscard(card)}
+                  type="button"
+                >
+                  <X size={16} />
+                </button>
+                <p className="text-xs font-bold uppercase tracking-wider text-amber-900">{card.concept} · {card.card_type}</p>
+                <p className="mt-2 font-semibold">{card.prompt}</p>
+                <p className="mt-2 text-sm text-[var(--muted)]">{card.answer}</p>
+                <Button className="mt-3" disabled={busy} onClick={() => void onActivate(card)} variant="secondary"><Check size={15} /> Approve and schedule</Button>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
       <section className="mt-8"><h3 className="text-lg font-bold">Card library ({course.cards.length})</h3>{course.cards.length === 0 ? <p className="mt-2 text-[var(--muted)]">No cards yet. Make one or generate drafts from notes.</p> : <div className="mt-3 overflow-hidden rounded-xl border bg-white"><div className="divide-y">{course.cards.filter((card) => card.status !== "draft").map((card) => <div className="flex items-start justify-between gap-4 p-4" key={card.id}><div><p className="font-semibold">{card.prompt}</p><p className="mt-1 text-sm text-[var(--muted)]">{card.concept} · {card.card_type} · reviewed {card.review_count}×</p></div><span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-semibold">{card.status}</span></div>)}</div></div>}</section>
     </section>
   );
