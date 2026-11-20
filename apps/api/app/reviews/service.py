@@ -55,6 +55,15 @@ def as_utc(value: datetime) -> datetime:
     return value if value.tzinfo else value.replace(tzinfo=UTC)
 
 
+# PostgreSQL INTEGER max; long-paused attempts must not overflow on submit.
+_MAX_LATENCY_MS = 2_147_483_647
+
+
+def elapsed_ms(started: datetime, ended: datetime | None = None) -> int:
+    end = ended or utcnow()
+    return max(0, min(_MAX_LATENCY_MS, round((end - as_utc(started)).total_seconds() * 1000)))
+
+
 def owned_task(db: Session, user: User, task_id: str) -> ReviewTask:
     task = db.get(ReviewTask, task_id)
     if task is None or task.user_id != user.id:
@@ -337,7 +346,7 @@ def answer(
     attempt.status = "submitted"
     attempt.correctness = graded.correctness
     attempt.confidence = confidence
-    attempt.latency_ms = round((now - as_utc(attempt.started_at)).total_seconds() * 1000)
+    attempt.latency_ms = elapsed_ms(attempt.started_at, now)
     if graded.recommended_action == "rebuild":
         attempt.mode = "rebuild"
     loaded = corpus_exercise(db.get(Exercise, attempt.exercise_id) if attempt.exercise_id else None)

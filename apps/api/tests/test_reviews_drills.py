@@ -17,10 +17,12 @@ from app.models import (
     Capability,
     CapabilityEvidence,
     Exercise,
+    ReviewAttempt,
     ReviewTask,
     User,
 )
 from app.reviews.grading import Rubric, rubric_grade
+from app.reviews.service import _MAX_LATENCY_MS
 from app.scheduling.scheduler import create_task
 
 
@@ -68,6 +70,29 @@ def test_rubric_grading() -> None:
     )
     assert rubric_grade(exact, " 0  0 2 2 ").correctness == 1.0
     assert rubric_grade(exact, "0 0 1 2").correctness == 0.0
+
+
+def test_answer_clamps_latency_for_long_paused_attempt(
+    client: TestClient, seeded_engine: Engine
+) -> None:
+    with Session(seeded_engine) as session:
+        task_id = make_task(session, "st-recall-when")
+    started = client.post(f"/v1/reviews/tasks/{task_id}/start", json={}).json()
+    with Session(seeded_engine) as session:
+        attempt = session.get(ReviewAttempt, started["attempt_id"])
+        assert attempt is not None
+        attempt.started_at = datetime.now(UTC) - timedelta(days=60)
+        session.commit()
+    result = client.post(
+        f"/v1/reviews/attempts/{started['attempt_id']}/answer",
+        json={"answer": "nested unmatched openers or next-greater needs", "confidence": 3},
+    )
+    assert result.status_code == 200, result.text
+    with Session(seeded_engine) as session:
+        attempt = session.get(ReviewAttempt, started["attempt_id"])
+        assert attempt is not None
+        assert attempt.status == "submitted"
+        assert attempt.latency_ms == _MAX_LATENCY_MS
 
 
 def test_text_review_retrieve_coach_and_rebuild(client: TestClient, seeded_engine: Engine) -> None:

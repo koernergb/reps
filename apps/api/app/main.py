@@ -86,18 +86,24 @@ def create_app(engine_factory: Callable[[], Engine] = create_database_engine) ->
         structlog.contextvars.clear_contextvars()
         structlog.contextvars.bind_contextvars(request_id=request_id)
         started = time.perf_counter()
-        status = 500
         try:
             response = await call_next(request)
-            status = response.status_code
-        finally:
+        except Exception:
             route = request.scope.get("route")
             request_metrics.record(
                 request.method,
                 getattr(route, "path", "unmatched"),
                 (time.perf_counter() - started) * 1000,
-                status,
+                500,
             )
+            raise
+        route = request.scope.get("route")
+        request_metrics.record(
+            request.method,
+            getattr(route, "path", "unmatched"),
+            (time.perf_counter() - started) * 1000,
+            response.status_code,
+        )
         response.headers["x-request-id"] = request_id
         return response
 
