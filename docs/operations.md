@@ -7,6 +7,7 @@ and recover it. Hosted operation needs the additional work listed at the end.
 
 | Process | Command | Notes |
 | --- | --- | --- |
+| Full local launch | `make start` | Docker Desktop if needed, Postgres, sandbox, migrate/seed, web+API+worker, opens browser |
 | Web | `pnpm dev:web` | Next.js on `:3000` |
 | API | `pnpm --filter @reps/api dev:api-only` | FastAPI on `API_PORT` (default 8000); never runs learner code |
 | Execution worker | `pnpm dev:worker` | Claims jobs, starts one Docker container per job |

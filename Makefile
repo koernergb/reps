@@ -1,8 +1,12 @@
-.PHONY: setup dev check services-up services-down db-migrate db-seed sandbox-build sandbox-test corpus-validate execution-off execution-on
+.PHONY: setup start dev check services-up services-down db-migrate db-seed sandbox-build sandbox-test corpus-validate execution-off execution-on
 
 setup:
 	pnpm install
 	cd apps/api && uv sync --all-groups
+
+# One-shot local launch: Docker, Postgres, sandbox, migrate/seed, web+API, browser.
+start:
+	./scripts/start-reps.sh
 
 dev:
 	pnpm dev

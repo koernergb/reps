@@ -50,13 +50,22 @@ make db-seed         # syncs the curated corpus into the database
 ## Run
 
 ```bash
+make start
+```
+
+That is the usual day-to-day command: it starts Docker Desktop if needed, brings up Postgres,
+builds the sandbox image when missing, migrates and syncs the corpus, starts the web app + API +
+execution worker, and opens the browser. Ctrl+C stops the app processes (Postgres keeps running).
+
+Equivalent: `./scripts/start-reps.sh`. For just the app processes when Docker is already up:
+
+```bash
 make dev
 ```
 
-This starts the web app (http://localhost:3000), the API (http://127.0.0.1:8000, docs at
-`/docs`), and the execution worker. If those ports are taken, set `API_PORT`, `WEB_ORIGIN`, and
-`NEXT_PUBLIC_API_URL` in `.env` (for example `API_PORT=8100` and
-`NEXT_PUBLIC_API_URL=http://127.0.0.1:8100`).
+Defaults: web at http://localhost:3000, API at http://127.0.0.1:8000 (docs at `/docs`). If those
+ports are taken, set `API_PORT`, `WEB_ORIGIN`, and `NEXT_PUBLIC_API_URL` in `.env` (for example
+`API_PORT=8100` and `NEXT_PUBLIC_API_URL=http://127.0.0.1:8100`).
 
 ### AI provider
 
