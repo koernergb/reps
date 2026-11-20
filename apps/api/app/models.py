@@ -706,14 +706,14 @@ class StudyReview(Base):
         ForeignKey("review_tasks.id", ondelete="SET NULL"), index=True
     )
     answer: Mapped[str] = mapped_column(Text, nullable=False, default="")
-    rating: Mapped[str] = mapped_column(String(10), nullable=False)
+    confidence: Mapped[int] = mapped_column(Integer, nullable=False)
     correctness: Mapped[float] = mapped_column(Float, nullable=False)
     interval_days: Mapped[float] = mapped_column(Float, nullable=False)
     reviewed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     __table_args__ = (
         CheckConstraint(
-            "rating IN ('again', 'hard', 'good', 'easy')", name="ck_study_reviews_rating"
+            "confidence >= 0 AND confidence <= 5", name="ck_study_reviews_confidence"
         ),
     )
 

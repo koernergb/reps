@@ -13,6 +13,7 @@ import {
   errorMessage,
   generateStudyCards,
   getStudyCourse,
+  importStudyCsv,
   listStudyCourses,
   updateStudyCard,
   type StudyCard,
@@ -95,6 +96,26 @@ export default function StudyPage() {
     } catch (reason) { setError(errorMessage(reason, "Could not generate cards.")); } finally { setBusy(false); }
   }
 
+  async function importCsv(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!course) return;
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await importStudyCsv(course.id, { csv_text: String(data.get("csv_text")) });
+      setCourse(await getStudyCourse(course.id));
+      await loadCourses();
+      form.reset();
+      if (result.imported === 0) setError("No cards imported. Check that each row has front and back columns.");
+    } catch (reason) {
+      setError(errorMessage(reason, "Could not import that CSV."));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function activate(card: StudyCard) {
     setBusy(true);
     setError(null);
@@ -103,7 +124,7 @@ export default function StudyPage() {
     finally { setBusy(false); }
   }
 
-  async function discard(card: StudyCard) {
+  async function removeCard(card: StudyCard) {
     setBusy(true);
     setError(null);
     try {
@@ -111,7 +132,24 @@ export default function StudyPage() {
       if (course) setCourse(await getStudyCourse(course.id));
       await loadCourses();
     } catch (reason) {
-      setError(errorMessage(reason, "Could not discard that draft."));
+      setError(errorMessage(reason, "Could not delete that card."));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeTagged(tag: string) {
+    if (!course) return;
+    const matches = course.cards.filter((card) => card.tags.includes(tag));
+    if (matches.length === 0) return;
+    setBusy(true);
+    setError(null);
+    try {
+      for (const card of matches) await deleteStudyCard(card.id);
+      setCourse(await getStudyCourse(course.id));
+      await loadCourses();
+    } catch (reason) {
+      setError(errorMessage(reason, `Could not delete cards tagged ${tag}.`));
     } finally {
       setBusy(false);
     }
@@ -154,15 +192,17 @@ export default function StudyPage() {
               {courses.map((item) => <button className={`w-full rounded-xl border p-4 text-left ${course?.id === item.id ? "border-green-700 bg-green-50" : "bg-white hover:border-green-300"}`} key={item.id} onClick={() => void selectCourse(item.id)} type="button"><span className="font-bold">{item.name}</span><span className="mt-1 block text-xs text-[var(--muted)]">{item.due_count} due · {item.card_count} cards</span></button>)}
             </div>
           </aside>
-          {course ? <CourseWorkspace busy={busy} course={course} onActivate={activate} onAddCard={addCard} onDiscard={discard} onGenerate={generate} /> : null}
+          {course ? <CourseWorkspace busy={busy} course={course} onActivate={activate} onAddCard={addCard} onDelete={removeCard} onDeleteTagged={removeTagged} onGenerate={generate} onImportCsv={importCsv} /> : null}
         </div>
       )}
     </div>
   );
 }
 
-function CourseWorkspace({ course, busy, onAddCard, onGenerate, onActivate, onDiscard }: { course: StudyCourseDetail; busy: boolean; onAddCard: (event: FormEvent<HTMLFormElement>) => Promise<void>; onGenerate: (event: FormEvent<HTMLFormElement>) => Promise<void>; onActivate: (card: StudyCard) => Promise<void>; onDiscard: (card: StudyCard) => Promise<void> }) {
+function CourseWorkspace({ course, busy, onAddCard, onGenerate, onImportCsv, onActivate, onDelete, onDeleteTagged }: { course: StudyCourseDetail; busy: boolean; onAddCard: (event: FormEvent<HTMLFormElement>) => Promise<void>; onGenerate: (event: FormEvent<HTMLFormElement>) => Promise<void>; onImportCsv: (event: FormEvent<HTMLFormElement>) => Promise<void>; onActivate: (card: StudyCard) => Promise<void>; onDelete: (card: StudyCard) => Promise<void>; onDeleteTagged: (tag: string) => Promise<void> }) {
   const drafts = course.cards.filter((card) => card.status === "draft");
+  const library = course.cards.filter((card) => card.status !== "draft");
+  const eecs281Count = library.filter((card) => card.tags.includes("eecs281")).length;
   return (
     <section className="min-w-0">
       <div className="flex items-start justify-between gap-4"><div><h2 className="text-3xl font-bold">{course.name}</h2><p className="mt-1 text-[var(--muted)]">{course.description || "Your adaptive study deck"}</p></div><span className="rounded-full bg-green-100 px-3 py-1 text-sm font-bold text-green-900">{course.due_count} due</span></div>
@@ -180,8 +220,16 @@ function CourseWorkspace({ course, busy, onAddCard, onGenerate, onActivate, onDi
         </form>
         <form className="rounded-2xl border bg-white p-5" onSubmit={(event) => void onGenerate(event)}>
           <h3 className="flex items-center gap-2 font-bold"><Sparkles className="text-green-700" size={17} /> Generate drafts from notes</h3>
-          <p className="mt-1 text-sm text-[var(--muted)]">The AI only proposes drafts. You approve each card before scheduling.</p>
-          <div className="mt-4 grid gap-3"><input aria-label="Source title" className={inputClass} name="title" placeholder="Lecture 7 — Virtual memory" required /><textarea aria-label="Source notes" className={inputClass} name="notes" placeholder="Paste lecture notes, a study guide, or your own summary…" required rows={8} /><Button disabled={busy} type="submit">{busy ? <LoaderCircle className="animate-spin" size={16} /> : <Sparkles size={16} />} Generate card drafts</Button></div>
+          <p className="mt-1 text-sm text-[var(--muted)]">Best with a short summary. Full lecture transcripts often fail — use CSV import below for those.</p>
+          <div className="mt-4 grid gap-3"><input aria-label="Source title" className={inputClass} name="title" placeholder="Lecture 7 — Virtual memory" required /><textarea aria-label="Source notes" className={inputClass} name="notes" placeholder="Paste a short study guide or your own summary…" required rows={8} /><Button disabled={busy} type="submit">{busy ? <LoaderCircle className="animate-spin" size={16} /> : <Sparkles size={16} />} Generate card drafts</Button></div>
+        </form>
+        <form className="rounded-2xl border bg-white p-5 xl:col-span-2" onSubmit={(event) => void onImportCsv(event)}>
+          <h3 className="flex items-center gap-2 font-bold"><FileText size={17} /> Import CSV</h3>
+          <p className="mt-1 text-sm text-[var(--muted)]">Paste a CSV with columns concept, type, front, back, accepted_answers, tags, status. Cards schedule immediately.</p>
+          <div className="mt-4 grid gap-3">
+            <textarea aria-label="CSV text" className={`${inputClass} font-mono text-xs`} name="csv_text" placeholder={'concept,type,front,back,accepted_answers,tags,status\nHeaps,basic,"What is heapify?","Bottom-up fixDown in O(n)",,eecs281|heaps,active'} required rows={6} />
+            <Button disabled={busy} type="submit">{busy ? <LoaderCircle className="animate-spin" size={16} /> : <FileText size={16} />} Import cards</Button>
+          </div>
         </form>
       </div>
       {drafts.length ? (
@@ -194,7 +242,7 @@ function CourseWorkspace({ course, busy, onAddCard, onGenerate, onActivate, onDi
                   aria-label="Discard draft"
                   className="absolute right-3 top-3 rounded-lg p-1.5 text-amber-900/70 hover:bg-amber-100 hover:text-amber-950 disabled:opacity-50"
                   disabled={busy}
-                  onClick={() => void onDiscard(card)}
+                  onClick={() => void onDelete(card)}
                   type="button"
                 >
                   <X size={16} />
@@ -208,7 +256,44 @@ function CourseWorkspace({ course, busy, onAddCard, onGenerate, onActivate, onDi
           </div>
         </section>
       ) : null}
-      <section className="mt-8"><h3 className="text-lg font-bold">Card library ({course.cards.length})</h3>{course.cards.length === 0 ? <p className="mt-2 text-[var(--muted)]">No cards yet. Make one or generate drafts from notes.</p> : <div className="mt-3 overflow-hidden rounded-xl border bg-white"><div className="divide-y">{course.cards.filter((card) => card.status !== "draft").map((card) => <div className="flex items-start justify-between gap-4 p-4" key={card.id}><div><p className="font-semibold">{card.prompt}</p><p className="mt-1 text-sm text-[var(--muted)]">{card.concept} · {card.card_type} · reviewed {card.review_count}×</p></div><span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-semibold">{card.status}</span></div>)}</div></div>}</section>
+      <section className="mt-8">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-lg font-bold">Card library ({library.length})</h3>
+          {eecs281Count > 0 ? (
+            <Button disabled={busy} onClick={() => void onDeleteTagged("eecs281")} type="button" variant="secondary">
+              Delete {eecs281Count} eecs281 card{eecs281Count === 1 ? "" : "s"}
+            </Button>
+          ) : null}
+        </div>
+        {library.length === 0 ? (
+          <p className="mt-2 text-[var(--muted)]">No cards yet. Make one or generate drafts from notes.</p>
+        ) : (
+          <div className="mt-3 overflow-hidden rounded-xl border bg-white">
+            <div className="divide-y">
+              {library.map((card) => (
+                <div className="flex items-start justify-between gap-4 p-4" key={card.id}>
+                  <div className="min-w-0">
+                    <p className="font-semibold">{card.prompt}</p>
+                    <p className="mt-1 text-sm text-[var(--muted)]">{card.concept} · {card.card_type} · reviewed {card.review_count}×</p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-semibold">{card.status}</span>
+                    <button
+                      aria-label={`Delete card: ${card.prompt}`}
+                      className="rounded-lg p-1.5 text-stone-500 hover:bg-red-50 hover:text-red-800 disabled:opacity-50"
+                      disabled={busy}
+                      onClick={() => void onDelete(card)}
+                      type="button"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
     </section>
   );
 }

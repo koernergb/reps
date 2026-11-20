@@ -29,12 +29,39 @@ def test_course_card_and_review_flow(client: TestClient) -> None:
 
     result = client.post(
         f"/v1/study/cards/{card.json()['id']}/review",
-        json={"answer": "Mutual exclusion", "rating": "good"},
+        json={"answer": "Mutual exclusion", "confidence": 3},
     )
     assert result.status_code == 200
-    assert result.json()["correctness"] == 1.0
-    assert result.json()["interval_days"] == 2.2
+    body = result.json()
+    assert body["correctness"] == 1.0
+    assert body["confidence"] == 3
+    assert body["interval_days"] == 2.2
+    assert body["feedback"] == "Correct."
     assert client.get("/v1/study/queue").json()["count"] == 0
+
+
+def test_review_requires_answer_and_uses_confidence(client: TestClient) -> None:
+    course_id, concept_id = create_course(client)
+    card = client.post(
+        f"/v1/study/courses/{course_id}/cards",
+        json={
+            "concept_id": concept_id,
+            "card_type": "typed",
+            "prompt": "Heapify build cost?",
+            "answer": "O(n)",
+            "accepted_answers": ["O(n)", "linear"],
+        },
+    ).json()
+    missing = client.post(f"/v1/study/cards/{card['id']}/review", json={"confidence": 5})
+    assert missing.status_code == 422
+    wrong = client.post(
+        f"/v1/study/cards/{card['id']}/review",
+        json={"answer": "O(log n)", "confidence": 5},
+    )
+    assert wrong.status_code == 200
+    assert wrong.json()["correctness"] == 0.0
+    assert wrong.json()["lapsed"] is True
+    assert wrong.json()["interval_days"] < 1
 
 
 def test_discard_draft_card(client: TestClient) -> None:
@@ -88,13 +115,19 @@ def test_csv_import_and_export(client: TestClient) -> None:
         json={
             "concept_id": concept_id,
             "csv_text": (
-                "front,back,type,tags\n"
-                "What is paging?,Virtual memory mapping,basic,os|memory\n"
+                "concept,type,front,back,accepted_answers,tags,status\n"
+                'Paging,basic,"What is paging?","Virtual memory mapping",,os|memory,active\n'
+                'Heaps,typed,"Heapify cost?","O(n)",O(n)|linear,eecs281|heaps,active\n'
             ),
         },
     )
     assert imported.status_code == 201
-    assert imported.json() == {"imported": 1}
+    assert imported.json() == {"imported": 2}
+    detail = client.get(f"/v1/study/courses/{course_id}").json()
+    names = {item["name"] for item in detail["concepts"]}
+    assert "Paging" in names
+    assert "Heaps" in names
     exported = client.get(f"/v1/study/courses/{course_id}/export.csv")
     assert exported.status_code == 200
     assert "What is paging?" in exported.text
+    assert "Heapify cost?" in exported.text

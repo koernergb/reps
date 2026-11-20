@@ -15,6 +15,7 @@ from app.deps import SessionDependency, UserDependency
 from app.errors import ApiError
 from app.learning.evidence import recompute_capability, upsert_evidence
 from app.llm.audit import record_call
+from app.llm.prompts import fence, load_prompt
 from app.llm.provider import LLMUnavailable, build_provider
 from app.models import (
     Capability,
@@ -29,6 +30,7 @@ from app.models import (
     User,
     new_id,
 )
+from app.reviews.grading import AnswerGrade, Rubric, grade as grade_answer, overlap_grade
 
 router = APIRouter(prefix="/v1/study", tags=["study"])
 CardType = Literal["basic", "reversed", "cloze", "typed", "explain", "compare"]
@@ -91,13 +93,13 @@ class GeneratedCards(BaseModel):
 
 
 class ReviewInput(BaseModel):
-    answer: str = Field(default="", max_length=12000)
-    rating: Literal["again", "hard", "good", "easy"]
+    answer: str = Field(min_length=1, max_length=12000)
+    confidence: int = Field(ge=0, le=5)
 
 
 class ImportInput(BaseModel):
     csv_text: str = Field(min_length=1, max_length=500000)
-    concept_id: str
+    concept_id: str | None = None
 
 
 def now() -> datetime:
@@ -378,14 +380,19 @@ def generate_cards(source_id: str, db: SessionDependency, user: UserDependency) 
             "llm_not_configured",
             "Configure OpenAI or Gemini in Settings before generating cards.",
         )
+    notes = source.body.strip()
+    if len(notes) > 24000:
+        notes = notes[:24000] + "\n\n[Truncated for card generation. Focus on the material above.]"
     try:
         result = provider.generate(
             system=(
                 "You create precise, atomic spaced-repetition cards from supplied notes. "
                 "Never add facts absent from the notes. Prefer retrieval over recognition. "
-                "Return 5-15 useful cards and concise answers."
+                "If the notes are a lecture transcript, ignore streaming chatter, jokes, "
+                "personal asides, and student Q&A; keep only exam/project-relevant facts. "
+                "Return 8-15 useful cards with concise answers."
             ),
-            user=f"Source title: {source.title}\n\n{source.body}",
+            user=f"Source title: {source.title}\n\n{notes}",
             schema=GeneratedCards,
         )
     except LLMUnavailable as exc:
@@ -403,7 +410,15 @@ def generate_cards(source_id: str, db: SessionDependency, user: UserDependency) 
             error_code=exc.code,
         )
         db.commit()
-        raise ApiError(503, exc.code, str(exc)) from exc
+        detail = str(exc)
+        if "Failed to validate JSON" in detail or "failed_generation" in detail:
+            raise ApiError(
+                400,
+                "generation_failed",
+                "The model could not structure cards from that input. "
+                "Paste a shorter summary of the lecture, or import a CSV instead.",
+            ) from exc
+        raise ApiError(503, exc.code, detail) from exc
     record_call(
         db,
         user_id=user.id,
@@ -468,6 +483,80 @@ def normalized(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", value.casefold()).strip()
 
 
+STUDY_GRADER_VERSION = "v1"
+# Flashcards: floor scores by the grader's own action so partial credit isn't harsh.
+_STUDY_ACTION_FLOOR = {"advance": 0.85, "review": 0.72, "coach": 0.45, "rebuild": 0.0}
+
+
+def _soften_study_score(correctness: float, action: str) -> float:
+    return round(max(correctness, _STUDY_ACTION_FLOOR.get(action, 0.0)), 2)
+
+
+def grade_study_card(card: StudyCard, answer: str) -> tuple[float, str, str]:
+    """Grade a study answer. Returns (correctness, feedback, grader_id)."""
+    accepted = [card.answer, *card.accepted_answers]
+    if any(normalized(answer) == normalized(item) for item in accepted if item.strip()):
+        return 1.0, "Correct.", "exact"
+    if card.card_type in ("typed", "cloze"):
+        graded, grader_id = grade_answer(
+            Rubric(
+                prompt=card.prompt,
+                key_points=[],
+                accepted_answers=accepted,
+                reference=card.answer,
+                misconception=None,
+            ),
+            answer,
+            None,
+        )
+        return graded.correctness, graded.feedback, grader_id
+
+    baseline = overlap_grade(card.answer, answer)
+    provider = build_provider()
+    if provider is None:
+        score = _soften_study_score(baseline.correctness, baseline.recommended_action)
+        return score, baseline.feedback, "overlap/v1-study"
+
+    template = load_prompt("study_grader", STUDY_GRADER_VERSION)
+    system = template.render(
+        prompt=card.prompt,
+        reference=card.answer,
+        accepted="; ".join(a for a in accepted if a.strip()) or "(none)",
+        answer=fence("learner_answer", answer, 3000),
+    )
+    try:
+        result = provider.generate(
+            system=system, user="Grade the flashcard answer.", schema=AnswerGrade
+        )
+    except LLMUnavailable:
+        score = _soften_study_score(baseline.correctness, baseline.recommended_action)
+        return score, baseline.feedback, "overlap/v1-study-fallback"
+
+    graded = result.value
+    score = _soften_study_score(
+        max(graded.correctness, baseline.correctness), graded.recommended_action
+    )
+    return score, graded.feedback, template.id
+
+
+def interval_for(stability_days: float, correctness: float, confidence: int) -> tuple[float, bool]:
+    """LLM/correctness gates lapses; confidence modulates growth within the band."""
+    current = max(stability_days, 1.0)
+    if correctness < 0.45:
+        return 0.007, True
+    if correctness < 0.7:
+        return max(0.5, current * (0.5 + 0.12 * confidence)), False
+    if confidence <= 1:
+        return max(1.0, current * 1.2), False
+    if confidence == 2:
+        return max(1.5, current * 1.6), False
+    if confidence == 3:
+        return max(2.0, current * 2.2), False
+    if confidence == 4:
+        return max(3.0, current * 2.8), False
+    return max(4.0, current * 3.2), False
+
+
 @router.post("/cards/{card_id}/review")
 def review(
     card_id: str, body: ReviewInput, db: SessionDependency, user: UserDependency
@@ -475,24 +564,11 @@ def review(
     card = owned(db, StudyCard, card_id, user.id)
     if card.status != "active":
         raise ApiError(409, "card_inactive", "Only active cards can be reviewed.")
-    expected = [card.answer, *card.accepted_answers]
-    objective = max(
-        (1.0 if normalized(body.answer) == normalized(item) else 0.0 for item in expected),
-        default=0.0,
-    )
-    score_by_rating = {"again": 0.15, "hard": 0.55, "good": 0.85, "easy": 1.0}
-    correctness = (
-        max(objective, score_by_rating[body.rating])
-        if card.card_type in ("explain", "compare", "basic")
-        else objective
-    )
-    current = max(card.stability_days, 1.0)
-    interval = {
-        "again": 0.007,
-        "hard": max(1.0, current * 1.2),
-        "good": max(2.0, current * 2.2),
-        "easy": max(4.0, current * 3.2),
-    }[body.rating]
+    answer = body.answer.strip()
+    if not answer:
+        raise ApiError(422, "answer_required", "Type an answer before submitting.")
+    correctness, feedback, grader_id = grade_study_card(card, answer)
+    interval, lapsed = interval_for(card.stability_days, correctness, body.confidence)
     reviewed = now()
     task = db.scalar(
         select(ReviewTask).where(
@@ -505,7 +581,7 @@ def review(
         task.updated_at = reviewed
         task.attempt_count += 1
     card.review_count += 1
-    card.lapses += int(body.rating == "again")
+    card.lapses += int(lapsed)
     card.stability_days = interval
     card.last_reviewed_at = reviewed
     due = reviewed + timedelta(days=interval)
@@ -513,8 +589,8 @@ def review(
         user_id=user.id,
         card_id=card.id,
         task_id=task.id if task else None,
-        answer=body.answer,
-        rating=body.rating,
+        answer=answer,
+        confidence=body.confidence,
         correctness=correctness,
         interval_days=interval,
         reviewed_at=reviewed,
@@ -529,17 +605,20 @@ def review(
         dedupe_key=f"study-review:{row.id}",
         occurred_at=reviewed,
         score=correctness,
-        confidence=0.9,
+        confidence=0.5 + 0.1 * body.confidence,
         hint_level=0,
         exercise_type=card.card_type,
-        explanation=f"{body.rating} on {card.prompt[:120]}",
+        explanation=f"confidence {body.confidence}/5 on {card.prompt[:120]}",
     )
     recompute_capability(db, user.id, card.concept.capability_id)
     schedule(db, card, due)
     db.commit()
     return {
         "correctness": correctness,
-        "rating": body.rating,
+        "confidence": body.confidence,
+        "feedback": feedback,
+        "grader": grader_id,
+        "lapsed": lapsed,
         "interval_days": interval,
         "next_review_at": due,
         "expected_answer": card.answer,
@@ -579,27 +658,50 @@ def import_csv(
     course_id: str, body: ImportInput, db: SessionDependency, user: UserDependency
 ) -> dict[str, int]:
     course = owned(db, StudyCourse, course_id, user.id)
-    concept = owned(db, StudyConcept, body.concept_id, user.id)
-    if concept.course_id != course.id:
-        raise ApiError(422, "wrong_course", "The concept belongs to another course.")
+    existing = {
+        item.name.casefold(): item
+        for item in db.scalars(select(StudyConcept).where(StudyConcept.course_id == course.id)).all()
+    }
+    fallback: StudyConcept | None = None
+    if body.concept_id:
+        fallback = owned(db, StudyConcept, body.concept_id, user.id)
+        if fallback.course_id != course.id:
+            raise ApiError(422, "wrong_course", "The concept belongs to another course.")
     count = 0
+    allowed_types = {"basic", "reversed", "cloze", "typed", "explain", "compare"}
     try:
         rows = csv.DictReader(io.StringIO(body.csv_text))
         for source in rows:
             prompt, answer = (source.get("front") or "").strip(), (source.get("back") or "").strip()
             if not prompt or not answer:
                 continue
+            concept_name = (source.get("concept") or "").strip()
+            if concept_name:
+                concept = existing.get(concept_name.casefold())
+                if concept is None:
+                    concept = create_concept(db, user, course, ConceptInput(name=concept_name))
+                    existing[concept_name.casefold()] = concept
+            elif fallback is not None:
+                concept = fallback
+            else:
+                concept = existing.get("imported")
+                if concept is None:
+                    concept = create_concept(db, user, course, ConceptInput(name="Imported"))
+                    existing["imported"] = concept
+            card_type = (source.get("type") or "basic").strip()
+            if card_type not in allowed_types:
+                card_type = "basic"
+            accepted = [part.strip() for part in (source.get("accepted_answers") or "").split("|") if part.strip()]
+            tags = [part.strip() for part in (source.get("tags") or "").split("|") if part.strip()]
             card = StudyCard(
                 user_id=user.id,
                 course_id=course.id,
                 concept_id=concept.id,
-                card_type=source.get("type") or "basic",
+                card_type=card_type,
                 prompt=prompt,
                 answer=answer,
-                accepted_answers=(source.get("accepted_answers") or "").split("|")
-                if source.get("accepted_answers")
-                else [],
-                tags=(source.get("tags") or "").split("|") if source.get("tags") else [],
+                accepted_answers=accepted,
+                tags=tags,
                 status="active",
                 origin="imported",
             )

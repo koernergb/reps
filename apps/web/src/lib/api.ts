@@ -237,8 +237,21 @@ export function createStudySource(courseId: string, body: { title: string; body:
 export function generateStudyCards(sourceId: string): Promise<{ cards: StudyCard[]; provider: string; model: string }> {
   return apiRequest(`/v1/study/sources/${encodeURIComponent(sourceId)}/generate`, { method: "POST" });
 }
+export function importStudyCsv(courseId: string, body: { csv_text: string; concept_id?: string }): Promise<{ imported: number }> {
+  return apiRequest(`/v1/study/courses/${encodeURIComponent(courseId)}/import`, { method: "POST", body: JSON.stringify(body) });
+}
 export function getStudyQueue(): Promise<{ due: StudyCard[]; count: number }> { return apiRequest("/v1/study/queue"); }
-export function reviewStudyCard(id: string, body: { answer: string; rating: "again" | "hard" | "good" | "easy" }): Promise<{ correctness: number; rating: string; interval_days: number; next_review_at: string; expected_answer: string }> {
+export type StudyReviewResult = {
+  correctness: number;
+  confidence: number;
+  feedback: string;
+  grader: string;
+  lapsed: boolean;
+  interval_days: number;
+  next_review_at: string;
+  expected_answer: string;
+};
+export function reviewStudyCard(id: string, body: { answer: string; confidence: number }): Promise<StudyReviewResult> {
   return apiRequest(`/v1/study/cards/${encodeURIComponent(id)}/review`, { method: "POST", body: JSON.stringify(body) });
 }
 

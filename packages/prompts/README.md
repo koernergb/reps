@@ -7,6 +7,7 @@ Versioned prompt templates for every LLM task, rendered with `string.Template`:
 | Interviewer turn | `interviewer/v1.md` | `InterviewerTurn` (`app/interview/interviewer.py`) |
 | Post-interview evaluation | `evaluator/v1.md` | `SemanticEvaluation` (`app/evaluation/schemas.py`) |
 | Review answer grading | `grader/v1.md` | `AnswerGrade` (`app/reviews/grading.py`) |
+| Study flashcard grading | `study_grader/v1.md` | `AnswerGrade` (`app/routes/study.py`) |
 
 Rules:
 
