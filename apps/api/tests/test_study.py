@@ -1,5 +1,24 @@
 from fastapi.testclient import TestClient
 
+from app.reviews.grading import AnswerGrade
+from app.routes.study import _clamp_study_score, _study_has_gaps
+
+
+def test_clamp_study_score_blocks_perfect_when_gaps() -> None:
+    # Model said "advance"/1.0 but also listed wrong facts — must not stay at 100%.
+    assert _clamp_study_score(1.0, "advance", errors=True) == 0.7
+    assert _clamp_study_score(1.0, "review", errors=True) == 0.75
+    assert _clamp_study_score(0.9, "advance", errors=False) == 0.9
+    assert _study_has_gaps(
+        AnswerGrade(
+            correctness=1.0,
+            missing_points=["test runs n+1 times"],
+            misconceptions=["update is n not n+1"],
+            recommended_action="advance",
+            feedback="init once is right; the other counts are swapped.",
+        )
+    )
+
 
 def create_course(client: TestClient) -> tuple[str, str]:
     response = client.post(
@@ -8,6 +27,55 @@ def create_course(client: TestClient) -> tuple[str, str]:
     )
     assert response.status_code == 201
     return response.json()["id"], response.json()["default_concept_id"]
+
+
+def test_queue_filters_by_course_and_practice_mode(client: TestClient) -> None:
+    course_a, concept_a = create_course(client)
+    course_b = client.post(
+        "/v1/study/courses",
+        json={"name": "EECS 376", "description": "Foundations"},
+    ).json()
+    concept_b = course_b["default_concept_id"]
+    client.post(
+        f"/v1/study/courses/{course_a}/cards",
+        json={
+            "concept_id": concept_a,
+            "card_type": "basic",
+            "prompt": "Mutex?",
+            "answer": "mutual exclusion",
+        },
+    )
+    client.post(
+        f"/v1/study/courses/{course_b['id']}/cards",
+        json={
+            "concept_id": concept_b,
+            "card_type": "basic",
+            "prompt": "Skip list height?",
+            "answer": "O(log n)",
+        },
+    )
+    # Review the 376 card so it is no longer due, but still practiceable.
+    card_b = client.get(f"/v1/study/courses/{course_b['id']}").json()["cards"][0]
+    reviewed = client.post(
+        f"/v1/study/cards/{card_b['id']}/review",
+        json={"answer": "O(log n)", "confidence": 4},
+    )
+    assert reviewed.status_code == 200
+    assert reviewed.json()["interval_days"] >= 1
+
+    all_due = client.get("/v1/study/queue").json()
+    assert all_due["mode"] == "due"
+    assert all_due["course_id"] is None
+    assert {card["prompt"] for card in all_due["due"]} == {"Mutex?"}
+
+    scoped = client.get(f"/v1/study/queue?course_id={course_b['id']}&mode=due").json()
+    assert scoped["course_name"] == "EECS 376"
+    assert scoped["count"] == 0
+
+    practice = client.get(f"/v1/study/queue?course_id={course_b['id']}&mode=practice").json()
+    assert practice["mode"] == "practice"
+    assert practice["count"] == 1
+    assert practice["due"][0]["prompt"] == "Skip list height?"
 
 
 def test_course_card_and_review_flow(client: TestClient) -> None:

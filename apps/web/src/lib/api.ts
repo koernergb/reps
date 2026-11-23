@@ -240,7 +240,26 @@ export function generateStudyCards(sourceId: string): Promise<{ cards: StudyCard
 export function importStudyCsv(courseId: string, body: { csv_text: string; concept_id?: string }): Promise<{ imported: number }> {
   return apiRequest(`/v1/study/courses/${encodeURIComponent(courseId)}/import`, { method: "POST", body: JSON.stringify(body) });
 }
-export function getStudyQueue(): Promise<{ due: StudyCard[]; count: number }> { return apiRequest("/v1/study/queue"); }
+export type StudyQueueMode = "due" | "practice";
+export type StudyQueue = {
+  due: StudyCard[];
+  count: number;
+  mode: StudyQueueMode;
+  course_id: string | null;
+  course_name: string | null;
+};
+export function getStudyQueue(opts?: {
+  courseId?: string;
+  mode?: StudyQueueMode;
+  limit?: number;
+}): Promise<StudyQueue> {
+  const params = new URLSearchParams();
+  if (opts?.courseId) params.set("course_id", opts.courseId);
+  if (opts?.mode) params.set("mode", opts.mode);
+  if (opts?.limit != null) params.set("limit", String(opts.limit));
+  const query = params.toString();
+  return apiRequest(`/v1/study/queue${query ? `?${query}` : ""}`);
+}
 export type StudyReviewResult = {
   correctness: number;
   confidence: number;

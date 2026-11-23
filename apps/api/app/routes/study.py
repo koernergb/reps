@@ -6,7 +6,7 @@ import re
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Query, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -465,31 +465,66 @@ def generate_cards(source_id: str, db: SessionDependency, user: UserDependency) 
 
 
 @router.get("/queue")
-def queue(db: SessionDependency, user: UserDependency) -> dict[str, Any]:
+def queue(
+    db: SessionDependency,
+    user: UserDependency,
+    course_id: str | None = Query(default=None),
+    mode: Literal["due", "practice"] = Query(default="due"),
+    limit: int | None = Query(default=None, ge=1, le=100),
+) -> dict[str, Any]:
+    course_name: str | None = None
+    if course_id is not None:
+        course = owned(db, StudyCourse, course_id, user.id)
+        course_name = course.name
+    filters = [StudyCard.user_id == user.id, StudyCard.status == "active"]
+    if course_id is not None:
+        filters.append(StudyCard.course_id == course_id)
+    if mode == "due":
+        filters.append(StudyCard.next_review_at <= now())
+        cap = limit or user.daily_review_cap
+    else:
+        # Practice: any active card in scope (ignore due date).
+        cap = limit or min(max(user.daily_review_cap * 3, 24), 100)
     cards = db.scalars(
         select(StudyCard)
-        .where(
-            StudyCard.user_id == user.id,
-            StudyCard.status == "active",
-            StudyCard.next_review_at <= now(),
-        )
-        .order_by(StudyCard.next_review_at)
-        .limit(user.daily_review_cap)
+        .where(*filters)
+        .order_by(StudyCard.next_review_at, StudyCard.id)
+        .limit(cap)
     ).all()
-    return {"due": [card_view(x) for x in cards], "count": len(cards)}
+    return {
+        "due": [card_view(x) for x in cards],
+        "count": len(cards),
+        "mode": mode,
+        "course_id": course_id,
+        "course_name": course_name,
+    }
 
 
 def normalized(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", value.casefold()).strip()
 
 
-STUDY_GRADER_VERSION = "v1"
-# Flashcards: floor scores by the grader's own action so partial credit isn't harsh.
-_STUDY_ACTION_FLOOR = {"advance": 0.85, "review": 0.72, "coach": 0.45, "rebuild": 0.0}
+STUDY_GRADER_VERSION = "v2"
+# Cap inflated LLM scores so "advance" can't mean 100% when the model also
+# admits missing/wrong facts. Floors only gently lift very low partial credit.
+_STUDY_ACTION_CEILING = {"advance": 1.0, "review": 0.75, "coach": 0.5, "rebuild": 0.3}
+_STUDY_ACTION_FLOOR = {"advance": 0.85, "review": 0.55, "coach": 0.3, "rebuild": 0.0}
 
 
-def _soften_study_score(correctness: float, action: str) -> float:
-    return round(max(correctness, _STUDY_ACTION_FLOOR.get(action, 0.0)), 2)
+def _clamp_study_score(correctness: float, action: str, *, errors: bool) -> float:
+    """Align score with the grader's action; never 100% if it listed errors."""
+    lo = _STUDY_ACTION_FLOOR.get(action, 0.0)
+    hi = _STUDY_ACTION_CEILING.get(action, 1.0)
+    score = min(max(correctness, lo), hi)
+    if errors and score >= 0.85:
+        score = min(score, 0.7)
+    if action == "review" and score > 0.75:
+        score = 0.75
+    return round(score, 2)
+
+
+def _study_has_gaps(graded: AnswerGrade) -> bool:
+    return bool(graded.missing_points or graded.misconceptions)
 
 
 def grade_study_card(card: StudyCard, answer: str) -> tuple[float, str, str]:
@@ -514,7 +549,9 @@ def grade_study_card(card: StudyCard, answer: str) -> tuple[float, str, str]:
     baseline = overlap_grade(card.answer, answer)
     provider = build_provider()
     if provider is None:
-        score = _soften_study_score(baseline.correctness, baseline.recommended_action)
+        score = _clamp_study_score(
+            baseline.correctness, baseline.recommended_action, errors=_study_has_gaps(baseline)
+        )
         return score, baseline.feedback, "overlap/v1-study"
 
     template = load_prompt("study_grader", STUDY_GRADER_VERSION)
@@ -529,13 +566,17 @@ def grade_study_card(card: StudyCard, answer: str) -> tuple[float, str, str]:
             system=system, user="Grade the flashcard answer.", schema=AnswerGrade
         )
     except LLMUnavailable:
-        score = _soften_study_score(baseline.correctness, baseline.recommended_action)
+        score = _clamp_study_score(
+            baseline.correctness, baseline.recommended_action, errors=_study_has_gaps(baseline)
+        )
         return score, baseline.feedback, "overlap/v1-study-fallback"
 
     graded = result.value
-    score = _soften_study_score(
-        max(graded.correctness, baseline.correctness), graded.recommended_action
-    )
+    # Prefer the LLM score; only blend overlap when the model undershoots a clear lexical hit.
+    raw = graded.correctness
+    if baseline.correctness >= 0.8 and graded.correctness < baseline.correctness:
+        raw = max(graded.correctness, min(baseline.correctness, 0.85))
+    score = _clamp_study_score(raw, graded.recommended_action, errors=_study_has_gaps(graded))
     return score, graded.feedback, template.id
 
 

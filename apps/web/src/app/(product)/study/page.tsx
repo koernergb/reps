@@ -205,7 +205,29 @@ function CourseWorkspace({ course, busy, onAddCard, onGenerate, onImportCsv, onA
   const eecs281Count = library.filter((card) => card.tags.includes("eecs281")).length;
   return (
     <section className="min-w-0">
-      <div className="flex items-start justify-between gap-4"><div><h2 className="text-3xl font-bold">{course.name}</h2><p className="mt-1 text-[var(--muted)]">{course.description || "Your adaptive study deck"}</p></div><span className="rounded-full bg-green-100 px-3 py-1 text-sm font-bold text-green-900">{course.due_count} due</span></div>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold">{course.name}</h2>
+          <p className="mt-1 text-[var(--muted)]">{course.description || "Your adaptive study deck"}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-bold text-green-900">
+            {course.due_count} due · {library.length} cards
+          </span>
+          <Link
+            className="rounded-lg bg-green-800 px-4 py-2 text-sm font-semibold text-white hover:bg-green-900"
+            href={`/study/review?course=${encodeURIComponent(course.id)}&mode=due`}
+          >
+            Study {course.name}
+          </Link>
+          <Link
+            className="rounded-lg border border-green-800 px-4 py-2 text-sm font-semibold text-green-900 hover:bg-green-50"
+            href={`/study/review?course=${encodeURIComponent(course.id)}&mode=practice`}
+          >
+            Practice all
+          </Link>
+        </div>
+      </div>
       <div className="mt-6 grid gap-5 xl:grid-cols-2">
         <form className="rounded-2xl border bg-white p-5" onSubmit={(event) => void onAddCard(event)}>
           <h3 className="flex items-center gap-2 font-bold"><Plus size={17} /> Make a card</h3>
